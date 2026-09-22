@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6d4aff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="MathsExpress" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="description" content="MathsExpress secure learning app." />
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="canonical" href="https://mathsexpress.netlify.app/" />
+  <title>MathsExpress App — Log in</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="./favicon.ico" sizes="any" />
+  <link rel="icon" href="./mx-logo.png" type="image/png" sizes="512x512" />
+  <link rel="apple-touch-icon" href="./assets/mx-logo-180.png" />
+  <link rel="preconnect" href="https://ewpncbgqutftiqhtkpfl.supabase.co" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="stylesheet" href="./styles.css?v=11.5.3-profile1" />
+</head>
+<body>
+  <div id="mx-loading-screen" class="mx-loading-screen" role="status" aria-live="polite">
+    <div class="mx-loading-card">
+      <div class="mx-loading-brand"><span class="brand-mark"><img src="./assets/mx-logo.png" alt="" aria-hidden="true" /></span><strong>MathsExpress</strong></div>
+      <div class="mx-train-track" aria-hidden="true">
+        <div class="mx-train">
+          <span class="mx-engine">M</span>
+          <span>+</span>
+          <span>×</span>
+          <span>÷</span>
+          <span>=</span>
+        </div>
+      </div>
+      <span class="mx-loading-title">Getting your maths ready…</span>
+      <small>Loading your progress, assignments and rewards.</small>
+    </div>
+  </div>
+  <div class="app-shell relaxed-shell">
+    <header class="relaxed-topnav v10-topnav" aria-label="MathsExpress navigation">
+      <button class="brand relaxed-brand v10-brand" data-route="home" aria-label="MathsExpress home">
+        <img class="brand-mark v10-brand-mark brand-logo-image" src="./assets/mx-logo.png" alt="" aria-hidden="true" />
+        <span class="brand-copy"><strong>Maths<span>Express</span></strong></span>
+      </button>
+
+      <nav class="nav-list relaxed-primary-nav v10-primary-nav" aria-label="Main navigation">
+        <button class="nav-item" data-route="home"><b>Home</b></button>
+        <button class="nav-item" data-route="learn"><b>Learn</b></button>
+        <button class="nav-item" data-route="learning-path"><b>Practice</b></button>
+        <button class="nav-item" data-route="student-hub"><b>Assignments</b></button>
+        <button class="nav-item" data-route="textbook"><b>Textbook</b></button>
+        <button class="nav-item" data-route="achievements"><b>Progress</b></button>
+      </nav>
+
+      <div class="relaxed-top-actions v10-top-actions">
+        <div class="top-stats compact-top-stats v10-icon-stats" aria-label="Student summary">
+          <div class="stat-pill level-pill" title="MathsExpress level"><span class="v10-level-label">LV</span><strong id="top-level">1</strong></div>
+          <div class="stat-pill game-time-pill" title="Available game time"><span class="v10-stat-icon" aria-hidden="true">✏️</span><strong id="top-game-time">0:00</strong></div>
+          <div class="stat-pill points-pill" title="Your weekly learning points"><span class="v10-stat-icon" aria-hidden="true">⚡</span><strong id="top-points">0</strong></div>
+          <div class="stat-pill coin-pill" title="Coins"><span class="v10-stat-icon v10-coin-icon" aria-hidden="true">●</span><strong id="top-coins">100</strong></div>
+        </div>
+        <button id="study-timer-top" class="study-timer-top" data-action="open-study-timer" type="button" hidden aria-label="Open study timer"><small>FOCUS</small><strong id="study-timer-top-display">25:00</strong></button>
+        <button id="account-chip" class="account-chip compact-account-chip v10-account-chip" data-action="open-account" type="button" aria-label="Open account"><span class="account-dot" id="account-avatar-initial">M</span><span id="account-chip-name">Sign in</span><small id="account-chip-role">ACCOUNT REQUIRED</small></button>
+        <div class="more-menu-wrap">
+          <button id="more-nav-button" class="nav-more-button v10-menu-button" data-action="toggle-more-nav" type="button" aria-controls="more-nav-menu" aria-expanded="false" aria-label="Open menu">☰</button>
+          <div id="more-nav-menu" class="more-nav-menu v10-more-menu" hidden>
+            <div class="more-menu-section"><small>Teacher & school</small>
+              <button id="school-top-button" data-route="teacher-hub" type="button" hidden>Teacher dashboard</button>
+              <button data-action="open-custom-assignment">Create task</button>
+              <button data-route="calendar">Planner</button>
+              <button id="owner-console-top-button" data-action="open-owner-console" type="button" hidden>Owner Console</button>
+            </div>
+            <div class="more-menu-section"><small>Learning</small>
+              <button data-route="learning-path">Learning Path</button>
+              <button data-action="open-student-tab" data-tab="skills">Skills</button>
+              <button data-route="textbook">Textbooks</button>
+              <button data-route="tools">Tools</button>
+              <button data-route="challenges">Challenges</button>
+            </div>
+            <div class="more-menu-section"><small>Account</small>
+              <button data-route="profile">Profile & account</button>
+              <button data-route="achievements">Badges</button>
+              <button data-action="open-student-parent">Parents & guardians</button>
+              <button id="role-tools-button" data-action="open-role-tools" hidden>Role Tools</button>
+              <button data-action="open-student-tab" data-tab="settings">Settings</button>
+              <button data-action="open-feedback">Report bug / suggestion</button>
+            </div>
+            <div class="menu-player"><div class="avatar">M</div><div><strong id="side-player-name">MathsExpress Student</strong><small id="side-player-level">Level 1</small></div></div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="main-shell relaxed-main-shell">
+      <main id="app-view" tabindex="-1"></main>
+    </section>
+    <footer class="mx-public-footer" aria-label="MathsExpress legal and support links">
+      <a href="./privacy.html" target="_blank" rel="noopener noreferrer">Privacy</a>
+      <a href="./terms.html" target="_blank" rel="noopener noreferrer">Terms</a>
+      <a href="./security.html" target="_blank" rel="noopener noreferrer">Security</a>
+      <a href="./accessibility.html" target="_blank" rel="noopener noreferrer">Accessibility</a>
+      <a href="./subprocessors.html" target="_blank" rel="noopener noreferrer">Subprocessors</a>
+      <span>v11.5.3</span>
+    </footer>
+  </div>
+
+  <button id="teacher-create-anywhere" class="teacher-create-anywhere" data-action="open-custom-assignment" type="button" title="Create task from anywhere · ⌘/Ctrl + Shift + A" hidden>＋ Create task</button>
+
+  <div id="modal-root"></div>
+  <div id="auth-gate"></div>
+  <div id="owner-console-root"></div>
+  <div id="toast-root" class="toast-root" aria-live="polite"></div>
+
+  <script src="./mathsexpress-config.js?v=10.0.0"></script>
+  <script src="./supabase-loader.js?v=10.0.0"></script>
+  <script src="./mathsexpress-safe-math.js?v=10.0.0"></script>
+  <script src="./deploy-core-1.js?v=11.5.3"></script>
+  <script src="./deploy-core-2.js?v=11.5.3"></script>
+  <script src="./v7-features.js?v=10.0.0"></script>
+  <script src="./deploy-app.js?v=11.5.3-profile1"></script>
+  <script>
+    // Independent local-file fail-safe: even if an app script throws, never leave a blank page.
+    setTimeout(function(){
+      var gate=document.getElementById('auth-gate');
+      var view=document.getElementById('app-view');
+      if(gate && view && !gate.textContent.trim() && !view.textContent.trim()){
+        gate.innerHTML='<div class="auth-backdrop"><section class="auth-card"><div class="auth-art"><div class="auth-logo"><img src="./assets/mx-logo.png" alt="" aria-hidden="true"></div><h1>MathsExpress</h1><p>The app files opened, but startup did not finish.</p></div><div class="auth-forms"><h2>Startup recovery</h2><p>Reload this page. If it still appears, open the newest MathsExpress folder and make sure all files were extracted together.</p><button class="btn primary auth-submit" type="button" onclick="location.reload()">Reload MathsExpress</button></div></section></div>';
+      }
+    },1800);
+  </script>
+</body>
+</html>
