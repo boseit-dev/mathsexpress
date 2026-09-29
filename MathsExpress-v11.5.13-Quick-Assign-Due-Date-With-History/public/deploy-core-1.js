@@ -271,12 +271,11 @@ const CURRICULUM_SYSTEMS = Object.freeze([
   'NSW Mathematics K–10',
   'Australian Curriculum Mathematics F–10A',
   'Victorian Curriculum Mathematics F–10',
-  'US Common Core Mathematics K–12',
-  'Florida B.E.S.T. Mathematics',
-  'Virginia Standards of Learning Mathematics',
-  'IB Mathematics',
+  'Western Australian Curriculum Mathematics P–10',
+  'Cambridge Primary Mathematics',
+  'Cambridge Lower Secondary Mathematics',
   'Cambridge IGCSE Mathematics',
-  'Ontario Mathematics Curriculum',
+  'Cambridge International AS & A Level Mathematics',
   'Custom / Other',
 ]);
 
@@ -3418,6 +3417,17 @@ function unwrap(result) {
   return result?.data;
 }
 
+function classJoinSucceeded(result) {
+  if (result == null) return false;
+  if (Array.isArray(result)) return result.length > 0;
+  if (typeof result === 'object') {
+    if (result.ok === false || result.joined === false || result.success === false) return false;
+    if (result.error || result.message_code === 'not_found') return false;
+    return Object.keys(result).length > 0;
+  }
+  return result !== false;
+}
+
 function isMissingRoomSchema(error) {
   const code=String(error?.code||'');
   const message=String(error?.message||error||'').toLowerCase();
@@ -3441,7 +3451,13 @@ class MathRiftSchoolClient {
   }
 
   async joinClass(code) {
-    return unwrap(await this.client.rpc('mathrift_join_class', { p_code: normalizeClassCode(code) }));
+    const result = unwrap(await this.client.rpc('mathrift_join_class', { p_code: normalizeClassCode(code) }));
+    // An unknown code comes back as a null/empty payload with no PostgREST error,
+    // so unwrap() stays silent and the caller would report a join that never
+    // happened. Treat only clearly-failed shapes as failure and leave any other
+    // success payload alone.
+    if (!classJoinSucceeded(result)) throw new Error('That class code was not found.');
+    return result;
   }
 
   async createClass({ schoolId = '', name, yearLevel = 9, joinCode = '', room = '' } = {}) {
