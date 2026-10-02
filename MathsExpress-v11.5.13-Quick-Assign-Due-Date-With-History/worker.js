@@ -1,6 +1,6 @@
 // MathsExpress Cloudflare Pages direct-upload worker (dashboard compatible)
-const MX_PUBLIC_SUPABASE_URL='https://ewpncbgqutftiqhtkpfl.supabase.co';
-const MX_PUBLIC_SUPABASE_KEY='sb_publishable_HyZAOJiLu0G_E8jLUnotIQ_YVux8ftm';
+const MX_PUBLIC_SUPABASE_URL='https://dsjrxkxjcaurrbijihja.supabase.co';
+const MX_PUBLIC_SUPABASE_KEY='sb_publishable_Df5UQ8PeQgUnWQ_4VT91DQ_j85oh6fv';
 
 function __mxMake_ai(runtimeEnv){
   const previousEnv=globalThis.__MX_ENV;
@@ -9,8 +9,8 @@ function __mxMake_ai(runtimeEnv){
   const ENV=(typeof globalThis!=='undefined'&&globalThis.__MX_ENV)||((typeof process!=='undefined'&&process.env)||{});
   const GROQ_URL='https://api.groq.com/openai/v1/chat/completions';
   const MODELS=['openai/gpt-oss-20b','openai/gpt-oss-120b','qwen/qwen3.8-27b'];
-  const SUPABASE_URL=ENV.SUPABASE_URL||'https://ewpncbgqutftiqhtkpfl.supabase.co';
-  const SUPABASE_KEY=ENV.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_HyZAOJiLu0G_E8jLUnotIQ_YVux8ftm';
+  const SUPABASE_URL=ENV.SUPABASE_URL||'https://dsjrxkxjcaurrbijihja.supabase.co';
+  const SUPABASE_KEY=ENV.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_Df5UQ8PeQgUnWQ_4VT91DQ_j85oh6fv';
   const clean=(v,n=3000)=>String(v??'').replace(/[\u0000-\u001F]/g,'').trim().slice(0,n);
   const redact=(v,n=3000)=>clean(v,n).replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[email redacted]');
   async function auth(req){if(!SUPABASE_URL||!SUPABASE_KEY)throw Object.assign(new Error('Server database configuration is missing.'),{status:503});const a=String(req.headers.authorization||'');if(!a.startsWith('Bearer '))throw Object.assign(new Error('Sign in required.'),{status:401});const r=await fetch(`${SUPABASE_URL}/auth/v1/user`,{headers:{apikey:SUPABASE_KEY,Authorization:a}});const u=await r.json().catch(()=>null);if(!r.ok||!u?.id)throw Object.assign(new Error('Session expired.'),{status:401});return a;}
@@ -285,8 +285,8 @@ function __mxMake_parent_email(runtimeEnv){
   globalThis.__MX_ENV=runtimeEnv||{};
   const module={exports:{}}; const exports=module.exports;
   const ENV=(typeof globalThis!=='undefined'&&globalThis.__MX_ENV)||((typeof process!=='undefined'&&process.env)||{});
-  const SUPABASE_URL=ENV.SUPABASE_URL||'https://ewpncbgqutftiqhtkpfl.supabase.co';
-  const SUPABASE_KEY=ENV.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_HyZAOJiLu0G_E8jLUnotIQ_YVux8ftm';
+  const SUPABASE_URL=ENV.SUPABASE_URL||'https://dsjrxkxjcaurrbijihja.supabase.co';
+  const SUPABASE_KEY=ENV.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_Df5UQ8PeQgUnWQ_4VT91DQ_j85oh6fv';
   const RESEND_KEY=ENV.RESEND_API_KEY||'';
   const FROM=ENV.PARENT_EMAIL_FROM||'';
   const REPLY_TO=ENV.PARENT_EMAIL_REPLY_TO||'';
