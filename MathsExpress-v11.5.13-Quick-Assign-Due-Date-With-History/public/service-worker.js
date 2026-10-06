@@ -1,4 +1,4 @@
-const CACHE='mathsexpress-v11-5-13';
+const CACHE='mathsexpress-v11-5-18';
 const CORE=[
   './','./index.html','./site.css','./site-motion.js','./app.html','./styles.css','./manifest.webmanifest','./mathsexpress-icon.svg','./mathsexpress-config.js',
   './supabase-loader.js','./mathsexpress-safe-math.js','./quick-assign-due.js','./deploy-core-1.js','./deploy-core-2.js','./v7-features.js','./deploy-app.js',

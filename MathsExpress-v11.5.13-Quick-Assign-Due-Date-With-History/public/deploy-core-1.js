@@ -2982,6 +2982,51 @@ __modules["src/core/auth.js"]=(()=>{
 const MX_RUNTIME_CONFIG = globalThis.MATHSEXPRESS_CONFIG || {};
 const SUPABASE_URL = String(MX_RUNTIME_CONFIG.supabaseUrl || '');
 const SUPABASE_PUBLISHABLE_KEY = String(MX_RUNTIME_CONFIG.supabasePublishableKey || '');
+async function mathsexpressSupabaseFetch(input, init) {
+  let target;
+  try {
+    const raw = typeof input === 'string' || input instanceof URL ? String(input) : String(input?.url || '');
+    target = new URL(raw, globalThis.location?.origin || SUPABASE_URL || 'https://mathsexpress.invalid');
+  } catch {
+    return globalThis.fetch(input, init);
+  }
+  let supabaseOrigin = '';
+  try { supabaseOrigin = new URL(SUPABASE_URL).origin; } catch {}
+  if (!supabaseOrigin || target.origin !== supabaseOrigin) return globalThis.fetch(input, init);
+  if (!/^\/(?:auth|rest|storage|functions)\/v1(?:\/|$)/.test(target.pathname)) return globalThis.fetch(input, init);
+
+  const directFetch = () => globalThis.fetch(input, init);
+  const pageProtocol = String(globalThis.location?.protocol || '');
+  const pageOrigin = String(globalThis.location?.origin || '');
+  if (!/^https?:$/.test(pageProtocol) || !pageOrigin || pageOrigin === 'null') return directFetch();
+
+  const proxyUrl = `/api/supabase${target.pathname}${target.search}`;
+  const proxyFetch = () => {
+    if (typeof Request !== 'undefined' && input instanceof Request) {
+      try { return globalThis.fetch(new Request(proxyUrl, input), init); }
+      catch { return globalThis.fetch(proxyUrl, init); }
+    }
+    return globalThis.fetch(proxyUrl, init);
+  };
+
+  let proxyResponse;
+  try {
+    proxyResponse = await proxyFetch();
+  } catch (proxyError) {
+    try { return await directFetch(); }
+    catch {
+      throw new Error('MathsExpress could not reach the account server. Open the deployed website (not the downloaded HTML file), then try again.');
+    }
+  }
+
+  // If the static site is being served without its Worker/API route, try the
+  // trusted Supabase project directly rather than leaving login stuck on a 404/5xx.
+  if ([404, 405, 501, 502, 503, 504].includes(Number(proxyResponse?.status))) {
+    try { return await directFetch(); }
+    catch { return proxyResponse; }
+  }
+  return proxyResponse;
+}
 function normalizeAccountProfile(row = {}) {
   return {
     userId: String(row.user_id ?? row.userId ?? ''),
@@ -3049,6 +3094,7 @@ class MathRiftAccountClient {
         detectSessionInUrl: true,
         storageKey: 'mathrift-account-v1',
       },
+      global: { fetch: mathsexpressSupabaseFetch },
     });
     return this.client;
   }
@@ -3080,15 +3126,43 @@ class MathRiftAccountClient {
     // now that MathsExpress no longer requires email verification.
     let loginResponse;
     try {
-      loginResponse = await fetch(`${SUPABASE_URL}/functions/v1/mathsexpress-login`, {
+      loginResponse = await mathsexpressSupabaseFetch(`${SUPABASE_URL}/functions/v1/mathsexpress-login`, {
         method:'POST',
         headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY},
         body:JSON.stringify({login:loginValue,password:passwordValue}),
       });
     } catch {
+      // If the optional custom login Edge Function is unavailable (for example,
+      // a new Cloudflare deployment where that function has not been deployed),
+      // email logins can still use Supabase Auth directly. This keeps normal
+      // email/password accounts working instead of showing a network error.
+      if (loginValue.includes('@')) {
+        const {data,error}=await client.auth.signInWithPassword({email:loginValue,password:passwordValue});
+        if(error) throw error;
+        this.session=data?.session||null;
+        if(!this.session) throw new Error('Username/email or password is incorrect.');
+        await this.refreshProfile();
+        if(this.profile.status!=='active'){
+          await this.signOut();
+          throw new Error(`This account is ${this.profile.status}.`);
+        }
+        return this.snapshot();
+      }
       throw new Error('Could not reach the account service. Check your internet connection and try again.');
     }
     const loginPayload=await loginResponse.json().catch(()=>({}));
+    if(!loginResponse.ok && (Number(loginResponse.status)===404 || Number(loginResponse.status)>=500) && loginValue.includes('@')){
+      const {data,error}=await client.auth.signInWithPassword({email:loginValue,password:passwordValue});
+      if(error) throw error;
+      this.session=data?.session||null;
+      if(!this.session) throw new Error('Username/email or password is incorrect.');
+      await this.refreshProfile();
+      if(this.profile.status!=='active'){
+        await this.signOut();
+        throw new Error(`This account is ${this.profile.status}.`);
+      }
+      return this.snapshot();
+    }
     if(!loginResponse.ok || !loginPayload?.access_token || !loginPayload?.refresh_token){
       throw new Error(loginPayload?.error || 'Username/email or password is incorrect.');
     }
@@ -3128,7 +3202,7 @@ class MathRiftAccountClient {
     const payload={email:normalizedEmail,password:passwordValue,displayName:safeDisplayName,accountType:requestedAccountType};
     let response;
     try{
-      response=await fetch(`${SUPABASE_URL}/functions/v1/mathsexpress-signup`,{
+      response=await mathsexpressSupabaseFetch(`${SUPABASE_URL}/functions/v1/mathsexpress-signup`,{
         method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_PUBLISHABLE_KEY},body:JSON.stringify(payload)
       });
     }catch{

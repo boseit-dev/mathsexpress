@@ -1,6 +1,6 @@
 // MathsExpress Cloudflare Pages direct-upload worker (dashboard compatible)
-const MX_PUBLIC_SUPABASE_URL='https://ewpncbgqutftiqhtkpfl.supabase.co';
-const MX_PUBLIC_SUPABASE_KEY='sb_publishable_HyZAOJiLu0G_E8jLUnotIQ_YVux8ftm';
+const MX_PUBLIC_SUPABASE_URL='https://dsjrxkxjcaurrbijihja.supabase.co';
+const MX_PUBLIC_SUPABASE_KEY='sb_publishable_Df5UQ8PeQgUnWQ_4VT91DQ_j85oh6fv';
 
 function __mxMake_ai(runtimeEnv){
   const previousEnv=globalThis.__MX_ENV;
@@ -9,8 +9,8 @@ function __mxMake_ai(runtimeEnv){
   const ENV=(typeof globalThis!=='undefined'&&globalThis.__MX_ENV)||((typeof process!=='undefined'&&process.env)||{});
   const GROQ_URL='https://api.groq.com/openai/v1/chat/completions';
   const MODELS=['openai/gpt-oss-20b','openai/gpt-oss-120b','qwen/qwen3.8-27b'];
-  const SUPABASE_URL=ENV.SUPABASE_URL||'https://ewpncbgqutftiqhtkpfl.supabase.co';
-  const SUPABASE_KEY=ENV.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_HyZAOJiLu0G_E8jLUnotIQ_YVux8ftm';
+  const SUPABASE_URL=ENV.SUPABASE_URL||'https://dsjrxkxjcaurrbijihja.supabase.co';
+  const SUPABASE_KEY=ENV.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_Df5UQ8PeQgUnWQ_4VT91DQ_j85oh6fv';
   const clean=(v,n=3000)=>String(v??'').replace(/[\u0000-\u001F]/g,'').trim().slice(0,n);
   const redact=(v,n=3000)=>clean(v,n).replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[email redacted]');
   async function auth(req){if(!SUPABASE_URL||!SUPABASE_KEY)throw Object.assign(new Error('Server database configuration is missing.'),{status:503});const a=String(req.headers.authorization||'');if(!a.startsWith('Bearer '))throw Object.assign(new Error('Sign in required.'),{status:401});const r=await fetch(`${SUPABASE_URL}/auth/v1/user`,{headers:{apikey:SUPABASE_KEY,Authorization:a}});const u=await r.json().catch(()=>null);if(!r.ok||!u?.id)throw Object.assign(new Error('Session expired.'),{status:401});return a;}
@@ -285,8 +285,8 @@ function __mxMake_parent_email(runtimeEnv){
   globalThis.__MX_ENV=runtimeEnv||{};
   const module={exports:{}}; const exports=module.exports;
   const ENV=(typeof globalThis!=='undefined'&&globalThis.__MX_ENV)||((typeof process!=='undefined'&&process.env)||{});
-  const SUPABASE_URL=ENV.SUPABASE_URL||'https://ewpncbgqutftiqhtkpfl.supabase.co';
-  const SUPABASE_KEY=ENV.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_HyZAOJiLu0G_E8jLUnotIQ_YVux8ftm';
+  const SUPABASE_URL=ENV.SUPABASE_URL||'https://dsjrxkxjcaurrbijihja.supabase.co';
+  const SUPABASE_KEY=ENV.SUPABASE_PUBLISHABLE_KEY||'sb_publishable_Df5UQ8PeQgUnWQ_4VT91DQ_j85oh6fv';
   const RESEND_KEY=ENV.RESEND_API_KEY||'';
   const FROM=ENV.PARENT_EMAIL_FROM||'';
   const REPLY_TO=ENV.PARENT_EMAIL_REPLY_TO||'';
@@ -412,6 +412,32 @@ async function __mxRun(handler, request){
 }
 
 
+async function __mxProxySupabase(request, env={}){
+  const requestUrl=new URL(request.url);
+  const upstreamPath=requestUrl.pathname.slice('/api/supabase'.length);
+  if(!/^\/(?:auth|rest|storage|functions)\/v1(?:\/|$)/.test(upstreamPath)){
+    return new Response(JSON.stringify({error:'Supabase proxy path is not allowed.'}),{status:404,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}});
+  }
+  const supabaseBase=MX_PUBLIC_SUPABASE_URL.replace(/\/$/,'');
+  const upstreamUrl=`${supabaseBase}${upstreamPath}${requestUrl.search}`;
+  const headers=new Headers(request.headers);
+  for(const name of ['host','content-length','cf-connecting-ip','cf-ipcountry','cf-ray','cf-visitor','x-forwarded-proto','x-real-ip']) headers.delete(name);
+  headers.set('apikey',MX_PUBLIC_SUPABASE_KEY);
+  headers.delete('origin');
+  try{
+    const init={method:request.method,headers,redirect:'manual'};
+    if(!['GET','HEAD'].includes(request.method)) init.body=await request.arrayBuffer();
+    const upstream=await fetch(upstreamUrl,init);
+    const responseHeaders=new Headers(upstream.headers);
+    for(const name of ['access-control-allow-origin','access-control-allow-credentials','access-control-expose-headers','transfer-encoding','content-length']) responseHeaders.delete(name);
+    responseHeaders.set('Cache-Control','no-store');
+    responseHeaders.set('X-Content-Type-Options','nosniff');
+    return new Response(upstream.body,{status:upstream.status,statusText:upstream.statusText,headers:responseHeaders});
+  }catch(error){
+    return new Response(JSON.stringify({error:'The database service is temporarily unavailable. Please try again.'}),{status:502,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+  }
+}
+
 async function __mxProxySignup(request){
   const baseHeaders={'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'};
   if(request.method!=='POST') return new Response(JSON.stringify({error:'POST only.'}),{status:405,headers:baseHeaders});
@@ -442,12 +468,13 @@ export default {
     const url=new URL(request.url);
     const routePath=url.pathname.replace(/\/$/,'');
     if(routePath==='/api/signup') return __mxProxySignup(request);
+    if(routePath.startsWith('/api/supabase/')) return __mxProxySupabase(request,env);
     const factory=__mxFactories[routePath];
     if(factory){
       const runtimeEnv={
         ...env,
-        SUPABASE_URL: env.SUPABASE_URL || MX_PUBLIC_SUPABASE_URL,
-        SUPABASE_PUBLISHABLE_KEY: env.SUPABASE_PUBLISHABLE_KEY || MX_PUBLIC_SUPABASE_KEY
+        SUPABASE_URL: MX_PUBLIC_SUPABASE_URL,
+        SUPABASE_PUBLISHABLE_KEY: MX_PUBLIC_SUPABASE_KEY
       };
       try{return await __mxRun(factory(runtimeEnv),request);}
       catch(error){return new Response(JSON.stringify({error:String(error?.message||'Server request failed.')}),{status:500,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});}
