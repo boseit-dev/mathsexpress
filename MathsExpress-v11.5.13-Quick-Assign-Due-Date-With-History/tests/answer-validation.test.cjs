@@ -145,3 +145,49 @@ test('check-in grading still accepts every correct answer', () => {
     assert.equal(grade(q, q.answer), true, `${q.id} must accept its own answer "${q.answer}"`);
   }
 });
+
+// Letters are permitted only when the question's own variables need them.
+// Single letters in prose ("the area of a rectangle", "A fair die is rolled")
+// are English articles, not variables, and previously leaked through -- which
+// let a student type "aaa" into a question whose answer is a plain number.
+function loadAllowedLetters() {
+  const app = fs.readFileSync(path.join(root, 'public', 'deploy-app.js'), 'utf8');
+  const src = app.match(/function questionAllowedLetters[\s\S]*?\n\}/);
+  assert.ok(src, 'questionAllowedLetters not found');
+  // eslint-disable-next-line no-eval
+  return eval(`${src[0]}; questionAllowedLetters`);
+}
+
+const questionAllowedLetters = loadAllowedLetters();
+const allowed = (q) => [...questionAllowedLetters(q)].sort().join('');
+
+test('number questions permit no letters at all', () => {
+  assert.equal(allowed({ prompt: 'Find the mean of 4, 7, 9, 10.', answer: '7.5', type: 'numeric' }), '');
+  assert.equal(allowed({ prompt: 'Simplify the ratio 18:24.', answer: '3:4', type: 'short-answer' }), '');
+});
+
+test('English articles in the prompt are not treated as variables', () => {
+  assert.equal(
+    allowed({ prompt: 'Find the area of a rectangle 7 cm by 5 cm.', answer: '35', type: 'numeric' }),
+    '',
+    'the article "a" must not become an allowed letter',
+  );
+  assert.equal(
+    allowed({ prompt: 'A fair die is rolled. Give a simplified fraction.', answer: '1/2', type: 'numeric' }),
+    '',
+  );
+});
+
+test('genuine variables are still permitted', () => {
+  assert.equal(allowed({ prompt: 'For y = 3x + 2, find y when x = 4.', answer: '14', type: 'numeric' }), 'xy');
+  assert.equal(allowed({ prompt: 'Expand (x+1)(x+2).', answer: 'x^2+3x+2', type: 'expression' }), 'x');
+  // letters needed to type the answer survive even when the prompt reads as prose
+  assert.equal(allowed({ prompt: 'Solve for a and b.', answer: 'a=2, b=3', type: 'short-answer' }), 'ab');
+  // "a = 7" is maths context rather than an article
+  assert.equal(allowed({ prompt: 'What is the value of a when a = 7?', answer: '7', type: 'numeric' }), 'a');
+});
+
+test('free-text question types opt out of restriction entirely', () => {
+  assert.equal(questionAllowedLetters({ prompt: 'Explain your reasoning.', type: 'written-response' }), null);
+  assert.equal(questionAllowedLetters({ prompt: 'Pick one.', type: 'multiple-choice' }), null);
+});

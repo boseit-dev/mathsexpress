@@ -3466,11 +3466,27 @@ function difficultyBars(difficulty) {
 
 function questionAllowedLetters(question={}) {
   if (['written-response','proof','multiple-choice','matching','drag-drop'].includes(String(question.type||''))) return null;
-  const source=`${question.prompt||''} ${question.answer??''} ${question.exactAnswer??''}`;
+  const CANDIDATES='xyzabcmnpqrstuvw';
   const vars=new Set();
-  for(const match of source.matchAll(/(^|[^A-Za-z])([a-z])(?=$|[^A-Za-z])/gi)){
-    if('xyzabcmnpqrstuvw'.includes(match[2].toLowerCase())) vars.add(match[2].toLowerCase());
-  }
+  const collect=(text,dropProseWords)=>{
+    const source=String(text||'');
+    for(const match of source.matchAll(/(^|[^A-Za-z])([a-z])(?=$|[^A-Za-z])/gi)){
+      const letter=match[2].toLowerCase();
+      if(!CANDIDATES.includes(letter)) continue;
+      // A single letter in prose is usually an English article or pronoun
+      // ("the area of a rectangle", "A fair die is rolled"), not a variable.
+      // Dropping those stops a question about numbers from accepting letters.
+      if(dropProseWords){
+        const after=source.slice(match.index+match[0].length);
+        if(/^\s+[a-z]{2,}/i.test(after)) continue;
+      }
+      vars.add(letter);
+    }
+  };
+  // Letters in the answer are always needed to type it, so they are kept
+  // unconditionally; only prompt prose gets the article filter.
+  collect(`${question.answer??''} ${question.exactAnswer??''}`,false);
+  collect(question.prompt,true);
   if(question.type==='linear-equation'||question.answerKind==='linear-equation') vars.add('x');
   return [...vars].join('');
 }
