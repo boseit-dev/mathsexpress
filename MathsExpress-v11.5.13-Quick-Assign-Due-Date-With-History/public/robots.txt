@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /app.html
-Disallow: /api/
-
-Sitemap: https://mathsexpress.netlify.app/sitemap.xml
