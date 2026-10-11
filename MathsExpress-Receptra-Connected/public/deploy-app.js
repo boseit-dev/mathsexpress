@@ -938,6 +938,7 @@ function updateAccountChrome() {
   chip.classList.toggle('owner', canUseOwnerConsole(account));
   name.textContent = signed ? (account.profile.role === 'player' ? displayNameFromEmail(account.profile.email) : account.profile.displayName) : 'Sign in';
   role.textContent = signed ? (getEquippedCosmetic(state,'title')?.name || platformRoleLabel(account.profile.role).toUpperCase()) : 'ACCOUNT REQUIRED';
+  document.querySelectorAll('#header-sign-out,#menu-sign-out').forEach(button=>{button.hidden=!signed;});
   const ownerButton = document.getElementById('owner-console-button');
   if (ownerButton) ownerButton.hidden = !canUseOwnerConsole(account);
   const ownerTopButton = document.getElementById('owner-console-top-button');
@@ -1088,8 +1089,10 @@ function showAuthGate(message = '') {
               <label><input type="radio" name="accountType" value="student" checked><span><b>Student</b><small>Join classes and complete work</small></span></label>
               <label><input type="radio" name="accountType" value="teacher"><span><b>Teacher</b><small>Create classes, assign work and view reports</small></span></label>
             </fieldset>
+            <label class="signup-class-code">Class code<input id="auth-signup-class-code" name="classCode" maxlength="6" minlength="6" autocomplete="off" autocapitalize="characters" placeholder="ABC123" pattern="[A-Za-z0-9]{6}" required><small class="field-help">The 6-character code from your teacher. You join the class as soon as your account is created.</small></label>
             <label>Email<input id="auth-signup-email" type="email" autocomplete="email" placeholder="name@example.com" required><small class="field-help">No email verification step is required.</small></label>
-            <label>Password<input id="auth-signup-password" type="password" minlength="10" autocomplete="new-password" placeholder="At least 10 characters" required><small class="field-help">You can start immediately after creating the account.</small></label>
+            <label>Password<input id="auth-signup-password" type="password" minlength="10" autocomplete="new-password" placeholder="At least 10 characters" required></label>
+            <label>Confirm password<input id="auth-signup-password-confirm" type="password" minlength="10" autocomplete="new-password" placeholder="Type it again" required><small class="field-help">You can start immediately after creating the account.</small></label>
             <button class="btn primary auth-submit" type="submit">Create account →</button>
           </form>`}
           <p id="auth-message" class="auth-message ${message?'visible':''}">${escapeHtml(message)}</p>
@@ -1150,12 +1153,30 @@ async function handleAuthSubmit(event) {
     try {
       const signupEmail=document.getElementById('auth-signup-email').value;
       const accountType=document.querySelector('input[name="accountType"]:checked')?.value||'student';
-      const result = await accountClient.signUp(signupEmail, document.getElementById('auth-signup-password').value, displayNameFromEmail(signupEmail), accountType);
+      const password=document.getElementById('auth-signup-password').value;
+      if(password!==document.getElementById('auth-signup-password-confirm').value) throw new Error('The two passwords do not match.');
+      const classCode=String(document.getElementById('auth-signup-class-code')?.value||'').trim().toUpperCase();
+      if(accountType==='student' && !/^[A-Z0-9]{6}$/.test(classCode)) throw new Error('Enter the 6-character class code from your teacher.');
+      const result = await accountClient.signUp(signupEmail, password, displayNameFromEmail(signupEmail), accountType);
       await finishAuthentication(result);
+      // Codes are checked by the rate-limited mathrift_join_class after sign-in rather than by an anonymous
+      // lookup, which would let anyone enumerate class codes. A bad code leaves the student on Join your class.
+      if(accountType==='student' && account.authenticated){
+        try { await getSchoolClient().joinClass(classCode); showToast('Class joined','Your class tasks will appear in the Class tab.','success'); }
+        catch(joinError){ showToast('Account created — class not joined',joinError.message||'Check the class code and try again.'); }
+        if(typeof go==='function') go('student-hub');
+      }
     } catch (error) { message.textContent = error.message || 'Could not create account.'; }
   }
 }
 
+
+function syncSignupClassCodeField() {
+  const student=(document.querySelector('input[name="accountType"]:checked')?.value||'student')==='student';
+  const wrap=document.querySelector('.signup-class-code'); const input=document.getElementById('auth-signup-class-code');
+  if(wrap) wrap.hidden=!student;
+  if(input) input.required=student;
+}
 
 function startAccountRoleSync() {
   if(accountRoleSyncTimer) clearInterval(accountRoleSyncTimer);
@@ -1321,12 +1342,10 @@ function openOwnerConsole() {
         ${ownerActionButton('streak-365','☀','365-day streak','Test large streak values')}
         ${ownerActionButton('complete-quests','✓','Complete quests','Finish all daily quests')}
       </div></section>
-      <section><h3>Game Time & driving</h3><div class="owner-grid">
+      <section><h3>Game Time</h3><div class="owner-grid">
         ${ownerActionButton('add-game-time','GT','+5 min Game Time','Add 300 seconds')}
         ${ownerActionButton('game-time-30','⏱','Set 30 min Game Time','Fill the game-time bank')}
         ${ownerActionButton('clear-game-time','⌫','Clear Game Time','Return game-time bank to zero', true)}
-        ${ownerActionButton('set-drive-score','🏁','10,000 drive score','Test driving high-score UI')}
-        ${ownerActionButton('clear-drive-score','↺','Reset drive score','Clear driving high score', true)}
       </div></section>
       <section><h3>Mastery</h3><div class="owner-grid">
         ${ownerActionButton('mastery-50','50','Set 50% mastery','Set Algebra mastery to 50%')}
@@ -1344,7 +1363,7 @@ function openOwnerConsole() {
       </div></section>
       <section><h3>Open screens</h3><div class="owner-grid">
         ${ownerActionButton('open-school-admin','⌁','School Admin','Open the school dashboard')}
-        ${ownerActionButton('open-games','GM','Games','Open Maths Drive and Lucky Box')}
+        ${ownerActionButton('open-games','GM','Games','Open Lucky Box and the class games')}
         ${ownerActionButton('open-challenges','CH','Challenges','Open the global challenge')}
         ${ownerActionButton('open-learn','✦','Learn','Open K–12 curriculum')}
         ${ownerActionButton('open-tools','▦','Power Tools','Open the full feature suite')}
@@ -1421,8 +1440,6 @@ function applyOwnerAction(action) {
   if (action === 'streak-30') next = { ...state, streak: 30, lastActiveDate: localDateString() };
   else if (action === 'streak-365') next = { ...state, streak: 365, lastActiveDate: localDateString() };
   else if (action === 'complete-quests') next = { ...state, quests: completeAllQuests(state.quests) };
-  else if (action === 'set-drive-score') next = { ...state, drivingHighScore: 10000 };
-  else if (action === 'clear-drive-score') next = { ...state, drivingHighScore: 0 };
   else if (action === 'mastery-50') next = { ...state, mastery: { ...state.mastery, algebra: 50 } };
   else if (action === 'mastery-80') next = { ...state, mastery: { ...state.mastery, algebra: 80 } };
   else if (action === 'mastery-100') next = { ...state, mastery: { ...state.mastery, algebra: 100 }, lessonMastery: Object.fromEntries(LESSONS.map((lesson) => [lesson.id, 100])) };
@@ -2248,7 +2265,7 @@ async function openTournamentModal() {
 }
 
 function parentEmailApiEndpoints() {
-  if (globalThis.location?.protocol === 'file:') return ['https://mathsexpress.netlify.app/api/parent-email','https://mathsexpress.netlify.app/.netlify/functions/parent-email'];
+  if (globalThis.location?.protocol === 'file:') return ['https://mathsexpress.aarush-sharma6.workers.dev/api/parent-email','https://mathsexpress.aarush-sharma6.workers.dev/.netlify/functions/parent-email'];
   return ['/api/parent-email','/.netlify/functions/parent-email'];
 }
 async function queueParentEmail(action, schoolId, studentId, body='') {
@@ -2528,6 +2545,68 @@ function evaluateScientificCalculator(raw) {
   return calculatorAns;
 }
 
+// Friend challenges need no server: the code carries the year level and a seed, so everyone who
+// enters the same code gets the same 10 questions and can compare scores.
+const FRIEND_CHALLENGE_LENGTH=10;
+let friendChallenge=null;
+function newFriendChallengeCode(){
+  const year=String(normaliseYearLevel(account.profile?.yearLevel,9)).padStart(2,'0');
+  const alphabet='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes=new Uint8Array(4); globalThis.crypto.getRandomValues(bytes);
+  return `MX${year}${[...bytes].map(b=>alphabet[b%alphabet.length]).join('')}`;
+}
+function parseFriendChallengeCode(code){
+  const m=/^MX(\d{2})([A-Z0-9]{4})$/.exec(String(code||''));
+  if(!m)return null;
+  const year=Number(m[1]); if(year<0||year>12)return null;
+  return {code:m[0],year};
+}
+function seededRandom(text){
+  let h=1779033703^text.length;
+  for(let i=0;i<text.length;i++){h=Math.imul(h^text.charCodeAt(i),3432918353);h=(h<<13)|(h>>>19);}
+  let a=h>>>0;
+  return ()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296;};
+}
+function openFriendChallengeModal(){
+  openSimpleModal('Private Friend Challenge',`<div class="friend-challenge">
+    <p>Both players get the same ${FRIEND_CHALLENGE_LENGTH} questions from the same code. Play, then compare scores.</p>
+    <button class="btn primary" type="button" data-action="friend-challenge-create">Create a new challenge code</button>
+    <div class="friend-challenge-join"><label>Have a code?<input id="friend-challenge-code" maxlength="8" autocomplete="off" autocapitalize="characters" placeholder="MX09K3F7"></label><button class="btn secondary" type="button" data-action="friend-challenge-join">Play this code</button></div>
+  </div>`);
+}
+function startFriendChallenge(code){
+  const parsed=parseFriendChallengeCode(code); if(!parsed)return;
+  const random=seededRandom(parsed.code);
+  const prompts=[]; const questions=[];
+  for(let i=0;i<FRIEND_CHALLENGE_LENGTH;i++){
+    let q; let tries=0;
+    do{ q=createDrivingQuestion(parsed.year,random,[],{deterministic:true}); tries+=1; }while(prompts.includes(q.prompt)&&tries<20);
+    prompts.push(q.prompt); questions.push(q);
+  }
+  friendChallenge={code:parsed.code,questions,index:0,score:0,answered:false};
+  renderFriendChallenge();
+}
+function renderFriendChallenge(){
+  const g=friendChallenge; if(!g)return;
+  if(g.index>=g.questions.length){
+    openSimpleModal('Private Friend Challenge',`<div class="friend-challenge done"><div class="challenge-code"><small>Challenge code</small><b>${escapeHtml(g.code)}</b></div><h3>You scored ${g.score} / ${g.questions.length}</h3><p>Share the code. Your friend gets the same questions, so the scores compare fairly.</p><button class="btn secondary" type="button" data-action="open-friend-challenge">New challenge</button></div>`);
+    return;
+  }
+  const q=g.questions[g.index];
+  openSimpleModal('Private Friend Challenge',`<div class="friend-challenge"><div class="challenge-code"><small>Code ${escapeHtml(g.code)} · Question ${g.index+1} of ${g.questions.length} · Score ${g.score}</small></div>
+    <h3 class="friend-challenge-prompt">${escapeHtml(q.prompt)}</h3>
+    <div class="choice-grid friend-challenge-options">${q.options.map((o,i)=>`<button class="btn secondary" type="button" data-action="friend-challenge-answer" data-option-id="${escapeHtml(o.id)}" data-choice-key="${'ABCD'[i]||''}"><b>${'ABCD'[i]||''}</b> ${escapeHtml(o.value)}</button>`).join('')}</div>
+    <p id="friend-challenge-feedback" class="muted" aria-live="polite"></p></div>`);
+}
+function answerFriendChallenge(optionId){
+  const g=friendChallenge; if(!g||g.answered||g.index>=g.questions.length)return;
+  const q=g.questions[g.index]; const picked=q.options.find(o=>o.id===optionId); if(!picked)return;
+  g.answered=true; if(picked.correct)g.score+=1;
+  document.querySelectorAll('[data-action="friend-challenge-answer"]').forEach(b=>{b.disabled=true;const o=q.options.find(x=>x.id===b.dataset.optionId);if(o?.correct)b.classList.add('correct');else if(b.dataset.optionId===optionId)b.classList.add('wrong');});
+  const fb=document.getElementById('friend-challenge-feedback'); if(fb)fb.textContent=picked.correct?'Correct!':`Not quite. The answer was ${q.answer}.`;
+  setTimeout(()=>{ if(friendChallenge!==g)return; g.index+=1; g.answered=false; renderFriendChallenge(); },picked.correct?700:1500);
+}
+
 function completeAction(action) {
   if(!action)return false;
   if(action==='open-discovery-checkin'){openV83Diagnostic('discovery');return true;}
@@ -2590,7 +2669,9 @@ function completeAction(action) {
   if(action==='open-geometry-toolkit') { openSimpleModal('Geometry Toolkit',`<div class="school-form geometry-calc"><h3>Coordinate geometry</h3><div class="form-two"><label>Point A (x, y)<input id="geometry-point-a" value="1, 2"></label><label>Point B (x, y)<input id="geometry-point-b" value="7, 10"></label></div><button class="btn primary" type="button" data-action="complete-geometry">Calculate distance & midpoint</button><div id="geometry-output" class="tool-result"></div><div class="geometry-tool-demo"><div class="geometry-grid"></div><div class="geometry-toolbar"><span>Ruler</span><span>Coordinates</span><span>Distance</span><span>Midpoint</span></div></div></div>`); return true; }
   if(action==='open-tournament') { openTournamentModal(); return true; }
   if(action==='open-duel') { openSimpleModal('Maths Duels',`<p>Create a 1v1 challenge using the same year/topic/difficulty rules for both students.</p><div class="duel-card"><strong>Student A</strong><span>10 questions</span><strong>Student B</strong></div>`); return true; }
-  if(action==='open-friend-challenge') { const code=`MX${String(Date.now()).slice(-6)}`; openSimpleModal('Private Friend Challenge',`<div class="challenge-code"><small>Challenge code</small><b>${code}</b></div><p>10 equal-difficulty questions. The code can be shared with a classmate.</p>`); return true; }
+  if(action==='open-friend-challenge') { openFriendChallengeModal(); return true; }
+  if(action==='friend-challenge-create') { startFriendChallenge(newFriendChallengeCode()); return true; }
+  if(action==='friend-challenge-join') { const code=String(document.getElementById('friend-challenge-code')?.value||'').trim().toUpperCase().replace(/\s+/g,''); if(!parseFriendChallengeCode(code)){showToast('Check the code','Challenge codes look like MX09K3F7.');return true;} startFriendChallenge(code); return true; }
   if(action==='open-spectate') { openSimpleModal('Teacher Spectate',`<p>${activeClassSessions.length?`${activeClassSessions.length} active class session${activeClassSessions.length===1?'':'s'} loaded.`:'No active sessions are currently loaded.'}</p><p>Open a class game to view server-backed position, score, streak, lives and answers.</p>`); return true; }
   if(action==='open-game-replay') { openSimpleModal('Game Replay Summary',`<div class="simple-list"><div><strong>Question 3</strong><span>Blue team took the lead</span></div><div><strong>Question 7</strong><span>Red team recovered with a 3-answer streak</span></div><div><strong>Question 10</strong><span>Final deciding question</span></div></div>`); return true; }
   if(action==='open-integrity-check') { const r=inspectChallengeIntegrity({answerTimesMs:[250,280,260,240,270],accuracy:1,tabLeaves:1,pasteEvents:0}); openSimpleModal('Challenge Integrity',`<div class="status-banner ${r.flagged?'warning':'success'}"><b>${r.flagged?'Review recommended':'No flags'}</b></div><p>Average answer time: ${r.averageAnswerMs} ms</p><p>${escapeHtml(r.reasons.join(' · ')||'No suspicious patterns detected.')}</p>`); return true; }
@@ -2628,7 +2709,7 @@ function completeAction(action) {
   if(action==='open-language-tools') { openSimpleModal('Language & Translation',`<div class="simple-list"><div><strong>Spanish</strong><span>${escapeHtml(translateMathUi('Learn','es'))}</span></div><div><strong>French</strong><span>${escapeHtml(translateMathUi('Learn','fr'))}</span></div><div><strong>Hindi</strong><span>${escapeHtml(translateMathUi('Learn','hi'))}</span></div></div><p class="muted">Full textbook translation requires translated content packs; MathsExpress does not auto-claim translations it has not reviewed.</p>`); return true; }
   if(action==='open-screen-reader-tools') { openSimpleModal('Screen-reader Mode',`<p>MathsExpress uses native buttons/inputs, labelled navigation, keyboard focus and live status regions. This mode emphasises text labels and reduces decorative-only UI.</p><button class="btn primary" data-action="complete-toggle-screen-reader">Toggle screen-reader emphasis</button>`); return true; }
   if(action==='open-colourblind-tools') { openSimpleModal('Colour-blind-friendly Graphs',`<p>Graph series use labels, point shapes and line patterns so colour is not the only signal.</p><div class="geometry-grid"></div>`); return true; }
-  if(action==='open-font-keyboard') { openSimpleModal('Font & Keyboard Controls',`<p>Large text, dyslexia-friendly text and keyboard-first navigation already live in Accessibility.</p><button class="btn secondary" data-action="tool-tab" data-tab="access">Open Accessibility</button>`); return true; }
+  if(action==='open-font-keyboard') { openSimpleModal('Font & Keyboard Controls',`<p>Large text, dyslexia-friendly text and keyboard-first navigation already live in Accessibility.</p><button class="btn secondary" data-action="open-accessibility">Open Accessibility</button>`); return true; }
   if(action==='open-game-schedule') { const g=buildGameSchedule(state.gameSchedule||{}); openSimpleModal('Game Time Schedule',`<div class="simple-list"><div><strong>Allowed days</strong><span>${escapeHtml(g.allowedDays.join(', '))}</span></div><div><strong>Time window</strong><span>${g.start}–${g.end}</span></div><div><strong>Daily cap</strong><span>${g.dailyCapMinutes} minutes</span></div></div><button class="btn primary" data-action="complete-save-game-schedule">Save example schedule</button>`); return true; }
   if(action==='open-duplicate-tools') { const original={id:'a1',title:'Year 9 Homework',classId:'c1'}; const copy=duplicateAssignment(original); openSimpleModal('Duplicate Classes & Assignments',`<p>Copies receive new IDs so results and submissions stay separate.</p><div class="simple-list"><div><strong>${escapeHtml(original.title)}</strong><span>${escapeHtml(original.id)}</span></div><div><strong>${escapeHtml(copy.title)}</strong><span>${escapeHtml(copy.id)}</span></div></div>`); return true; }
   if(action==='open-public-library') { return completeAction('open-resource-library'); }
@@ -2870,8 +2951,8 @@ function aiContextForRequest(context) {
 function aiApiEndpoints() {
   if (globalThis.location?.protocol === 'file:') {
     return [
-      'https://mathsexpress.netlify.app/api/ai',
-      'https://mathsexpress.netlify.app/.netlify/functions/ai',
+      'https://mathsexpress.aarush-sharma6.workers.dev/api/ai',
+      'https://mathsexpress.aarush-sharma6.workers.dev/.netlify/functions/ai',
     ];
   }
   return ['/api/ai','/.netlify/functions/ai'];
@@ -3890,7 +3971,7 @@ function renderAssignmentRoute(){
 
 
 function assessmentApiEndpoints(name) {
-  if (globalThis.location?.protocol === 'file:') return [`https://mathsexpress.netlify.app/api/${name}`,`https://mathsexpress.netlify.app/.netlify/functions/${name}`];
+  if (globalThis.location?.protocol === 'file:') return [`https://mathsexpress.aarush-sharma6.workers.dev/api/${name}`,`https://mathsexpress.aarush-sharma6.workers.dev/.netlify/functions/${name}`];
   return [`/api/${name}`,`/.netlify/functions/${name}`];
 }
 async function assessmentApi(name,payload,timeoutMs=22000){
@@ -4763,7 +4844,7 @@ function classGamePercent(value, target) {
 
 function classGameTeamTotals(leaderboard=[]) {
   return leaderboard.reduce((out,row)=>{
-    const team=String(row.team||'Blue')==='Red'?'Red':'Blue';
+    const team=['Red','Gold'].includes(String(row.team||'Blue'))?'Red':'Blue'; // the server assigns Blue/Gold
     out[team].players+=1;
     out[team].score+=Number(row.score)||0;
     out[team].correct+=Number(row.correct)||0;
@@ -6099,7 +6180,7 @@ function renderTextbook() {
   const toc=book?book.chapters.map(ch=>{
     const open=textbookExpandedChapters.has(ch.id); const testId=ch.topicTestTaskId||'';
     const rows=isExactCambridgeYear9Book(book)?ch.sections.map(sec=>`<button class="licensed-toc-row" data-action="open-licensed-textbook-page" data-pdf-key="${escapeHtml(book.licensedPdfKey)}" data-pdf-page="${sec.pdfPage}" data-book-page="${sec.bookPage}" data-pdf-label="${escapeHtml(`${sec.sectionNumber} ${sec.title}`)}"><span>${escapeHtml(sec.sectionNumber||'')}</span><b>${escapeHtml(sec.title)}</b><small>p. ${sec.bookPage}${sec.tocLabel?` · ${escapeHtml(sec.tocLabel)}`:''}</small></button>`).join(''):ch.sections.map(sec=>`<button data-action="open-textbook-section" data-section-id="${escapeHtml(sec.id)}"><span>${escapeHtml(sec.sectionNumber||'')}</span><b>${escapeHtml(sec.title)}</b></button>`).join('');
-    return `<div class="mx-textbook-topic ${open?'open':''}"><button class="mx-textbook-topic-toggle" data-action="textbook-toggle-chapter" data-chapter-id="${escapeHtml(ch.id)}"><span>${open?'⌄':'›'}</span><strong>${ch.number}. ${escapeHtml(ch.title)}</strong><small>${isExactCambridgeYear9Book(book)?`p. ${ch.bookPage}`:ch.sections.length}</small></button>${open?`<div class="mx-textbook-topic-lessons">${rows}${testId?`<div class="mx-topic-test-row"><button class="mx-topic-test" data-action="start-library-task" data-task-id="${escapeHtml(testId)}"><span>TEST</span><b>${isExactCambridgeYear9Book(book)?`MathsExpress practice for Chapter ${ch.number}`:`Chapter ${ch.number} topic test`}</b></button>${canUseTeacherHub(account)?`<button class="mx-topic-assign" data-action="assign-textbook-task" data-task-id="${escapeHtml(testId)}" data-assignment-title="${escapeHtml(textbookAssignmentLabel(book,ch,isExactCambridgeYear9Book(book)?`Chapter practice · hardcopy p. ${ch.bookPage}`:'Topic test'))}">Assign</button>`:''}</div>`:''}</div>`:''}</div>`;
+    return `<div class="mx-textbook-topic ${open?'open':''}"><button class="mx-textbook-topic-toggle" data-action="textbook-toggle-chapter" data-chapter-id="${escapeHtml(ch.id)}"><span>${open?'⌄':'›'}</span><strong>${ch.number}. ${escapeHtml(ch.title)}</strong><small>${isExactCambridgeYear9Book(book)?`p. ${ch.bookPage}`:`${ch.sections.length} lesson${ch.sections.length===1?'':'s'}`}</small></button>${open?`<div class="mx-textbook-topic-lessons">${rows}${testId?`<div class="mx-topic-test-row"><button class="mx-topic-test" data-action="start-library-task" data-task-id="${escapeHtml(testId)}"><span>TEST</span><b>${isExactCambridgeYear9Book(book)?`MathsExpress practice for Chapter ${ch.number}`:`Chapter ${ch.number} topic test`}</b></button>${canUseTeacherHub(account)?`<button class="mx-topic-assign" data-action="assign-textbook-task" data-task-id="${escapeHtml(testId)}" data-assignment-title="${escapeHtml(textbookAssignmentLabel(book,ch,isExactCambridgeYear9Book(book)?`Chapter practice · hardcopy p. ${ch.bookPage}`:'Topic test'))}">Assign</button>`:''}</div>`:''}</div>`:''}</div>`;
   }).join(''):'';
   const coverYear=textbookYearLevel===0?'K':String(textbookYearLevel);
   const displayTitle=book?textbookPublisherTitle(book,textbookPublisher):'';
@@ -6354,7 +6435,7 @@ async function renderStudentHub() {
       ${tab==='tasks'?`<section class="class-hub-section"><div class="class-section-head"><div><span class="eyebrow">Class work</span><h2>Your tasks</h2></div><span>${active.length} active</span></div><div class="assignment-list">${active.map(studentAssignmentCard).join('')||'<div class="class-hub-empty">No active tasks.</div>'}</div><div class="class-history-block"><h3>Past work</h3><div class="history-grid">${past.slice(0,12).map(a=>`<article class="history-card"><strong>${escapeHtml(a.title)}</strong><span>${schoolStatusPill(a._effectiveStatus||a.status)}</span><small>${Math.round(Number(a.score_percent)||0)}% result</small><div class="history-card-actions">${schoolAssignmentStartButton(a,'Retry task')}${Number(a.score_percent)<100?`<button class="btn ghost small" data-action="open-fix-mode" data-assignment-id="${escapeHtml(a.id)}">Fix mistakes</button>`:''}</div></article>`).join('')||'<div class="class-hub-empty">Completed tasks appear here.</div>'}</div></div></section>`:''}
       ${tab==='activity'?`<section class="class-hub-section"><div class="class-section-head"><div><span class="eyebrow">Progress</span><h2>Your class activity</h2></div></div><div class="class-activity-summary"><article><strong>${active.length}</strong><span>active tasks</span></article><article><strong>${past.filter(a=>a._effectiveStatus==='completed').length}</strong><span>completed tasks</span></article><article><strong>${weeklyPoints}</strong><span>points this week</span></article><article><strong>${formatGameTime(state.gameTimeSeconds)}</strong><span>Game Time</span></article></div><div class="recommend-list">${studentRecommendationCards()}</div></section>`:''}
       ${tab==='skills'?`<section class="class-hub-section"><div class="class-section-head"><div><span class="eyebrow">Teacher focus</span><h2>Skills Focus</h2></div><button class="btn primary small" data-route="learn">Open Learn</button></div><div id="class-skills-focus"><div class="school-loading compact"><span class="spinner"></span><strong>Loading focus skills…</strong></div></div><div class="class-section-head spaced"><div><span class="eyebrow">Recommended learning</span><h2>Skills for you</h2></div></div><div class="recommend-list">${studentRecommendationCards()}</div></section>`:''}
-      ${tab==='settings'?`<section class="class-hub-section"><div class="class-section-head"><div><span class="eyebrow">Student settings</span><h2>Account & class</h2></div></div><p>Your class data, assignments and progress are saved to your MathsExpress account. Local preferences are also synced to the account cloud when available.</p><div class="simple-actions"><button class="btn primary" data-action="open-student-parent">Parents & guardians</button><button class="btn secondary" data-route="profile">Profile</button><button class="btn secondary" data-route="tools">Accessibility</button><button class="btn ghost" data-action="export-progress">Download backup</button></div></section>`:''}
+      ${tab==='settings'?`<section class="class-hub-section"><div class="class-section-head"><div><span class="eyebrow">Student settings</span><h2>Account & class</h2></div></div><p>Your class data, assignments and progress are saved to your MathsExpress account. Local preferences are also synced to the account cloud when available.</p><div class="simple-actions"><button class="btn primary" data-action="open-student-parent">Parents & guardians</button><button class="btn secondary" data-route="profile">Profile</button><button class="btn secondary" data-action="open-accessibility">Accessibility</button><button class="btn ghost" data-action="export-progress">Download backup</button></div></section>`:''}
     </section>`;
     if(tab==='class'){void hydrateClassHubExtras(cls);startClassHubLiveRefresh();}else if(tab==='skills'){void hydrateClassHubExtras(cls);stopClassHubLiveRefresh();}else stopClassHubLiveRefresh();
   }catch(error){stopClassHubLiveRefresh();root.innerHTML=`<section class="page class-hub-page"><div class="school-error"><strong>Class couldn’t load.</strong><p>${escapeHtml(error.message||'Try again.')}</p><div class="simple-actions"><button class="btn primary" data-action="retry-student-hub">Retry</button><button class="btn secondary" data-route="home">Back home</button></div></div></section>`;}
@@ -7802,9 +7883,18 @@ async function handleV7Submit(event){
 }
 
 
+let maintenanceRecheckTimer=null;
 function renderMaintenanceLock() {
   const view=document.getElementById('app-view'); if(!view)return;
-  view.innerHTML=`<div class="page maintenance-lock"><section class="maintenance-lock-card"><span class="maintenance-icon">MX</span><span class="eyebrow">MathsExpress maintenance</span><h1>We’re updating MathsExpress.</h1><p>${escapeHtml(state.ownerSettings?.maintenanceMessage||'MathsExpress is being updated. Please try again soon.')}</p><small>Your account and school data stay saved. Owner accounts can still enter to test the update.</small><button class="btn secondary" data-action="sign-out">Sign out</button></section></div>`;
+  view.innerHTML=`<div class="page maintenance-lock"><section class="maintenance-lock-card" role="status" aria-live="polite">
+    <img class="maintenance-logo" src="./assets/mx-logo.png" alt="" aria-hidden="true">
+    <span class="eyebrow">Scheduled maintenance</span><h1>MathsExpress is being updated</h1>
+    <p>${escapeHtml(state.ownerSettings?.maintenanceMessage||'We’re making improvements and will be back shortly.')}</p>
+    <ul class="maintenance-facts"><li><b>Your work is safe.</b> Progress, assignments and rewards are saved to your account.</li><li><b>Nothing to do.</b> This page checks again automatically every minute.</li></ul>
+    <div class="maintenance-actions"><button class="btn primary" data-action="maintenance-check">Check again</button><button class="btn ghost" data-action="sign-out">Sign out</button></div>
+  </section></div>`;
+  clearTimeout(maintenanceRecheckTimer);
+  maintenanceRecheckTimer=setTimeout(()=>{ if(document.querySelector('.maintenance-lock')) location.reload(); },60000);
 }
 
 // --- Fox tour guide: a separate character from Clove, used only for the
@@ -8258,7 +8348,14 @@ function handleClick(event) {
     return routeFromHash().route === 'student-hub' ? renderStudentHub() : go('student-hub');
   }
   if (action === 'tool-tab') { activeToolTab=actionEl.dataset.tab||'study'; return renderTools(); }
+  if (action === 'maintenance-check') { location.reload(); return; }
+  if (action === 'open-accessibility') {
+    activeToolTab='access';
+    const modalRoot=document.getElementById('modal-root'); if(modalRoot) modalRoot.innerHTML='';
+    return routeFromHash().route==='tools' ? renderTools() : go('tools');
+  }
   if (v7Action(action, actionEl)) return;
+  if (action === 'friend-challenge-answer') { answerFriendChallenge(String(actionEl.dataset.optionId||'')); return; }
   if (completeAction(action)) return;
   if (action === 'complete-save-notebook') { const body=document.getElementById('complete-notebook-text')?.value||''; const page=createNotebookPage({title:`Notes ${new Date().toLocaleDateString()}`,body,tags:['maths']}); persist({...state,notebookPages:[...(state.notebookPages||[]),page].slice(-100)},{quiet:true}); showToast('Notebook saved','Your maths notes were saved.','success'); return; }
   if (action === 'complete-save-starter-flashcards') { const cards=createFlashcards([{term:'Gradient',definition:'rise ÷ run'},{term:'Pythagoras',definition:'a² + b² = c²'}]); persist({...state,flashcards:cards},{quiet:true}); showToast('Flashcards saved','Starter revision cards are ready.','success'); return; }
@@ -8644,7 +8741,28 @@ Alex,alex@example.com,9"></textarea></label><p class="muted">Existing MathsExpre
   }
 }
 
+const MCQ_CHOICE_ACTIONS=['lesson-choice','generated-choice','challenge-choice','class-game-answer','edu-game-answer','v6-game-answer','math-chess-answer','friend-challenge-answer'];
+// A/B/C/D (or 1-4) picks the matching multiple-choice option, but never while the student is typing.
+function handleMcqChoiceKey(event){
+  if(event.defaultPrevented||event.ctrlKey||event.metaKey||event.altKey||event.repeat)return false;
+  const key=String(event.key||'').toUpperCase();
+  const index='ABCD'.indexOf(key)>=0?'ABCD'.indexOf(key):'1234'.indexOf(key);
+  if(index<0||key.length!==1)return false;
+  const active=document.activeElement;
+  if(active&&(active.isContentEditable||/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)))return false;
+  const modal=document.querySelector('#modal-root .ultimate-modal, #modal-root [role="dialog"]');
+  const scope=modal||document.getElementById('app-view')||document;
+  const selector=MCQ_CHOICE_ACTIONS.map(a=>`[data-action="${a}"]`).join(',');
+  const choices=[...scope.querySelectorAll(selector)].filter(el=>!el.disabled&&el.offsetParent!==null);
+  if(choices.length<2||choices.length>6||!choices[index])return false;
+  event.preventDefault();
+  choices[index].focus({preventScroll:true});
+  choices[index].click();
+  return true;
+}
+
 function handleKeyDown(event) {
+  if (handleMcqChoiceKey(event)) return;
   const graphGrid=document.activeElement?.id==='generated-graph-grid'?document.activeElement:null;
   if(graphGrid && ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter',' '].includes(event.key)){
     event.preventDefault();
@@ -8849,6 +8967,8 @@ async function bootstrap() {
     if (!moreWrap) { const menu=document.getElementById('more-nav-menu'); const button=document.getElementById('more-nav-button'); if(menu) menu.hidden=true; if(button) button.setAttribute('aria-expanded','false'); }
     const teacherMoreWrap = event.target.closest('.teacher-more-wrap');
     if (!teacherMoreWrap) document.querySelectorAll('.teacher-more-menu').forEach((menu)=>{ menu.hidden=true; });
+    const accountTypeInput = event.target.closest('input[name="accountType"]');
+    if (accountTypeInput) syncSignupClassCodeField();
     const tab = event.target.closest('[data-auth-tab]');
     if (tab) {
       const signup = tab.dataset.authTab === 'signup';

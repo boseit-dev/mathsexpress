@@ -11,7 +11,7 @@
   <meta name="format-detection" content="telephone=no" />
   <meta name="description" content="MathsExpress secure learning app." />
   <meta name="robots" content="noindex,nofollow" />
-  <link rel="canonical" href="https://mathsexpress.netlify.app/" />
+  <link rel="canonical" href="https://mathsexpress.aarush-sharma6.workers.dev/" />
   <title>MathsExpress App — Log in</title>
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="icon" href="./favicon.ico" sizes="any" />
@@ -20,12 +20,13 @@
   <link rel="preconnect" href="https://dsjrxkxjcaurrbijihja.supabase.co" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
-  <link rel="stylesheet" href="./styles.css?v=11.5.20" />
+  <link rel="stylesheet" href="./styles.css?v=11.5.21" />
 </head>
 <body>
   <div id="mx-loading-screen" class="mx-loading-screen" role="status" aria-live="polite">
     <div class="mx-loading-card">
       <div class="mx-loading-brand"><span class="brand-mark"><img src="./assets/mx-logo.png" alt="" aria-hidden="true" /></span><strong>MathsExpress</strong></div>
+      <div class="mx-loading-progress" aria-hidden="true"><i></i></div>
       <div class="mx-train-track" aria-hidden="true">
         <div class="mx-train">
           <span class="mx-engine">M</span>
@@ -37,6 +38,7 @@
       </div>
       <span class="mx-loading-title">Getting your maths ready…</span>
       <small>Loading your progress, assignments and rewards.</small>
+      <p class="mx-loading-tip" aria-hidden="true">Tip: press A, B, C or D to answer multiple-choice questions.</p>
     </div>
   </div>
   <div class="app-shell relaxed-shell">
@@ -64,12 +66,12 @@
         </div>
         <button id="study-timer-top" class="study-timer-top" data-action="open-study-timer" type="button" hidden aria-label="Open study timer"><small>FOCUS</small><strong id="study-timer-top-display">25:00</strong></button>
         <button id="account-chip" class="account-chip compact-account-chip v10-account-chip" data-action="open-account" type="button" aria-label="Open account"><span class="account-dot" id="account-avatar-initial">M</span><span id="account-chip-name">Sign in</span><small id="account-chip-role">ACCOUNT REQUIRED</small></button>
+        <button id="header-sign-out" class="header-sign-out" data-action="sign-out" type="button" hidden>Sign out</button>
         <div class="more-menu-wrap">
           <button id="more-nav-button" class="nav-more-button v10-menu-button" data-action="toggle-more-nav" type="button" aria-controls="more-nav-menu" aria-expanded="false" aria-label="Open menu">☰</button>
           <div id="more-nav-menu" class="more-nav-menu v10-more-menu" hidden>
             <div class="more-menu-section"><small>Teacher & school</small>
               <button id="school-top-button" data-route="teacher-hub" type="button" hidden>Teacher dashboard</button>
-              <button data-action="open-custom-assignment">Create task</button>
               <button data-route="calendar">Planner</button>
               <button id="owner-console-top-button" data-action="open-owner-console" type="button" hidden>Owner Console</button>
             </div>
@@ -87,6 +89,7 @@
               <button id="role-tools-button" data-action="open-role-tools" hidden>Role Tools</button>
               <button data-action="open-student-tab" data-tab="settings">Settings</button>
               <button data-action="open-feedback">Report bug / suggestion</button>
+              <button id="menu-sign-out" data-action="sign-out" hidden>Sign out</button>
             </div>
             <div class="menu-player"><div class="avatar">M</div><div><strong id="side-player-name">MathsExpress Student</strong><small id="side-player-level">Level 1</small></div></div>
           </div>
@@ -118,20 +121,11 @@
   <script src="./mathsexpress-config.js?v=11.5.17"></script>
   <script src="./supabase-loader.js?v=11.5.16"></script>
   <script src="./mathsexpress-safe-math.js?v=10.0.0"></script>
-  <script src="./deploy-core-1.js?v=11.5.18"></script>
-  <script src="./deploy-core-2.js?v=11.5.12"></script>
+  <script src="./deploy-core-1.js?v=11.5.21"></script>
+  <script src="./deploy-core-2.js?v=11.5.21"></script>
   <script src="./v7-features.js?v=10.0.0"></script>
   <script src="./quick-assign-due.js?v=11.5.13"></script>
-  <script src="./deploy-app.js?v=11.5.20"></script>
-  <script>
-    // Independent local-file fail-safe: even if an app script throws, never leave a blank page.
-    setTimeout(function(){
-      var gate=document.getElementById('auth-gate');
-      var view=document.getElementById('app-view');
-      if(gate && view && !gate.textContent.trim() && !view.textContent.trim()){
-        gate.innerHTML='<div class="auth-backdrop"><section class="auth-card"><div class="auth-art"><div class="auth-logo"><img src="./assets/mx-logo.png" alt="" aria-hidden="true"></div><h1>MathsExpress</h1><p>The app files opened, but startup did not finish.</p></div><div class="auth-forms"><h2>Startup recovery</h2><p>Reload this page. If it still appears, open the newest MathsExpress folder and make sure all files were extracted together.</p><button class="btn primary auth-submit" type="button" onclick="location.reload()">Reload MathsExpress</button></div></section></div>';
-      }
-    },1800);
-  </script>
+  <script src="./deploy-app.js?v=11.5.21"></script>
+  <script src="./startup-failsafe.js?v=11.5.21"></script>
 </body>
 </html>

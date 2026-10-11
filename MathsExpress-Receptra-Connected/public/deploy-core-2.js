@@ -416,10 +416,12 @@ function rememberDrivingQuestion(year,prompt){
   while(list.length>24)list.shift();
   DRIVING_RECENT.set(year,list);
 }
-function createDrivingQuestion(yearLevel = 9, random = Math.random, avoidPrompts = []) {
+function createDrivingQuestion(yearLevel = 9, random = Math.random, avoidPrompts = [], { deterministic = false } = {}) {
+  // deterministic: ignore and do not update the per-tab recent-prompt memory, so a seeded `random`
+  // produces the same question for every player (friend challenge codes rely on this).
   const parsedYear=Number(yearLevel);
   const year = Math.max(0, Math.min(12, Math.floor(Number.isFinite(parsedYear)?parsedYear:9)));
-  const recent=[...new Set([...(DRIVING_RECENT.get(year)||[]), ...(Array.isArray(avoidPrompts)?avoidPrompts:[])])].slice(-220);
+  const recent=deterministic?[]:[...new Set([...(DRIVING_RECENT.get(year)||[]), ...(Array.isArray(avoidPrompts)?avoidPrompts:[])])].slice(-220);
   let prompt = '';
   let answer = 0;
   let attempts=0;
@@ -467,7 +469,7 @@ function createDrivingQuestion(yearLevel = 9, random = Math.random, avoidPrompts
   }
     attempts += 1;
   } while(recent.includes(prompt) && attempts < 30);
-  rememberDrivingQuestion(year,prompt);
+  if(!deterministic) rememberDrivingQuestion(year,prompt);
   const options = shuffled(uniqueDistractors(answer, random, Math.max(5, Math.abs(Number(answer))*0.25)), random)
     .map((value, index) => ({ id: `lane-${index}`, value: String(value), correct: Number(value) === Number(answer) }));
   return { id: `drive-${year}-${Date.now()}-${Math.floor(random()*1e6)}`, yearLevel: year, prompt, answer: String(answer), options };

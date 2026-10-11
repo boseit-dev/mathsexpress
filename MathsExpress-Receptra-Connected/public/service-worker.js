@@ -1,7 +1,7 @@
-const CACHE='mathsexpress-v11-5-20-receptra';
+const CACHE='mathsexpress-v11-5-21-receptra';
 const CORE=[
   './','./index.html','./site.css','./site-motion.js','./receptra-widget.js','./app.html','./styles.css','./manifest.webmanifest','./mathsexpress-icon.svg','./mathsexpress-config.js',
-  './supabase-loader.js','./mathsexpress-safe-math.js','./quick-assign-due.js','./deploy-core-1.js','./deploy-core-2.js','./v7-features.js','./deploy-app.js',
+  './supabase-loader.js','./mathsexpress-safe-math.js','./quick-assign-due.js','./startup-failsafe.js','./deploy-core-1.js','./deploy-core-2.js','./v7-features.js','./deploy-app.js',
   './assets/clove.png','./assets/mx-logo.png','./mx-logo.png','./favicon.ico','./assets/mx-logo-180.png','./assets/mx-logo-192.png','./assets/mx-logo-192-maskable.png','./assets/mx-logo-512-maskable.png','./assets/fox-guide.png','./privacy.html','./terms.html','./security.html','./accessibility.html','./subprocessors.html','./robots.txt','./sitemap.xml'
 ];
 

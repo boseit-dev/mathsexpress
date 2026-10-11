@@ -2486,8 +2486,6 @@ const ACHIEVEMENTS = [
   { id: 'coin-500', title: 'Coin Collector', description: 'Hold 500 coins', earned: (s) => (s.coins ?? 0) >= 500 },
   { id: 'coin-2500', title: 'Reward Saver', description: 'Hold 2,500 coins', earned: (s) => (s.coins ?? 0) >= 2500 },
   { id: 'game-time-5', title: 'Game Time Bank', description: 'Fill your 5-minute Game Time bank', earned: (s) => (s.gameTimeSeconds ?? 0) >= 300 },
-  { id: 'drive-1000', title: 'Maths Driver', description: 'Score 1,000 in Maths Drive', earned: (s) => (s.drivingHighScore ?? 0) >= 1000 },
-  { id: 'drive-5000', title: 'Road Scholar', description: 'Score 5,000 in Maths Drive', earned: (s) => (s.drivingHighScore ?? 0) >= 5000 },
   { id: 'algebra-apprentice', title: 'Algebra Apprentice', description: 'Reach 25% Algebra mastery', earned: (s) => getTopicMastery(s, 'algebra') >= 25 },
   { id: 'algebra-skilled', title: 'Algebra Skilled', description: 'Reach 50% Algebra mastery', earned: (s) => getTopicMastery(s, 'algebra') >= 50 },
   { id: 'algebra-master', title: 'Algebra Master', description: 'Reach 80% Algebra mastery', earned: (s) => getTopicMastery(s, 'algebra') >= 80 },
@@ -2515,7 +2513,6 @@ const ACHIEVEMENTS = [
   ...[2,5,10,20,30,50,75,100].map(target=>({id:`goals-extra-${target}`,title:`Goal Hunter ${target}`,description:`Complete ${target} learning goals`,earned:(s)=>(s.goals??[]).filter(g=>g?.completed||g?.status==='completed').length>=target})),
   ...[5,10,20,30,50,75,100,150].map(target=>({id:`challenge-extra-${target}`,title:`Challenge Run ${target}`,description:`Complete ${target} challenge runs`,earned:(s)=>(s.challengeHistory?.length??0)>=target})),
   ...[5,10,20,30,40,50,60].map(target=>({id:`level-extra-${target}`,title:`Level ${target}`,description:`Reach MathsExpress Level ${target}`,earned:(s)=>levelFromXp(s.xp??0)>=target})),
-  ...[10000,20000,35000,50000,75000,100000].map(target=>({id:`drive-extra-${target}`,title:`Road Score ${target.toLocaleString()}`,description:`Reach ${target.toLocaleString()} in Maths Drive`,earned:(s)=>(s.drivingHighScore??0)>=target})),
   { id:'secret-perfect-50', title:'???', secretTitle:'Perfect Fifty', description:'Secret badge: get at least 50 answers with 100% accuracy', earned:(s)=>(s.stats?.answered??0)>=50&&(s.stats?.correct??0)===(s.stats?.answered??0) },
   { id:'secret-night-owl', title:'???', secretTitle:'Night Owl', description:'Secret badge: complete a late study session', earned:(s)=>(s.secretFlags?.nightOwl??false) },
   { id:'secret-early-bird', title:'???', secretTitle:'Early Bird', description:'Secret badge: complete an early study session', earned:(s)=>(s.secretFlags?.earlyBird??false) },
@@ -2670,7 +2667,6 @@ const COSMETICS = [
   ...['Notebook','Grid Paper','Night Sky','Ocean','Forest','Desert','Arcade','Circuit','Galaxy','Stadium','Mountain','Aurora'].map((name,i)=>({id:`background-${name.toLowerCase().replaceAll(' ','-')}`,category:'background',name:`${name} Background`,price:160+i*80,icon:'▧',description:`A ${name.toLowerCase()} profile and locker background.`})),
   ...['Rookie Solver','Algebra Ace','Geometry Guru','Number Ninja','Data Detective','Probability Pro','Equation Expert','Revision Ranger','Streak Star','Mastery Mentor','Maths Champion','Ultimate Scholar'].map((name,i)=>({id:`title-${name.toLowerCase().replaceAll(' ','-')}`,category:'title',name,price:100+i*100,icon:'★',description:`Display the title “${name}” beside your name.`})),
   ...['Classic','Graphite','Mint','Sunset','Ocean','Lavender','Midnight','Solar','Arcade','Forest'].map((name,i)=>({id:`theme-${name.toLowerCase()}`,category:'theme',name:`${name} Theme`,price:i===0?0:220+i*95,icon:'◫',description:`A ${name.toLowerCase()} MathsExpress dashboard theme.`})),
-  ...['City Racer','Desert Rally','Night Drift','Snow Sprint','Beach Cruiser','Cyber Racer','Formula Maths','Rocket Kart','Retro Pixel','Champion Gold'].map((name,i)=>({id:`game-skin-${name.toLowerCase().replaceAll(' ','-')}`,category:'gameSkin',name,price:200+i*140,icon:'🏎️',description:`A cosmetic vehicle skin for MathsExpress games.`})),
   ...['Student Blue','Scholar Green','Problem Purple','Graph Orange','Data Teal','Geometry Red','Night Navy','Gold Legend','Pixel Lime','Galaxy Violet'].map((name,i)=>({id:`avatar-${name.toLowerCase().replaceAll(' ','-')}`,category:'avatar',name:`${name} Avatar`,price:90+i*65,icon:'●',description:`A profile avatar style called ${name}.`})),
 ];
 function getCosmeticById(itemId) {
@@ -3940,15 +3936,15 @@ class MathRiftSchoolClient {
   }
 
   async joinClassroomGame(sessionId) {
-    return unwrap(await this.client.rpc('mathsexpress_class_game_join_v114', { p_session_id:String(sessionId) }));
+    return unwrap(await this.client.rpc('mathsexpress_class_game_join', { p_session_id:String(sessionId) }));
   }
 
   async submitClassroomGameAnswer(sessionId, correct, questionKey) {
-    return unwrap(await this.client.rpc('mathsexpress_class_game_answer_v114', { p_session_id:String(sessionId), p_correct:Boolean(correct), p_question_key:String(questionKey || '') }));
+    return unwrap(await this.client.rpc('mathsexpress_class_game_answer', { p_session_id:String(sessionId), p_correct:Boolean(correct) }));
   }
 
   async classroomGameLeaderboard(sessionId) {
-    return unwrap(await this.client.rpc('mathsexpress_class_game_leaderboard_v114', { p_session_id:String(sessionId) })) || [];
+    return unwrap(await this.client.rpc('mathsexpress_class_game_leaderboard', { p_session_id:String(sessionId) })) || [];
   }
 
   async classroomGameState(sessionId) {
@@ -4239,7 +4235,10 @@ class MathRiftSchoolClient {
   async eloLeaderboards() { return unwrap(await this.client.rpc('mathsexpress_elo_my_leaderboards', {})) || {}; }
   async eloAwardQuestion(eventKey,questionId,attemptNumber,correct=true) { return unwrap(await this.client.rpc('mathsexpress_elo_award_question', { p_event_key:String(eventKey||''), p_question_id:String(questionId||''), p_attempt_number:Math.max(1,Number(attemptNumber)||1), p_correct:Boolean(correct) })); }
   async recordIntegrityEvent(assignmentId,eventType,payload={}) { return unwrap(await this.client.rpc('mathsexpress_record_integrity_event',{p_assignment_id:String(assignmentId),p_event_type:String(eventType||''),p_payload:payload&&typeof payload==='object'?payload:{}})); }
-  async recordDailyQuestionAttempt(eventKey,correct=false) { return unwrap(await this.client.rpc('mathsexpress_record_daily_question_attempt_v114',{p_event_key:String(eventKey||''),p_correct:Boolean(correct)})) || {}; }
+  // The _v114 RPC was never built, and aliasing it to award_question_reward would spend the event key
+  // before awardQuestionReward runs, so the XP award would be rejected as a duplicate. Rewards go through
+  // awardQuestionReward; this stays as a no-op so existing call sites need no changes.
+  async recordDailyQuestionAttempt() { return {}; }
   async playerState() { return unwrap(await this.client.rpc('mathsexpress_player_state', {})) || {}; }
   async getUserAppState() { return unwrap(await this.client.rpc('mathsexpress_get_user_app_state', {})) || {}; }
   async saveUserAppState(appState={}) { return unwrap(await this.client.rpc('mathsexpress_put_user_app_state', { p_state:appState&&typeof appState==='object'?appState:{} })) || {}; }
