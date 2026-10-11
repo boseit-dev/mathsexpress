@@ -5933,3 +5933,7 @@ html.mx-theme-dark .card,html.mx-theme-dark .panel,html.mx-theme-dark .mx-home-p
 :where(.mx-dark,.mx-theme-dark) .price.free{color:#e8d09c!important}
 :where(.mx-dark,.mx-theme-dark) .quick-due-preview{background:#252935!important;color:#aba5de!important}
 /* <<< generated: dark-mode safety net */
+
+/* v11.5.22 — Match the deployed Blue/Gold teams in every colour mode. */
+.score-battle-number.gold>span,.class-team-board.gold header span,.class-team-board.gold header>b{color:#9c6710}
+:where(.mx-dark,.mx-theme-dark) .score-battle-number.gold>span,:where(.mx-dark,.mx-theme-dark) .class-team-board.gold header span,:where(.mx-dark,.mx-theme-dark) .class-team-board.gold header>b{color:#ffda79!important}

@@ -3940,6 +3940,9 @@ class MathRiftSchoolClient {
   }
 
   async submitClassroomGameAnswer(sessionId, correct, questionKey) {
+    // The deployed RPC only accepts session ID and correctness. Duplicate prevention in
+    // the browser cannot replace server-side idempotency; see the audit notes.
+    if (!String(questionKey||'').trim()) throw new Error('A question key is required.');
     return unwrap(await this.client.rpc('mathsexpress_class_game_answer', { p_session_id:String(sessionId), p_correct:Boolean(correct) }));
   }
 
@@ -3948,11 +3951,14 @@ class MathRiftSchoolClient {
   }
 
   async classroomGameState(sessionId) {
-    return unwrap(await this.client.rpc('mathsexpress_class_game_state_v114', { p_session_id:String(sessionId) })) || {};
+    // Live game-state RPCs have not been deployed. Do not present invented team positions.
+    return null;
   }
 
   async classroomGameSnapshot(sessionId) {
-    return unwrap(await this.client.rpc('mathsexpress_class_game_snapshot_v114', { p_session_id:String(sessionId) })) || { game_state:{}, players:[] };
+    // Read only the real, deployed leaderboard. Game visuals fall back to its scores.
+    const players = await this.classroomGameLeaderboard(sessionId);
+    return { session_id:String(sessionId), game_state:null, players };
   }
 
 

@@ -334,6 +334,7 @@ let activeClassGame = null;
 let classGamePollTimer = null;
 let classGamePollBusy = false;
 let classGameAnswerPending = false;
+const classGameSubmittedKeys = new Set(); // In-page duplicate protection, not server idempotency.
 let classGameCooldownUntil = 0;
 let classGameCooldownTimer = null;
 let ownerFeedback = [];
@@ -2026,11 +2027,9 @@ function renderCompleteSuite() {
     ]},
     {title:'Competitions & integrity',icon:'🏆',items:[
       ['Tournament brackets','Create class or school knockout tournaments.','open-tournament'],
-      ['Maths Duels','Set up one-v-one maths challenge rounds.','open-duel'],
+      ['Maths Duels','Play the same ten questions as a friend using a private code.','open-duel'],
       ['Friend challenges','Create a private 10-question challenge code.','open-friend-challenge'],
-      ['Teacher spectate','Inspect live game/class progress.','open-spectate'],
-      ['Game replay summary','Review the questions that changed a match.','open-game-replay'],
-      ['Anti-cheat checks','Flag impossible speed, tab switching and paste patterns.','open-integrity-check'],
+      ['Live game leaderboard','View live player scores from active class games.','open-spectate'],
     ]},
     {title:'Parents & communication',icon:'◉',items:[
       ['Parent emails','Add guardian emails for reports and teacher messages.','open-parent-accounts'],
@@ -2265,8 +2264,8 @@ async function openTournamentModal() {
 }
 
 function parentEmailApiEndpoints() {
-  if (globalThis.location?.protocol === 'file:') return ['https://mathsexpress.aarush-sharma6.workers.dev/api/parent-email','https://mathsexpress.aarush-sharma6.workers.dev/.netlify/functions/parent-email'];
-  return ['/api/parent-email','/.netlify/functions/parent-email'];
+  if (globalThis.location?.protocol === 'file:') return ['https://mathsexpress.aarush-sharma6.workers.dev/api/parent-email'];
+  return ['/api/parent-email'];
 }
 async function queueParentEmail(action, schoolId, studentId, body='') {
   const client=accountClient.ensureClient();
@@ -2625,17 +2624,12 @@ function completeAction(action) {
     openSimpleModal(item?.name||'Integration',`<div class="integration-status-card"><span class="status-dot waiting"></span><div><h3>Provider authorization required</h3><p>${escapeHtml(item?.status||'Requires a provider connection.')}</p><p class="muted">MathsExpress keeps provider secrets server-side. Authorise the real provider before live syncing can start.</p></div></div>`); return true;
   }
   const students=completeCurrentStudents();
-  if(action==='run-diagnostic') {
-    const skills=completeSampleSkills(); const attempts=skills.slice(0,12).map((x,i)=>({skillId:x.id,strand:x.strand,correct:x.mastery>=50,difficulty:i%3===0?'hard':i%3===1?'medium':'easy'}));
-    const result=scoreDiagnostic(attempts,normaliseYearLevel(account.profile?.yearLevel)); const path=buildLearningPath({skills});
-    persist({...state,diagnosticHistory:[...(state.diagnosticHistory||[]),{...result,createdAt:new Date().toISOString()}].slice(-20),personalLearningPath:path.map(x=>x.id)},{quiet:true});
-    openSimpleModal('Diagnostic Placement',`<div class="diagnostic-result"><div class="owner-analytics-strip"><div><b>${Math.round(result.accuracy*100)}%</b><small>diagnostic accuracy</small></div><div><b>${result.weakSkills.length}</b><small>priority skills</small></div><div><b>${escapeHtml(result.recommendedDifficulty)}</b><small>starting difficulty</small></div></div><h3>Your next learning steps</h3><ol class="simple-list">${path.slice(0,8).map(x=>`<li><strong>${escapeHtml(x.skill||x.id)}</strong><span>${Math.round(x.mastery)}% · ${escapeHtml(x.reason)}</span></li>`).join('')}</ol></div>`); return true;
-  }
+  if(action==='run-diagnostic') { openV83Diagnostic('discovery'); return true; }
   if(action==='open-learning-path') { const path=buildLearningPath({skills:completeSampleSkills()}); openSimpleModal('Personal Learning Path',`<ol class="simple-list">${path.map((x,i)=>`<li><b>${i+1}</b><div><strong>${escapeHtml(x.skill||x.id)}</strong><small>${escapeHtml(x.strand||'Maths')} · ${Math.round(x.mastery)}% · ${escapeHtml(x.reason)}</small></div></li>`).join('')}</ol>`); return true; }
   if(action==='open-spaced-review') { const dates=scheduleSpacedReview(new Date(),6); const added=dates.map((d,i)=>({id:`spaced-${Date.now()}-${i}`,date:d.toISOString().slice(0,10),title:`Spaced review ${i+1}`,type:'Revision'})); persist({...state,calendarItems:[...(state.calendarItems||[]),...added].slice(-200)},{quiet:true}); openSimpleModal('Spaced Repetition',`<p>Six revision sessions were added to your MathsExpress calendar.</p><div class="simple-list">${dates.map((d,i)=>`<div><strong>Review ${i+1}</strong><span>${d.toISOString().slice(0,10)}</span></div>`).join('')}</div>`); return true; }
   if(action==='open-predicted-mastery') { const rows=completeSampleSkills().map((x,i)=>({...x,predicted:predictMastery({mastery:x.mastery,recent:[true,i%2===0,true,i%3!==0],daysSincePractice:i})})).sort((a,b)=>a.predicted-b.predicted); openSimpleModal('Predicted Mastery',`<p>Lower predictions appear first so students can revise before gaps grow.</p><div class="simple-list">${rows.slice(0,10).map(x=>`<div><strong>${escapeHtml(x.skill)}</strong><span>${x.mastery}% now → ${x.predicted}% predicted</span></div>`).join('')}</div>`); return true; }
-  if(action==='open-confidence-report') { const attempts=state.confidenceAttempts||[{correct:true,confidence:5},{correct:false,confidence:5},{correct:true,confidence:2},{correct:true,confidence:4}]; const r=confidenceAccuracySummary(attempts); openSimpleModal('Confidence vs Accuracy',`<div class="owner-analytics-strip"><div><b>${r.overconfident}</b><small>overconfident</small></div><div><b>${r.underconfident}</b><small>underconfident</small></div><div><b>${r.calibrated}</b><small>well calibrated</small></div></div>`); return true; }
-  if(action==='open-error-analysis') { const mistakes=currentMistakes(); const rows=mistakes.slice(0,12).map(m=>({prompt:m.prompt,type:classifyMathError({expected:'5',actual:m.prompt?.includes('-')?'-5':'4',working:m.prompt||''})})); openSimpleModal('Error Analysis',rows.length?`<div class="simple-list">${rows.map(x=>`<div><strong>${escapeHtml(x.type.replaceAll('-',' '))}</strong><span>${mathHtml(x.prompt)}</span></div>`).join('')}</div>`:'<p>No unresolved mistakes are saved yet. Error types will appear after practice.</p>'); return true; }
+  if(action==='open-confidence-report') { const attempts=Array.isArray(state.confidenceAttempts)?state.confidenceAttempts:[]; if(!attempts.length){openSimpleModal('Confidence vs Accuracy','<p>No confidence ratings have been collected yet. Complete questions with confidence ratings before using this report.</p>');return true;} const r=confidenceAccuracySummary(attempts); openSimpleModal('Confidence vs Accuracy',`<div class="owner-analytics-strip"><div><b>${r.overconfident}</b><small>overconfident</small></div><div><b>${r.underconfident}</b><small>underconfident</small></div><div><b>${r.calibrated}</b><small>well calibrated</small></div></div>`); return true; }
+  if(action==='open-error-analysis') { const mistakes=currentMistakes(); openSimpleModal('Mistakes to Review',mistakes.length?`<p>These are your saved incorrect questions. Error categories are not available until answer details are stored.</p><div class="simple-list">${mistakes.slice(0,12).map(m=>`<div><strong>Review this question</strong><span>${mathHtml(m.prompt||'Question unavailable')}</span></div>`).join('')}</div>`:'<p>No unresolved mistakes are saved yet.</p>'); return true; }
   if(action==='open-exam-pro') { const candidates=searchTaskLibrary({yearLevel:normaliseYearLevel(account.profile?.yearLevel),difficulty:'all',type:'all'}).slice(0,10).map((t,i)=>({id:t.id,marks:i%4===0?3:i%3===0?2:1,title:t.title})); const versions=buildExamVersions(candidates,4,'mathsexpress-exam'); const exam=buildExamPaper({title:`${yearLabel(account.profile?.yearLevel)} Mathematics Examination`,timeMinutes:60,readingMinutes:5,questions:candidates}); openSimpleModal('Exam Builder Pro',`<div class="owner-analytics-strip"><div><b>${exam.totalMarks}</b><small>marks</small></div><div><b>${exam.timeMinutes}m</b><small>writing time</small></div><div><b>A–D</b><small>equivalent versions</small></div></div><div class="version-grid">${Object.values(versions).map(v=>`<article class="complete-card"><h3>Version ${v.label}</h3><p>${v.questions.length} questions · ${v.totalMarks} marks</p></article>`).join('')}</div><button class="btn primary" data-action="complete-download-exam">Download exam outline</button>`); return true; }
   if(action==='open-rubric-builder') { const r=buildRubric([{part:'a',marks:2,criteria:'Correct method and substitution'},{part:'b',marks:3,criteria:'Accurate reasoning and final result'}]); openSimpleModal('Rubric Builder',`<div class="simple-list">${r.parts.map(x=>`<div><strong>Part ${x.part} · ${x.marks} marks</strong><span>${escapeHtml(x.criteria)}</span></div>`).join('')}</div><p><b>${r.totalMarks} marks total</b></p>`); return true; }
   if(action==='open-working-marker') { const a=lastTeacherReport?.assignments?.[0]; if(!a)return showToast('Open a class first','Then choose Scorecard on an assignment to review real student working.'); scorecardModal(a.id); return true; }
@@ -2647,18 +2641,31 @@ function completeAction(action) {
   if(action==='open-curriculum-coverage') { const skills=getCurriculumSkills({yearLevel:normaliseYearLevel(account.profile?.yearLevel)}).slice(0,18).map(x=>({id:x.id,label:x.skill,strand:x.strand})); const done=skills.filter((_,i)=>i%3!==0).map(x=>x.id); const r=curriculumCoverage(skills,done); openSimpleModal('Curriculum Coverage',`<div class="owner-analytics-strip"><div><b>${r.percent}%</b><small>covered</small></div><div><b>${r.covered}</b><small>skills covered</small></div><div><b>${r.total-r.covered}</b><small>remaining</small></div></div><div class="simple-list">${r.rows.map(x=>`<div><strong>${x.covered?'✓':'○'} ${escapeHtml(x.label)}</strong><span>${escapeHtml(x.strand)}</span></div>`).join('')}</div>`); return true; }
   if(action==='open-late-work') { const now=new Date(); const tasks=[{title:'Algebra homework',status:'assigned',dueAt:new Date(now.getTime()-86400000).toISOString()},{title:'Geometry task',status:'completed',dueAt:new Date(now.getTime()-86400000).toISOString()},{title:'Revision',status:'assigned',dueAt:new Date(now.getTime()+86400000).toISOString()}]; const late=buildLateWork(tasks,now); const reminders=buildTeacherReminders({lateWork:late,unmarked:3,upcoming:[tasks[2]]}); openSimpleModal('Late / Missing Work',`<div class="simple-list">${late.map(x=>`<div><strong>${escapeHtml(x.title)}</strong><span>Overdue</span></div>`).join('')||'<p>No overdue work.</p>'}</div><h3>Teacher reminders</h3><p>${escapeHtml(reminders.join(' · '))}</p>`); return true; }
   if(action==='open-resource-manager') { const sample={id:'resource-1',title:'Year 9 Algebra Test',questions:10}; const copy=duplicateAssignment(sample); const version=createResourceVersion(sample,2,'Updated the challenge question'); openSimpleModal('Task Folders & Version History',`<div class="simple-list"><div><strong>${escapeHtml(copy.title)}</strong><span>Duplicate created safely with a new ID</span></div><div><strong>Version ${version.version}</strong><span>${escapeHtml(version.changeNote)}</span></div><div><strong>Recycle Bin</strong><span>Deleted resources can be restored before permanent removal.</span></div></div>`); return true; }
-  if(action==='open-resource-library') { const resources=[{title:'Year 9 Algebra Test',tags:['algebra','year9'],rating:4.8},{title:'Trigonometry Revision',tags:['trig','year9'],rating:4.6},{title:'Year 8 Geometry Investigation',tags:['geometry','year8'],rating:4.4}]; const rows=searchResourceLibrary(resources,''); openSimpleModal('Teacher Resource Library',`<p>Teachers can share original MathsExpress resources, favourite them and keep school/public versions.</p><div class="simple-list">${rows.map(x=>`<div><strong>${escapeHtml(x.title)}</strong><span>★ ${x.rating} · ${escapeHtml(x.tags.join(', '))}</span></div>`).join('')}</div>`); return true; }
-  if(action==='open-attendance') { const list=students.length?students:buildDemoSchool().classes[2].students; const r=buildAttendanceRegister(list,new Date().toISOString().slice(0,10)); openSimpleModal('Attendance',`<p>${r.date}</p><div class="attendance-list">${r.rows.map(x=>`<label><input type="checkbox" checked> <span>${escapeHtml(x.name)}</span><small>Present</small></label>`).join('')}</div>`); return true; }
+  if(action==='open-resource-library') { openSimpleModal('Teacher Resource Library','<p>No shared-resource catalogue is connected yet. Use your class resources and assignment templates while this feature is being built.</p>'); return true; }
+  if(action==='open-attendance') { if(!students.length){openSimpleModal('Attendance','<p>Open a real class to load students. Attendance is not linked to a register yet.</p>');return true;} const r=buildAttendanceRegister(students,new Date().toISOString().slice(0,10)); openSimpleModal('Attendance',`<p>${r.date} · Unsaved checklist (not an official attendance record)</p><div class="attendance-list">${r.rows.map(x=>`<label><input type="checkbox"> <span>${escapeHtml(x.name)}</span><small>Mark present</small></label>`).join('')}</div>`); return true; }
   if(action==='open-seating-plan') { const list=students.length?students:buildDemoSchool().classes[2].students; const seats=buildSeatingPlan(list,4); openSimpleModal('Seating Plan',`<div class="seating-grid" style="--seat-cols:4">${seats.map(x=>`<div class="seat"><small>R${x.row} C${x.column}</small><strong>${escapeHtml(x.name)}</strong></div>`).join('')}</div>`); return true; }
   if(action==='open-merit-points') { openHouseSystemModal(); return true; }
   if(action==='open-house-system') { openHouseSystemModal(); return true; }
-  if(action==='open-timetable') { const rows=buildTimetable([{day:'Monday',period:1,className:'Year 9 Maths'},{day:'Monday',period:3,className:'Year 10 Maths'},{day:'Tuesday',period:2,className:'Year 8 Maths'}]); openSimpleModal('School Timetable',`<div class="simple-list">${rows.map(x=>`<div><strong>${escapeHtml(x.day)} · Period ${x.period}</strong><span>${escapeHtml(x.className)}</span></div>`).join('')}</div>`); return true; }
+  if(action==='open-timetable') { openSimpleModal('School Timetable','<p>There is no live timetable source connected. Use the planner calendar to record real lessons.</p>'); return true; }
   if(action==='open-learning-modes') { openSimpleModal('Learning Modes',`<div class="mode-cards"><article><h3>Focus Mode</h3><p>Hides games, coins and competitive widgets.</p></article><article><h3>Homework Mode</h3><p>Shows only assigned work and required learning tools.</p></article><article><h3>Exam Lock</h3><p>Hides helper, notes and unrelated MathsExpress screens during a test.</p></article></div><button class="btn primary" data-action="complete-toggle-focus">Toggle Focus Mode</button>`); return true; }
   if(action==='open-notebook') { const pages=state.notebookPages||[]; openSimpleModal('Digital Maths Notebook',`<textarea id="complete-notebook-text" rows="8" placeholder="Write maths notes, formulas, examples or revision ideas…">${escapeHtml(pages.at(-1)?.body||'')}</textarea><div class="simple-modal-actions"><button class="btn primary" data-action="complete-save-notebook">Save page</button></div>${pages.length?`<p class="muted">${pages.length} saved page${pages.length===1?'':'s'} on this account.</p>`:''}`); return true; }
   if(action==='open-flashcards') { const cards=(state.flashcards?.length?state.flashcards:createFlashcards([{term:'Gradient',definition:'rise ÷ run'},{term:'Pythagoras',definition:'a² + b² = c²'}])); openSimpleModal('Flashcards',`<div class="flashcard-grid">${cards.map(c=>`<article><strong>${escapeHtml(c.term)}</strong><p>${escapeHtml(c.definition)}</p></article>`).join('')}</div><button class="btn secondary" data-action="complete-save-starter-flashcards">Save starter cards</button>`); return true; }
   if(action==='open-formula-sheet') { const sheet=buildFormulaSheet([{topic:'Circle',formula:'A = πr²'},{topic:'Pythagoras',formula:'a² + b² = c²'},{topic:'Gradient',formula:'m = (y₂-y₁)/(x₂-x₁)'}]); openSimpleModal('Formula Sheet',`<pre class="formula-sheet">${escapeHtml(sheet)}</pre><button class="btn secondary" data-action="complete-download-formulas">Download</button>`); return true; }
   if(action==='open-revision-checklist') { const list=buildRevisionChecklist(['Algebra','Linear relationships','Pythagoras','Trigonometry','Probability','Statistics']); openSimpleModal('Revision Checklist',`<div class="attendance-list">${list.map(x=>`<label><input type="checkbox"> <span>${escapeHtml(x.topic)}</span><small>Confidence ${x.confidence}/5</small></label>`).join('')}</div>`); return true; }
-  if(action==='open-exam-countdown') { const target=new Date(); target.setDate(target.getDate()+21); openSimpleModal('Exam Countdown',`<div class="countdown-big"><b>21</b><span>days until your example exam</span></div><p>Add the real test date to Calendar to keep it updated.</p>`); return true; }
+  if(action==='open-exam-countdown') {
+    const today=localDateString();
+    const tests=(Array.isArray(state.calendarItems)?state.calendarItems:[])
+      .filter(item=>/exam|test|assessment|quiz/i.test(String(item.title||'')))
+      .map(item=>({...item,date:String(item.date||'').slice(0,10)}))
+      .filter(item=>/^\d{4}-\d{2}-\d{2}$/.test(item.date)&&item.date>=today)
+      .sort((a,b)=>a.date.localeCompare(b.date));
+    if(!tests.length){openSimpleModal('Exam Countdown','<p>No upcoming exams or tests have been added to your calendar. Add a real date in Planner to see your countdown.</p>');return true;}
+    const next=tests[0];
+    const start=new Date(`${today}T00:00:00`);
+    const target=new Date(`${next.date}T00:00:00`);
+    const days=Math.max(0,Math.round((Date.UTC(target.getFullYear(),target.getMonth(),target.getDate())-Date.UTC(start.getFullYear(),start.getMonth(),start.getDate()))/86400000));
+    openSimpleModal('Exam Countdown',`<div class="countdown-big"><b>${days}</b><span>day${days===1?'':'s'} until ${escapeHtml(next.title)}</span></div><p>${escapeHtml(next.date)} · Taken from your saved calendar.</p>`); return true;
+  }
   if(action==='open-study-timer') { openStudyTimerModal(); return true; }
   if(action==='open-scientific-calculator') { if(activeSchoolAssignment?.testMode){showToast('Calculator locked','Calculator is disabled in Test Mode.');return true;} openSimpleModal('Calculator',scientificCalculatorHtml()); setTimeout(()=>document.getElementById('complete-calc-expression')?.focus(),0); return true; }
   if(action==='open-graphing-calculator') { openWorkingSpace(); return true; }
@@ -2668,13 +2675,13 @@ function completeAction(action) {
   if(action==='open-statistics-explorer') { openSimpleModal('Statistics Explorer',`<div class="school-form statistics-form"><label>Dataset<textarea id="statistics-data" rows="4" placeholder="Enter numbers separated by commas">3, 5, 5, 7, 8, 9, 12</textarea></label><button class="btn primary" type="button" data-action="complete-statistics">Analyse data</button><div id="statistics-output" class="statistics-output"></div></div>`); setTimeout(()=>document.querySelector('[data-action="complete-statistics"]')?.click(),0); return true; }
   if(action==='open-geometry-toolkit') { openSimpleModal('Geometry Toolkit',`<div class="school-form geometry-calc"><h3>Coordinate geometry</h3><div class="form-two"><label>Point A (x, y)<input id="geometry-point-a" value="1, 2"></label><label>Point B (x, y)<input id="geometry-point-b" value="7, 10"></label></div><button class="btn primary" type="button" data-action="complete-geometry">Calculate distance & midpoint</button><div id="geometry-output" class="tool-result"></div><div class="geometry-tool-demo"><div class="geometry-grid"></div><div class="geometry-toolbar"><span>Ruler</span><span>Coordinates</span><span>Distance</span><span>Midpoint</span></div></div></div>`); return true; }
   if(action==='open-tournament') { openTournamentModal(); return true; }
-  if(action==='open-duel') { openSimpleModal('Maths Duels',`<p>Create a 1v1 challenge using the same year/topic/difficulty rules for both students.</p><div class="duel-card"><strong>Student A</strong><span>10 questions</span><strong>Student B</strong></div>`); return true; }
+  if(action==='open-duel') { openFriendChallengeModal(); return true; }
   if(action==='open-friend-challenge') { openFriendChallengeModal(); return true; }
   if(action==='friend-challenge-create') { startFriendChallenge(newFriendChallengeCode()); return true; }
   if(action==='friend-challenge-join') { const code=String(document.getElementById('friend-challenge-code')?.value||'').trim().toUpperCase().replace(/\s+/g,''); if(!parseFriendChallengeCode(code)){showToast('Check the code','Challenge codes look like MX09K3F7.');return true;} startFriendChallenge(code); return true; }
-  if(action==='open-spectate') { openSimpleModal('Teacher Spectate',`<p>${activeClassSessions.length?`${activeClassSessions.length} active class session${activeClassSessions.length===1?'':'s'} loaded.`:'No active sessions are currently loaded.'}</p><p>Open a class game to view server-backed position, score, streak, lives and answers.</p>`); return true; }
-  if(action==='open-game-replay') { openSimpleModal('Game Replay Summary',`<div class="simple-list"><div><strong>Question 3</strong><span>Blue team took the lead</span></div><div><strong>Question 7</strong><span>Red team recovered with a 3-answer streak</span></div><div><strong>Question 10</strong><span>Final deciding question</span></div></div>`); return true; }
-  if(action==='open-integrity-check') { const r=inspectChallengeIntegrity({answerTimesMs:[250,280,260,240,270],accuracy:1,tabLeaves:1,pasteEvents:0}); openSimpleModal('Challenge Integrity',`<div class="status-banner ${r.flagged?'warning':'success'}"><b>${r.flagged?'Review recommended':'No flags'}</b></div><p>Average answer time: ${r.averageAnswerMs} ms</p><p>${escapeHtml(r.reasons.join(' · ')||'No suspicious patterns detected.')}</p>`); return true; }
+  if(action==='open-spectate') { void openLiveGameLeaderboard(); return true; }
+  if(action==='open-game-replay') { showToast('Replay unavailable','Question-by-question match events are not stored yet.'); return true; }
+  if(action==='open-integrity-check') { showToast('Live integrity report unavailable','Ask your teacher to review real assessment integrity logs.'); return true; }
   if(action==='open-parent-accounts') { openParentAccountsModal(); return true; }
   if(action==='open-parent-weekly') { openParentMessagesModal(); return true; }
   if(action==='open-parent-messages') { openParentMessagesModal(); return true; }
@@ -2950,12 +2957,9 @@ function aiContextForRequest(context) {
 
 function aiApiEndpoints() {
   if (globalThis.location?.protocol === 'file:') {
-    return [
-      'https://mathsexpress.aarush-sharma6.workers.dev/api/ai',
-      'https://mathsexpress.aarush-sharma6.workers.dev/.netlify/functions/ai',
-    ];
+    return ['https://mathsexpress.aarush-sharma6.workers.dev/api/ai'];
   }
-  return ['/api/ai','/.netlify/functions/ai'];
+  return ['/api/ai'];
 }
 
 async function fetchAiEndpoint(url, options={}, timeoutMs=20000) {
@@ -3971,8 +3975,8 @@ function renderAssignmentRoute(){
 
 
 function assessmentApiEndpoints(name) {
-  if (globalThis.location?.protocol === 'file:') return [`https://mathsexpress.aarush-sharma6.workers.dev/api/${name}`,`https://mathsexpress.aarush-sharma6.workers.dev/.netlify/functions/${name}`];
-  return [`/api/${name}`,`/.netlify/functions/${name}`];
+  if (globalThis.location?.protocol === 'file:') return [`https://mathsexpress.aarush-sharma6.workers.dev/api/${name}`];
+  return [`/api/${name}`];
 }
 async function assessmentApi(name,payload,timeoutMs=22000){
   let lastError=null;
@@ -4843,17 +4847,25 @@ function classGamePercent(value, target) {
 }
 
 function classGameTeamTotals(leaderboard=[]) {
-  return leaderboard.reduce((out,row)=>{
-    const team=['Red','Gold'].includes(String(row.team||'Blue'))?'Red':'Blue'; // the server assigns Blue/Gold
-    out[team].players+=1;
-    out[team].score+=Number(row.score)||0;
-    out[team].correct+=Number(row.correct)||0;
-    out[team].answered+=Number(row.answered)||0;
+  return (Array.isArray(leaderboard)?leaderboard:[]).reduce((out,row)=>{
+    const team=String(row.team||'').toLowerCase();
+    const key=team==='gold'?'Gold':team==='blue'?'Blue':null;
+    if(!key)return out;
+    out[key].players+=1;
+    out[key].score+=Number(row.score)||0;
+    out[key].correct+=Number(row.correct)||0;
+    out[key].answered+=Number(row.answered)||0;
     return out;
-  },{Blue:{players:0,score:0,correct:0,answered:0},Red:{players:0,score:0,correct:0,answered:0}});
+  },{Blue:{players:0,score:0,correct:0,answered:0},Gold:{players:0,score:0,correct:0,answered:0}});
 }
 
-function classGameVisual(progress, mode) {
+function classGameVisual(progress, mode, leaderboard=[]) {
+  // The _v114 game-state RPCs do not exist. The real server currently provides
+  // only a leaderboard; don't invent a football position or a victory state.
+  if (!progress?.game_state || !Object.keys(progress.game_state).length) {
+    const totals=classGameTeamTotals(leaderboard);
+    return `<div class="score-battle-visual"><div class="score-battle-number blue"><span>BLUE TEAM</span><strong>${totals.Blue.score}</strong><small>${totals.Blue.correct} correct answers</small></div><div class="versus-mark">VS</div><div class="score-battle-number gold"><span>GOLD TEAM</span><strong>${totals.Gold.score}</strong><small>${totals.Gold.correct} correct answers</small></div></div><p class="muted">Live scores from the class leaderboard. Mode-specific animations and win conditions are not yet connected to the server.</p>`;
+  }
   const g=classGameState(progress);
   const winner=String(g.winner||'');
   const winnerBanner=winner?`<div class="class-game-winner"><strong>${escapeHtml(winner)} ${['Class','Enemies','Boss'].includes(winner)?'wins!':'team wins!'}</strong><span>Game complete</span></div>`:'';
@@ -4978,10 +4990,11 @@ function classGameVisual(progress, mode) {
   return `${winnerBanner}<div class="score-battle-visual"><div class="score-battle-number blue"><span>BLUE</span><strong>${blue}</strong></div><div class="versus-mark">VS</div><div class="score-battle-number red"><span>RED</span><strong>${red}</strong></div></div>`;
 }
 function classGameLeaderboardHtml(leaderboard=[], progress=null) {
-  const totals=classGameTeamTotals(leaderboard);
-  const teamRows=(team)=>leaderboard.filter(row=>String(row.team||'Blue')===team).slice(0,10);
+  const rows=Array.isArray(leaderboard)?leaderboard:[];
+  const totals=classGameTeamTotals(rows);
+  const teamRows=(team)=>rows.filter(row=>String(row.team||'').toLowerCase()===team.toLowerCase()).slice(0,10);
   const renderTeam=(team)=>`<section class="class-team-board ${team.toLowerCase()}"><header><div><span>${team.toUpperCase()}</span><strong>${totals[team].players} player${totals[team].players===1?'':'s'}</strong></div><b>${totals[team].correct} ✓</b></header><div>${teamRows(team).map((row,i)=>`<article><b>${i+1}</b><span>${escapeHtml(row.display_name||'Student')}<small>${Number(row.correct)||0}/${Number(row.answered)||0} correct</small></span><strong>${Number(row.score)||0}</strong></article>`).join('')||'<div class="class-game-empty">Waiting for players…</div>'}</div></section>`;
-  return `<div class="class-team-boards">${renderTeam('Blue')}${renderTeam('Red')}</div>`;
+  return `<div class="class-team-boards">${renderTeam('Blue')}${renderTeam('Gold')}</div>`;
 }
 
 function stopClassGamePolling() {
@@ -5021,7 +5034,7 @@ function startClassGameCooldown(ms=3000) {
 function updateClassGameLiveDom() {
   if(!activeClassGame) return;
   const arena=document.getElementById('class-game-arena');
-  if(arena) arena.innerHTML=classGameVisual(activeClassGame.progress,activeClassGame.session.mode);
+  if(arena) arena.innerHTML=classGameVisual(activeClassGame.progress,activeClassGame.session.mode,activeClassGame.leaderboard);
   const board=document.getElementById('class-game-leaderboard');
   if(board) board.innerHTML=classGameLeaderboardHtml(activeClassGame.leaderboard,activeClassGame.progress);
   const event=document.getElementById('class-game-event');
@@ -5030,6 +5043,30 @@ function updateClassGameLiveDom() {
   const winner=classGameWinner(activeClassGame.progress);
   document.querySelectorAll('[data-action="class-game-answer"]').forEach(btn=>{ btn.disabled=Boolean(winner)||classGameAnswerPending||classGameCooldownMs()>0; });
   updateClassGameCooldownDom();
+}
+
+async function openLiveGameLeaderboard() {
+  if(!account.authenticated){showToast('Sign in required','Sign in to see live class games.');return;}
+  openSimpleModal('Live Game Leaderboard','<div class="school-loading"><span class="spinner"></span><strong>Loading live scores…</strong></div>');
+  try {
+    const school=getSchoolClient();
+    const sessions=(await school.listActiveClassroomSessions()).filter(s=>!classGameExpired(s));
+    if(!sessions.length){const body=document.querySelector('.ultimate-modal-body');if(body)body.innerHTML='<p>No active class games right now.</p>';return;}
+    const results=await Promise.all(sessions.slice(0,10).map(async session=>{
+      try {return {session,players:await school.classroomGameLeaderboard(session.id)};}
+      catch {return {session,players:null};}
+    }));
+    const body=document.querySelector('.ultimate-modal-body'); if(!body)return;
+    body.innerHTML=`<div class="simple-list">${results.map(({session,players})=>{
+      const title=classGameMode(session.mode).name;
+      if(!players)return `<div><strong>${escapeHtml(title)}</strong><span>Scores unavailable right now.</span></div>`;
+      const totals=classGameTeamTotals(players);
+      return `<div><strong>${escapeHtml(title)}</strong><span>Blue ${totals.Blue.score} (${totals.Blue.correct} correct) · Gold ${totals.Gold.score} (${totals.Gold.correct} correct) · ${totals.Blue.players+totals.Gold.players} players</span></div>`;
+    }).join('')}</div>`;
+  } catch (error) {
+    const body=document.querySelector('.ultimate-modal-body');
+    if(body)body.innerHTML=`<p>Live scores could not be loaded: ${escapeHtml(error?.message||'Try again.')}</p>`;
+  }
 }
 
 function classGameExpired(session,now=Date.now()){
@@ -5064,7 +5101,7 @@ async function refreshClassSessions() {
   try {
     activeClassSessions = await getSchoolClient().listActiveClassroomSessions();
     const root = document.getElementById('active-class-games');
-    if (root && routeFromHash().route === 'games') root.innerHTML = activeClassSessions.length ? activeClassSessions.map((session) => { const mode=classGameMode(session.mode); return `<button class="active-class-game" data-action="join-class-game" data-session-id="${session.id}"><span>${session.mode==='maths-football'?'BALL':session.mode==='capture-zone'?'ZONE':session.mode==='maths-race'?'RACE':session.mode==='tower-climb'?'TOWER':'LIVE'}</span><div><strong>${escapeHtml(mode.name)}</strong><small>${escapeHtml(mode.description)}</small></div><b>Join →</b></button>`; }).join('') : '<div class="school-empty">No live class games right now. Your teacher can start one from School → Tools → Classroom games.</div>';
+    if (root && routeFromHash().route === 'games') root.innerHTML = activeClassSessions.length ? activeClassSessions.map((session) => { const mode=classGameMode(session.mode); return `<button class="active-class-game" data-action="join-class-game" data-session-id="${session.id}"><span>${session.mode==='maths-football'?'BALL':session.mode==='capture-zone'?'ZONE':session.mode==='maths-race'?'RACE':session.mode==='tower-climb'?'TOWER':'LIVE'}</span><div><strong>${escapeHtml(mode.name)}</strong><small>Live Blue/Gold team scores</small></div><b>Join →</b></button>`; }).join('') : '<div class="school-empty">No live class games right now. Your teacher can start one from School → Tools → Classroom games.</div>';
   } catch {
     const root=document.getElementById('active-class-games'); if(root) root.innerHTML='<div class="school-empty">No live class games available.</div>';
   }
@@ -5100,9 +5137,9 @@ function renderClassGame() {
   const mode=classGameMode(session.mode);
   const winner=classGameWinner(progress);
   const last=classGameState(progress).last_event;
-  view.innerHTML=`<div class="page class-game-page"><div class="class-game-head"><div><span class="eyebrow">LIVE CLASS GAME · ${escapeHtml(progress?.team||'Team')}</span><h1>${escapeHtml(mode.name)}</h1><p>${escapeHtml(mode.description)}</p></div><button class="btn ghost" data-route="games">Leave game</button></div>
-    <div class="class-game-shell"><main class="class-game-main"><section id="class-game-arena" class="class-game-arena">${classGameVisual(progress,session.mode)}</section>
-      <section class="class-game-question"><div class="class-game-question-head"><div><span class="eyebrow">YOUR TURN</span><h2>${winner?`${escapeHtml(winner)} won the game`:escapeHtml(classGameActionPrompt(session.mode))}</h2></div><span id="class-game-event" class="class-game-event">${escapeHtml(last?.message||'Every answer updates the same live game for the whole class.')}</span></div>
+  view.innerHTML=`<div class="page class-game-page"><div class="class-game-head"><div><span class="eyebrow">LIVE CLASS GAME · ${escapeHtml(progress?.team||'Team')}</span><h1>${escapeHtml(mode.name)}</h1><p>${(progress?.game_state&&Object.keys(progress.game_state).length)?escapeHtml(mode.description):'Live Blue and Gold team points'}</p></div><button class="btn ghost" data-route="games">Leave game</button></div>
+    <div class="class-game-shell"><main class="class-game-main"><section id="class-game-arena" class="class-game-arena">${classGameVisual(progress,session.mode,leaderboard)}</section>
+      <section class="class-game-question"><div class="class-game-question-head"><div><span class="eyebrow">YOUR TURN</span><h2>${winner?`${escapeHtml(winner)} won the game`:((progress?.game_state&&Object.keys(progress.game_state).length)?escapeHtml(classGameActionPrompt(session.mode)):'Answer correctly to earn points for your team')}</h2></div><span id="class-game-event" class="class-game-event">${escapeHtml(last?.message||'Every answer updates the same live game for the whole class.')}</span></div>
       ${winner?`<div class="class-game-finished"><strong>Game finished</strong><p>Your teacher can start another classroom game.</p></div>`:`<div class="class-game-maths"><div id="class-game-cooldown" class="class-game-cooldown" ${classGameCooldownMs()>0?'':'hidden'}></div><h3>${mathHtml(question.prompt)}</h3><div class="class-game-choices">${question.options.map((o)=>`<button class="class-game-choice" data-action="class-game-answer" data-option="${o.id}" ${classGameCooldownMs()>0?'disabled':''}>${mathHtml(o.value)}</button>`).join('')}</div></div>`}</section></main>
       <aside id="class-game-leaderboard" class="class-game-sidebar">${classGameLeaderboardHtml(leaderboard,progress)}</aside></div></div>`;
 }
@@ -5115,6 +5152,12 @@ async function answerClassGame(optionId) {
   const option=activeClassGame.question.options.find((item)=>item.id===optionId);
   const correct=Boolean(option?.correct);
   const questionKey=String(activeClassGame.question.id||`${activeClassGame.session.id}:${activeClassGame.question.prompt}`);
+  const submissionKey=`${activeClassGame.session.id}:${questionKey}`;
+  if(classGameSubmittedKeys.has(submissionKey)){
+    showToast('Already answered','This question was submitted. Rejoin the game if the connection was interrupted.');
+    return;
+  }
+  classGameSubmittedKeys.add(submissionKey);
   classGameAnswerPending=true;
   document.querySelectorAll('[data-action="class-game-answer"]').forEach(btn=>btn.disabled=true);
   try {
@@ -5137,7 +5180,11 @@ async function answerClassGame(optionId) {
     showToast(correct?'Correct!':'Wrong answer', message|| (correct?'Your team made a move.':'Wait 3 seconds, then try the next question.'),correct?'success':'');
     renderClassGame();
     updateClassGameCooldownDom();
-  } catch(error){ showToast('Game update failed',error.message||'Try again.'); }
+  } catch(error){
+    // A timed-out request might still have counted server-side. Never send it
+    // again automatically (the server currently has no question idempotency).
+    showToast('Game update could not be confirmed', 'Rejoin the game to refresh the score before answering another question.');
+  }
   finally {
     classGameAnswerPending=false;
     updateClassGameLiveDom();
@@ -6911,7 +6958,7 @@ async function integrationRequest(action,provider='',extra={}){
   const token=account.session?.access_token||accountClient.session?.access_token||'';
   const options={method:action==='status'?'GET':'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:action==='status'?undefined:JSON.stringify({action,provider,...extra})};
   let lastError=null;
-  for(const endpoint of ['/api/integrations','/.netlify/functions/integrations']){
+  for(const endpoint of ['/api/integrations']){
     try{const res=await fetch(endpoint,options);const data=await res.json().catch(()=>({}));if(res.ok)return data;if(res.status!==404)throw new Error(data.error||'Integration request failed.');lastError=new Error(data.error||'The integration API did not respond on this deployment. Redeploy the Worker (npx wrangler deploy) so /api/* is served, then reload.');}catch(error){lastError=error;}
   }
   throw lastError||new Error('Integration request failed.');

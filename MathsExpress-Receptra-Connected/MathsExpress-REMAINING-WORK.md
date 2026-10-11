@@ -1,5 +1,7 @@
 # MathsExpress: remaining work after v11.5.21
 
+> **v11.5.22 audit update (11 October 2026):** See `V11.5.22-VERIFIED-AUDIT.md` for fixes and test evidence. The original checklist below is preserved as the pre-audit handoff: the fake duels/replay/spectate display and `.netlify/functions` fallbacks have now been addressed in source, and the client class-game display now uses the real Blue/Gold leaderboard. **Backend class-game engine, server-side double-submit protection, RPC issues, migrations and production validation are still outstanding.**
+
 Status on 11 October 2026: v11.5.21 is committed in the zip but **not deployed**, and its migration has **not been applied**. Production is still v11.5.20.
 
 ## 0 · Ship v11.5.21 (do this first)
