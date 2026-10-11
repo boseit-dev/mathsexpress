@@ -1,0 +1,56 @@
+{
+  "name": "MathsExpress",
+  "short_name": "MathsExpress",
+  "description": "K–12 mathematics learning, assignments, textbooks, games, reporting and school tools.",
+  "start_url": "./app.html#home",
+  "display": "standalone",
+  "background_color": "#6d4aff",
+  "theme_color": "#6d4aff",
+  "icons": [
+    {
+      "src": "./assets/mx-logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./mx-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/mx-logo-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./assets/mx-logo-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "orientation": "any",
+  "categories": [
+    "education"
+  ],
+  "shortcuts": [
+    {
+      "name": "Assigned Work",
+      "short_name": "Assigned",
+      "url": "./app.html#student-hub"
+    },
+    {
+      "name": "Learn",
+      "short_name": "Learn",
+      "url": "./app.html#learn"
+    },
+    {
+      "name": "Textbook",
+      "short_name": "Textbook",
+      "url": "./app.html#textbook"
+    }
+  ]
+}

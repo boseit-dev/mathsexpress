@@ -1,0 +1,13 @@
+{
+  "name": "mathsexpress",
+  "private": true,
+  "description": "Cloudflare Worker and static assets for MathsExpress.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "node --test tests/*.test.cjs"
+  },
+  "devDependencies": {
+    "wrangler": "4.149.0"
+  }
+}
