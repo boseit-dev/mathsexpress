@@ -1091,9 +1091,9 @@ function showAuthGate(message = '') {
               <label><input type="radio" name="accountType" value="teacher"><span><b>Teacher</b><small>Create classes, assign work and view reports</small></span></label>
             </fieldset>
             <label class="signup-class-code">Class code<input id="auth-signup-class-code" name="classCode" maxlength="6" minlength="6" autocomplete="off" autocapitalize="characters" placeholder="ABC123" pattern="[A-Za-z0-9]{6}" required><small class="field-help">The 6-character code from your teacher. You join the class as soon as your account is created.</small></label>
-            <label>Email<input id="auth-signup-email" type="email" autocomplete="email" placeholder="name@example.com" required><small class="field-help">No email verification step is required.</small></label>
+            <label>Email<input id="auth-signup-email" type="email" autocomplete="email" placeholder="name@example.com" required><small class="field-help">You may need to confirm your email before logging in.</small></label>
             <label>Password<input id="auth-signup-password" type="password" minlength="10" autocomplete="new-password" placeholder="At least 10 characters" required></label>
-            <label>Confirm password<input id="auth-signup-password-confirm" type="password" minlength="10" autocomplete="new-password" placeholder="Type it again" required><small class="field-help">You can start immediately after creating the account.</small></label>
+            <label>Confirm password<input id="auth-signup-password-confirm" type="password" minlength="10" autocomplete="new-password" placeholder="Type it again" required><small class="field-help">If verification is required, check your inbox first.</small></label>
             <button class="btn primary auth-submit" type="submit">Create account →</button>
           </form>`}
           <p id="auth-message" class="auth-message ${message?'visible':''}">${escapeHtml(message)}</p>
@@ -1159,6 +1159,14 @@ async function handleAuthSubmit(event) {
       const classCode=String(document.getElementById('auth-signup-class-code')?.value||'').trim().toUpperCase();
       if(accountType==='student' && !/^[A-Z0-9]{6}$/.test(classCode)) throw new Error('Enter the 6-character class code from your teacher.');
       const result = await accountClient.signUp(signupEmail, password, displayNameFromEmail(signupEmail), accountType);
+      if(result.needsConfirmation){
+        // Stay logged out until the user verifies the email. The class code is never
+        // checked anonymously, so the student must join after their first verified login.
+        message.textContent='Check '+signupEmail+' for your verification link. After verifying, log in and join your class using the same code. Check your spam folder if needed.';
+        document.getElementById('auth-signup-password').value='';
+        document.getElementById('auth-signup-password-confirm').value='';
+        return;
+      }
       await finishAuthentication(result);
       // Codes are checked by the rate-limited mathrift_join_class after sign-in rather than by an anonymous
       // lookup, which would let anyone enumerate class codes. A bad code leaves the student on Join your class.
@@ -5015,7 +5023,7 @@ function updateClassGameCooldownDom() {
   const box=document.getElementById('class-game-cooldown');
   if(box){
     box.hidden=ms<=0;
-    if(ms>0) box.innerHTML=`<strong>Wrong answer</strong><span>Next question unlocks in ${(ms/1000).toFixed(1)}s</span>`;
+    if(ms>0) box.innerHTML=`<strong>Ready soon</strong><span>Next answer unlocks in ${(ms/1000).toFixed(1)}s</span>`;
   }
   const winner=activeClassGame ? classGameWinner(activeClassGame.progress) : '';
   document.querySelectorAll('[data-action="class-game-answer"]').forEach(btn=>{
@@ -5116,7 +5124,8 @@ async function openClassGame(sessionId) {
     const snapshot = await getSchoolClient().classroomGameSnapshot(sessionId).catch(()=>null);
     const progress={...joined,game_state:snapshot?.game_state||joined?.game_state||{}};
     const leaderboard=Array.isArray(snapshot?.players)?snapshot.players:await getSchoolClient().classroomGameLeaderboard(sessionId);
-    activeClassGame = { session, progress, leaderboard, question:createDrivingQuestion(normaliseYearLevel(account.profile?.yearLevel)) };
+    const question=await getSchoolClient().classroomGameNextQuestion(sessionId,normaliseYearLevel(account.profile?.yearLevel));
+    activeClassGame = { session, progress, leaderboard, question };
     classGameCooldownUntil=0; stopClassGameCooldown();
     startClassGamePolling();
     go('class-game', sessionId);
@@ -5150,7 +5159,7 @@ async function answerClassGame(optionId) {
   const cooldown=classGameCooldownMs();
   if(cooldown>0){ startClassGameCooldown(cooldown); return; }
   const option=activeClassGame.question.options.find((item)=>item.id===optionId);
-  const correct=Boolean(option?.correct);
+  if(!option) return;
   const questionKey=String(activeClassGame.question.id||`${activeClassGame.session.id}:${activeClassGame.question.prompt}`);
   const submissionKey=`${activeClassGame.session.id}:${questionKey}`;
   if(classGameSubmittedKeys.has(submissionKey)){
@@ -5161,29 +5170,34 @@ async function answerClassGame(optionId) {
   classGameAnswerPending=true;
   document.querySelectorAll('[data-action="class-game-answer"]').forEach(btn=>btn.disabled=true);
   try {
-    const progress=await getSchoolClient().submitClassroomGameAnswer(activeClassGame.session.id,correct,questionKey);
+    const progress=await getSchoolClient().submitClassroomGameAnswer(activeClassGame.session.id,optionId,questionKey);
     if(progress?.blocked){
       const retry=Math.max(0,Number(progress.retry_after_ms)||0);
       if(retry>0) startClassGameCooldown(retry);
       if(progress.reason==='duplicate') showToast('Already submitted','That question has already counted.');
-      else if(progress.reason==='cooldown') showToast('Wait a moment',`You can answer again in ${(retry/1000).toFixed(1)} seconds.`);
+      else if(progress.reason==='cooldown') {
+        // A cooldown is not a submission. Permit retrying this SAME question.
+        classGameSubmittedKeys.delete(submissionKey);
+        showToast('Wait a moment',`You can answer again in ${(retry/1000).toFixed(1)} seconds.`);
+      }
       return;
     }
+    const correct=Boolean(progress.correct); // graded by Supabase, not the browser
     trackActivityEvent('game-answer','game','class-game-answer',{sessionId:activeClassGame.session.id,mode:activeClassGame.session.mode,correct});
     const snapshot=await getSchoolClient().classroomGameSnapshot(activeClassGame.session.id).catch(()=>null);
     const leaderboard=Array.isArray(snapshot?.players)?snapshot.players:await getSchoolClient().classroomGameLeaderboard(activeClassGame.session.id);
-    const nextQuestion=createDrivingQuestion(normaliseYearLevel(account.profile?.yearLevel));
+    const nextQuestion=await getSchoolClient().classroomGameNextQuestion(activeClassGame.session.id,normaliseYearLevel(account.profile?.yearLevel));
     activeClassGame={...activeClassGame,progress:{...progress,game_state:snapshot?.game_state||progress?.game_state||{}},leaderboard,question:nextQuestion};
     const message=classGameState(activeClassGame.progress)?.last_event?.message;
-    if(!correct) startClassGameCooldown(Math.max(3000,Number(progress.retry_after_ms)||3000));
-    else { classGameCooldownUntil=0; stopClassGameCooldown(); }
+    // Match the 3-second server cooldown for both correct and incorrect answers.
+    startClassGameCooldown(Math.max(3000,Number(progress.retry_after_ms)||3000));
     showToast(correct?'Correct!':'Wrong answer', message|| (correct?'Your team made a move.':'Wait 3 seconds, then try the next question.'),correct?'success':'');
     renderClassGame();
     updateClassGameCooldownDom();
   } catch(error){
-    // A timed-out request might still have counted server-side. Never send it
-    // again automatically (the server currently has no question idempotency).
-    showToast('Game update could not be confirmed', 'Rejoin the game to refresh the score before answering another question.');
+    // The question key makes retries idempotent after the database migration.
+    // Ask the student to reconnect instead of submitting an unknown result again.
+    showToast('Game update could not be confirmed', 'Reconnect to check the score. If the problem continues, ask your teacher.');
   }
   finally {
     classGameAnswerPending=false;

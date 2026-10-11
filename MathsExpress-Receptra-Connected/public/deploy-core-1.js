@@ -3184,7 +3184,15 @@ class MathRiftAccountClient {
     } catch { return undefined; }
   }
 
-  async resendSignupVerification(email) { return true; }
+  async resendSignupVerification(email) {
+    const normalized=String(email||'').trim().toLowerCase();
+    if(!normalized || !normalized.includes('@')) throw new Error('Enter the email you signed up with.');
+    const {error}=await this.ensureClient().auth.resend({
+      type:'signup',email:normalized,options:{emailRedirectTo:this.authRedirectUrl()}
+    });
+    if(error) throw error;
+    return true;
+  }
 
   async signUp(email, password, displayName, accountType = 'student') {
     const client=this.ensureClient();
@@ -3210,8 +3218,18 @@ class MathRiftAccountClient {
     }
     const result=await response.json().catch(()=>({}));
     if(!response.ok) throw new Error(result?.error||'Could not create account.');
-    if(!result?.access_token || !result?.refresh_token) throw new Error('Account was created but sign-in could not start. Please log in.');
-    const {data,error}=await client.auth.setSession({access_token:String(result.access_token),refresh_token:String(result.refresh_token)});
+    // With email confirmation enabled, Supabase signup legitimately returns NO session.
+    // Never try to sign in with missing tokens or skip the verification flow.
+    if(result?.needsConfirmation === true){
+      return {...this.snapshot(),authenticated:false,session:null,profile:null,
+        needsConfirmation:true,verificationEmail:normalizedEmail};
+    }
+    // The hosted signup Edge Function intentionally does not return tokens.
+    // When confirmation is disabled, perform a normal password login through
+    // Supabase Auth; when it is enabled, the branch above keeps us signed out.
+    const {data,error}=(result?.access_token && result?.refresh_token)
+      ? await client.auth.setSession({access_token:String(result.access_token),refresh_token:String(result.refresh_token)})
+      : await client.auth.signInWithPassword({email:normalizedEmail,password:passwordValue});
     if(error) throw error;
     this.session=data.session||null;
     await this.refreshProfile();
@@ -3939,11 +3957,25 @@ class MathRiftSchoolClient {
     return unwrap(await this.client.rpc('mathsexpress_class_game_join', { p_session_id:String(sessionId) }));
   }
 
-  async submitClassroomGameAnswer(sessionId, correct, questionKey) {
-    // The deployed RPC only accepts session ID and correctness. Duplicate prevention in
-    // the browser cannot replace server-side idempotency; see the audit notes.
-    if (!String(questionKey||'').trim()) throw new Error('A question key is required.');
-    return unwrap(await this.client.rpc('mathsexpress_class_game_answer', { p_session_id:String(sessionId), p_correct:Boolean(correct) }));
+  async classroomGameNextQuestion(sessionId,yearLevel=9) {
+    const question=unwrap(await this.client.rpc('mathsexpress_class_game_next_question',{
+      p_session_id:String(sessionId),p_year_level:Math.max(0,Math.min(12,Math.floor(Number.isFinite(Number(yearLevel))?Number(yearLevel):9)))
+    }));
+    if(!question?.id || !question?.prompt || !Array.isArray(question?.options))
+      throw new Error('Could not load a verified class-game question.');
+    return question;
+  }
+
+  async submitClassroomGameAnswer(sessionId, optionId, questionKey) {
+    // Server validates the submitted option against a hidden marking key.
+    // Never fall back to the old client-scored 2-argument endpoint.
+    const key=String(questionKey||'').trim();
+    const option=String(optionId||'').trim();
+    if (!key || key.length>180) throw new Error('A valid question key is required.');
+    if(!/^lane-[0-3]$/.test(option)) throw new Error('Choose a valid answer option.');
+    return unwrap(await this.client.rpc('mathsexpress_class_game_answer', {
+      p_session_id:String(sessionId),p_option_id:option,p_question_key:key
+    }));
   }
 
   async classroomGameLeaderboard(sessionId) {
@@ -4241,10 +4273,14 @@ class MathRiftSchoolClient {
   async eloLeaderboards() { return unwrap(await this.client.rpc('mathsexpress_elo_my_leaderboards', {})) || {}; }
   async eloAwardQuestion(eventKey,questionId,attemptNumber,correct=true) { return unwrap(await this.client.rpc('mathsexpress_elo_award_question', { p_event_key:String(eventKey||''), p_question_id:String(questionId||''), p_attempt_number:Math.max(1,Number(attemptNumber)||1), p_correct:Boolean(correct) })); }
   async recordIntegrityEvent(assignmentId,eventType,payload={}) { return unwrap(await this.client.rpc('mathsexpress_record_integrity_event',{p_assignment_id:String(assignmentId),p_event_type:String(eventType||''),p_payload:payload&&typeof payload==='object'?payload:{}})); }
-  // The _v114 RPC was never built, and aliasing it to award_question_reward would spend the event key
-  // before awardQuestionReward runs, so the XP award would be rejected as a duplicate. Rewards go through
-  // awardQuestionReward; this stays as a no-op so existing call sites need no changes.
-  async recordDailyQuestionAttempt() { return {}; }
+  // Daily attempts are tracked separately from rewards. Never consume an XP event key here.
+  async recordDailyQuestionAttempt(eventKey,correct) {
+    const key=String(eventKey||'').trim();
+    if(!key || key.length>180) throw new Error('A valid daily question key is required.');
+    return unwrap(await this.client.rpc('mathsexpress_record_daily_question_attempt',{
+      p_event_key:key,p_correct:Boolean(correct)
+    })) || {};
+  }
   async playerState() { return unwrap(await this.client.rpc('mathsexpress_player_state', {})) || {}; }
   async getUserAppState() { return unwrap(await this.client.rpc('mathsexpress_get_user_app_state', {})) || {}; }
   async saveUserAppState(appState={}) { return unwrap(await this.client.rpc('mathsexpress_put_user_app_state', { p_state:appState&&typeof appState==='object'?appState:{} })) || {}; }
