@@ -4289,9 +4289,7 @@ class MathRiftSchoolClient {
   async myConsentStatus() { return unwrap(await this.client.rpc('mathsexpress_my_consent_status', {})) || []; }
   async awardQuestionReward(eventKey,{correct=true,xp=0,gameTimeSeconds=10,yearLevel=null}={}) {
     const payload={p_event_key:String(eventKey||''),p_correct:Boolean(correct),p_xp:Math.max(0,Math.min(60,Number(xp)||0)),p_game_time_seconds:Math.max(0,Math.min(10,Number(gameTimeSeconds)||0)),p_year_level:Number.isFinite(Number(yearLevel))?Math.max(0,Math.min(12,Math.round(Number(yearLevel)))):null};
-    const primary=await this.client.rpc('mathsexpress_award_question_reward_v114',payload);
-    if(!primary.error) return unwrap(primary)||{};
-    if(!/function|schema cache|not found|PGRST202/i.test(String(primary.error?.message||primary.error?.code||''))) throw primary.error;
+    // The _v114 variant was never created in the database; calling it first logged a 404 on every correct answer.
     return unwrap(await this.client.rpc('mathsexpress_award_question_reward',{p_event_key:payload.p_event_key,p_correct:payload.p_correct,p_xp:payload.p_xp,p_game_time_seconds:payload.p_game_time_seconds})) || {};
   }
   async claimDailyMission(missionId) { return unwrap(await this.client.rpc('mathsexpress_claim_daily_mission',{p_mission_id:String(missionId||'')})) || {}; }
