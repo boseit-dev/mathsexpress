@@ -1045,7 +1045,50 @@ function getCurriculumSkill(yearLevel, id) {
 const CURRICULUM_STRANDS = Object.freeze([...new Set(CURRICULUM.map((item) => item.strand))]);
 const CURRICULUM_TOPICS = Object.freeze([...new Set(CURRICULUM.map((item) => item.topic))]);
 
-return {YEARS,CURRICULUM,getCurriculumSkills,getCurriculumSkill,CURRICULUM_STRANDS,CURRICULUM_TOPICS,CURRICULUM_SYSTEMS};
+// NSW outcome alignment (v11.5.28). Codes are from the current NESA syllabuses, collected 12 Oct 2026:
+// Mathematics K–10 Syllabus (2022) and Mathematics Standard / Advanced / Extension 1 11–12 (2024).
+// Each skill maps to the outcome(s) whose focus area matches its title, topic and generator.
+const NSW_FOCUS_NAMES = Object.freeze({RWN:'Representing whole numbers',CSQ:'Combining and separating quantities',FG:'Forming groups',GM:'Geometric measure',
+  '2DS':'Two-dimensional spatial structure','3DS':'Three-dimensional spatial structure',NSM:'Non-spatial measure',DATA:'Data',CHAN:'Chance',RN:'Represents numbers',
+  AR:'Additive relations',MR:'Multiplicative relations',PF:'Partitioned fractions',RQF:'Representing quantity fractions',INT:'Computation with integers',
+  FRC:'Fractions, decimals and percentages',RAT:'Ratios and rates',ALG:'Algebraic techniques',IND:'Indices',EQU:'Equations',LIN:'Linear relationships',
+  LEN:'Length',PYT:'Right-angled triangles (Pythagoras)',ARE:'Area',VOL:'Volume',ANG:'Angle relationships',GEO:'Properties of geometrical figures',
+  DAT:'Data analysis',PRO:'Probability',FIN:'Financial mathematics',NLI:'Non-linear relationships',POL:'Polynomials',LOG:'Logarithms',FNC:'Functions',
+  MAG:'Numbers of any magnitude',TRG:'Trigonometry',CIR:'Circle geometry',NET:'Networks'});
+const NSW_RULES = Object.freeze({
+  0:[[/add|subtract|take away|story/,'MAE-CSQ-01'],[/part|whole|partition|bond/,'MAE-CSQ-02'],[/pattern/,'MAE-FG-01'],[/group|shar/,'MAE-FG-02'],[/position|direction/,'MAE-GM-01'],[/length|long|tall/,'MAE-GM-02'],[/half/,'MAE-GM-03'],[/3d|object|solid/,'MAE-3DS-01'],[/2d|shape/,'MAE-2DS-01'],[/area/,'MAE-2DS-02'],[/volume|capacity/,'MAE-3DS-02'],[/mass|heav/,'MAE-NSM-01'],[/time|clock|day|calendar/,'MAE-NSM-02'],[/data|graph|tally/,'MAE-DATA-01'],[/numeral|read|write/,'MAE-RWN-02'],[/count|number|compar/,'MAE-RWN-01']],
+  1:[[/add|subtract|bond|partition/,'MA1-CSQ-01'],[/multipl|divi|group|shar|array|skip/,'MA1-FG-01'],[/position|direction|map/,'MA1-GM-01'],[/length|metre|centimetre|distance/,'MA1-GM-02'],[/fraction|half|halves|quarter|eighth/,'MA1-GM-03'],[/3d|object|solid/,'MA1-3DS-01'],[/2d|shape|polygon/,'MA1-2DS-01'],[/area/,'MA1-2DS-02'],[/volume|capacity/,'MA1-3DS-02'],[/mass/,'MA1-NSM-01'],[/time|clock|duration|calendar/,'MA1-NSM-02'],[/chance|likely|probab/,'MA1-CHAN-01'],[/interpret/,'MA1-DATA-02'],[/data|graph|tally/,'MA1-DATA-01'],[/money|coin|represent|pattern|odd|even/,'MA1-RWN-02'],[/place value|number|count|order/,'MA1-RWN-01']],
+  2:[[/decimal/,'MA2-RN-02'],[/missing|number sentence|equation|pattern|algebra/,'MA2-AR-02'],[/add|subtract/,'MA2-AR-01'],[/multipl|divi|times|factor|four operations/,'MA2-MR-01'],[/fraction/,'MA2-PF-01'],[/map|grid|position|direction/,'MA2-GM-01'],[/length|perimeter|metre|millimetre/,'MA2-GM-02'],[/angle/,'MA2-GM-03'],[/transform|symmetr|flip|slide|turn/,'MA2-2DS-02'],[/area/,'MA2-2DS-03'],[/3d|net|prism|pyramid|solid/,'MA2-3DS-01'],[/volume|capacity|litre/,'MA2-3DS-02'],[/2d|shape|polygon/,'MA2-2DS-01'],[/mass|gram/,'MA2-NSM-01'],[/time|clock|calendar/,'MA2-NSM-02'],[/chance|probab/,'MA2-CHAN-01'],[/interpret|read/,'MA2-DATA-02'],[/data|graph|statist/,'MA2-DATA-01'],[/.*/,'MA2-RN-01']],
+  3:[[/percent/,'MA3-RN-03'],[/decimal/,'MA3-RN-02'],[/fraction.*(of|quantit)|of a quantity/,'MA3-RQF-02'],[/fraction/,'MA3-RQF-01'],[/pattern|algebra|number sentence|order of operations|equation/,'MA3-MR-02'],[/multipl|divi|factor|multiple|prime|square number/,'MA3-MR-01'],[/add|subtract/,'MA3-AR-01'],[/transl|reflect|rotat|transform/,'MA3-2DS-01'],[/coordinat|cartesian|position/,'MA3-GM-01'],[/length|perimeter|distance/,'MA3-GM-02'],[/angle/,'MA3-GM-03'],[/parallelogram|triangle area|rearrang/,'MA3-2DS-03'],[/area/,'MA3-2DS-02'],[/3d|prism|pyramid|solid|net/,'MA3-3DS-01'],[/volume|capacity/,'MA3-3DS-02'],[/2d|shape|triangle|quadrilateral|polygon|symmetr/,'MA3-2DS-01'],[/mass/,'MA3-NSM-01'],[/time|24-hour|timetable|duration/,'MA3-NSM-02'],[/chance|probab/,'MA3-CHAN-01'],[/interpret|line graph|timeline/,'MA3-DATA-02'],[/data|graph|statist/,'MA3-DATA-01'],[/money|financ|budget/,'MA3-RN-03'],[/.*/,'MA3-RN-01']],
+  4:[[/integer|negative|directed/,'MA4-INT-C-01'],[/scientific notation/,'MA4-IND-C-01'],[/ratio|rate|speed|distance.time/,'MA4-RAT-C-01'],[/index|indices|power|root|prime|squar/,'MA4-IND-C-01'],[/equation|solve/,'MA4-EQU-C-01'],[/linear|gradient|graph|plot|coordinat|pattern/,'MA4-LIN-C-01'],[/algebra|expression|expand|factoris|substitut|like term/,'MA4-ALG-C-01'],[/pythag|hypotenuse/,'MA4-PYT-C-01'],[/perimeter|circumference|circle|length/,'MA4-LEN-C-01'],[/area/,'MA4-ARE-C-01'],[/volume|capacity|prism|cylinder/,'MA4-VOL-C-01'],[/angle|parallel|transversal/,'MA4-ANG-C-01'],[/triangle|quadrilateral|geometr|shape|propert|congruen/,'MA4-GEO-C-01'],[/mean|median|mode|range|centre|average/,'MA4-DAT-C-02'],[/data|statist|histogram|display|sampl/,'MA4-DAT-C-01'],[/probab|chance/,'MA4-PRO-C-01'],[/.*/,'MA4-FRC-C-01']],
+  5:[[/compound|depreciat/,'MA5-FIN-C-02'],[/interest|financ|earning|wage|money|budget/,'MA5-FIN-C-01'],[/variation|direct|inverse/,'MA5-RAT-P-01'],[/rate of change|rates/,'MA5-RAT-P-02'],[/surd|fractional ind/,'MA5-IND-P-02'],[/negative ind/,'MA5-IND-P-01'],[/index|indices|power/,'MA5-IND-C-01'],[/log/,'MA5-LOG-P-01'],[/polynomial|remainder|factor theorem/,'MA5-POL-P-01'],[/function/,'MA5-FNC-P-01'],[/simultaneous|inequalit/,'MA5-EQU-P-02'],[/quadratic.*(equation|solv)|solv.*quadratic/,'MA5-EQU-P-01'],[/equation|solve/,'MA5-EQU-C-01'],[/parabola|exponential|non-linear|quadratic|hyperbola|circle graph/,'MA5-NLI-C-01'],[/midpoint|gradient|distance|linear|straight line/,'MA5-LIN-C-01'],[/factoris|binomial|algebraic fraction/,'MA5-ALG-P-01'],[/algebra|expand|expression/,'MA5-ALG-C-01'],[/scientific notation|significant|magnitude|error/,'MA5-MAG-C-01'],[/bearing|elevation|depression/,'MA5-TRG-C-02'],[/sine rule|cosine rule|non-right|3d|three-dim|trig.*graph|exact/,'MA5-TRG-P-01'],[/trig|pythag/,'MA5-TRG-C-01'],[/surface area|area/,'MA5-ARE-C-01'],[/cone|sphere|pyramid/,'MA5-VOL-P-01'],[/volume/,'MA5-VOL-C-01'],[/circle geometry|chord|tangent|circle theorem/,'MA5-CIR-P-01'],[/proof|congruen/,'MA5-GEO-P-01'],[/similar|scale|geometr|angle|shape/,'MA5-GEO-C-01'],[/network|graph theory/,'MA5-NET-P-01'],[/bivariate|scatter|correlat/,'MA5-DAT-C-02'],[/venn|two-way|conditional/,'MA5-PRO-P-01'],[/probab|chance/,'MA5-PRO-C-01'],[/.*/,'MA5-DAT-C-01']],
+});
+const NSW_STAGE6 = Object.freeze({
+  Standard:{11:[[/linear|model/,'MST-11-02'],[/earn|tax|wage/,'MST-11-03'],[/budget|purchas|financ|money|annuit|interest/,'MST-11-04'],[/network/,'MST-11-07'],[/time|location|latitude/,'MST-11-06'],[/measure|scale|area|volume|trig/,'MST-11-05'],[/data|statist|probab|sampl/,'MST-11-08'],[/.*/,'MST-11-01']],
+            12:[[/annuit/,'MST-12-S2-03'],[/compound|depreciat|interest|financ|loan|credit/,'MST-12-S2-02'],[/network|critical path/,'MST-12-S2-07'],[/trig|pythag/,'MST-12-S2-04'],[/ratio|rate/,'MST-12-S2-05'],[/bivariate|scatter|correlat/,'MST-12-S2-08'],[/normal|z-score|distribution/,'MST-12-S2-10'],[/probab|chance|simulat/,'MST-12-S2-09'],[/data|statist|sampl/,'MST-12-S2-08'],[/.*/,'MST-12-S2-01']]},
+  Advanced:{11:[[/trig.*(function|equation|identit)|periodic/,'MAV-11-05'],[/trig/,'MAV-11-04'],[/transform/,'MAV-11-03'],[/differen|derivat|calculus/,'MAV-11-06'],[/log|exponential law/,'MAV-11-07'],[/exponential/,'MAV-11-08'],[/probab|chance/,'MAV-11-09'],[/data|statist/,'MAV-11-10'],[/function|polynomial|graph/,'MAV-11-02'],[/.*/,'MAV-11-01']],
+            12:[[/trig/,'MAV-12-01'],[/sequence|series/,'MAV-12-03'],[/integrat|area under/,'MAV-12-05'],[/optimis|rates of change|motion|stationary|curve sketch/,'MAV-12-06'],[/differen|derivat|calculus/,'MAV-12-04'],[/distribution|normal|random variable|probab|statist/,'MAV-12-07'],[/financ|annuit|interest/,'MAV-12-08'],[/.*/,'MAV-12-02']]},
+  Extension:{11:[[/permutation|combination|counting/,'ME1-11-04'],[/binomial/,'ME1-11-05'],[/polynomial|remainder|zeroes|roots/,'ME1-11-02'],[/trig|3d/,'ME1-11-03'],[/.*/,'ME1-11-01']],
+             12:[[/induction/,'ME1-12-01'],[/vector|projectile/,'ME1-12-02'],[/inverse trig/,'ME1-12-03'],[/volume|rates|polynomial/,'ME1-12-05'],[/binomial|sampling|distribution|probab/,'ME1-12-06'],[/.*/,'ME1-12-04']]},
+});
+function nswOutcomesForSkill(skill) {
+  if (!skill) return [];
+  const y = Number(skill.yearLevel);
+  const text = `${skill.title||''} ${skill.topic||''} ${skill.generator||''} ${skill.strand||''}`.toLowerCase();
+  let rules;
+  if (y >= 11) { const path = /extension/i.test(skill.pathway||'') ? 'Extension' : /advanced/i.test(skill.pathway||'') ? 'Advanced' : 'Standard'; rules = NSW_STAGE6[path][y >= 12 ? 12 : 11]; }
+  else rules = NSW_RULES[y === 0 ? 0 : y <= 2 ? 1 : y <= 4 ? 2 : y <= 6 ? 3 : y <= 8 ? 4 : 5];
+  const hit = (rules||[]).find(([re]) => re.test(text));
+  const code = hit ? hit[1] : null;
+  return code ? [code, 'MAO-WM-01'] : ['MAO-WM-01'];
+}
+function nswOutcomeLabel(code) {
+  const focus = String(code||'').split('-')[1];
+  if (/^MST|^MAV|^ME1/.test(code)) return /^MST/.test(code)?'Mathematics Standard 11–12 (2024)':/^MAV/.test(code)?'Mathematics Advanced 11–12 (2024)':'Mathematics Extension 1 11–12 (2024)';
+  if (code === 'MAO-WM-01') return 'Working mathematically';
+  return NSW_FOCUS_NAMES[focus] || 'Mathematics K–10 (2022)';
+}
+return {YEARS,CURRICULUM,getCurriculumSkills,getCurriculumSkill,CURRICULUM_STRANDS,CURRICULUM_TOPICS,CURRICULUM_SYSTEMS,nswOutcomesForSkill,nswOutcomeLabel};
 })();
 // module: src/data/task-library.js
 __modules["src/data/task-library.js"]=(()=>{

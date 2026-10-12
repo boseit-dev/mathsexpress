@@ -1,4 +1,4 @@
-# MathsExpress — still to do after v11.5.27 (12 October 2026)
+# MathsExpress — still to do after v11.5.28 (12 October 2026)
 
 This tracks `CHECKLIST.md` (79 items) and `MathsExpress.pdf`. **Done** means done in the source and tested. None of it is live until it is deployed.
 
@@ -68,7 +68,7 @@ This tracks `CHECKLIST.md` (79 items) and `MathsExpress.pdf`. **Done** means don
 | Design | Level/XP/coins strip; Clove throughout the app with animations; full signed-in check of every screen in each theme |
 | Can't be done as written | Blocking all AI use, screenshots or phone cameras isn't possible in a browser. The possible version is done: fullscreen, question swapping, copy and right-click blocking, and focus tracking. A literal view of a student's screen isn't possible either; the live class view is the closest version. |
 
-## Update after v11.5.27
+## Update after v11.5.28
 Done since v11.5.26 (see V11.5.27-SELF-DIRECTED-AND-PDF-ITEMS.md):
 - self-directed accounts;
 - Sign out button removed from the header;
@@ -99,3 +99,14 @@ Still open:
 - **NSW outcome codes.** These need the official NSW syllabus outcome list to map against.
 - **Emails from MathsExpress.** Verification emails need SMTP set up in Supabase.
 - **Your decisions:** the auto-complete bot, and what to do with the old marking data.
+
+## Update after v11.5.28
+- Done:
+  - Cambridge PDF and catalogue removed, and the built-in MathsExpress textbook is the only textbook;
+  - old misgraded check-ins purged (the server had none);
+  - owner-only auto-complete bot;
+  - NSW outcome codes from the latest syllabuses on every skill.
+- **You need to:**
+  - force-push `gh-push` (command in V11.5.28-TEXTBOOK-OUTCOMES-BOT.md);
+  - optionally ask GitHub Support to purge old pull request refs and caches;
+  - approve 6 migrations for production (20261011_01, 20261011_02, 20261012_01, 20261013_01, 20261014_01, 20261015_01).

@@ -6094,3 +6094,11 @@ body.mx-reduced-motion .clove-mascot,body.mx-reduced-motion .clove-mascot img{an
 .pdf-draw-tools{display:inline-flex;gap:6px;align-items:center}
 .pdf-draw-tools input[type=color]{width:34px;height:30px;border:0;background:none;padding:0}
 .signup-class-code .optional-tag,.optional-tag{display:inline-block!important;width:auto!important;justify-self:start;vertical-align:middle}
+.textbook-draw-layer{position:absolute;left:0;top:0;pointer-events:none;z-index:5;touch-action:none}
+.textbook-draw-layer.active{pointer-events:auto;cursor:crosshair}
+.textbook-reader-page:has(.textbook-draw-layer.active){outline:2px dashed #d93636;outline-offset:4px}
+.textbook-draw-colour{width:32px;height:30px;border:0;background:none;padding:0;vertical-align:middle}
+.autocomplete-bot-button{position:fixed;right:16px;bottom:16px;z-index:70;padding:10px 16px;border-radius:999px;border:0;background:#24345f;color:#fff;font:700 14px/1 inherit;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.owner-bot-controls span{font-weight:700;align-self:center}
+.nsw-outcome{display:inline-block;margin-left:4px;padding:1px 7px;border-radius:6px;background:#e8eefc;color:#1f3d8a;font:700 11px/1.5 ui-monospace,Menlo,monospace;letter-spacing:.02em;vertical-align:middle}
+:where(.mx-dark,.mx-theme-dark) .nsw-outcome{background:#1f2a48!important;color:#b9cbff!important}
