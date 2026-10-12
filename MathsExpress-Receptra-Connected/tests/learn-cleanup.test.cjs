@@ -28,5 +28,5 @@ test('new release refreshes script and service worker cache',()=>{
   const html=fs.readFileSync(path.join(root,'app.html'),'utf8');
   const sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
   assert.match(html,/deploy-app\.js\?v=11\.5\.34/);
-  assert.match(sw,/mathsexpress-v11-5-34-class-controls/);
+  assert.match(sw,/mathsexpress-v11-5-35-mc-freeze-and-caching/);
 });

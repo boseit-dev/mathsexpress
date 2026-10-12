@@ -54,8 +54,15 @@ test('school surfaces are light blue in light mode and readable in dark mode',()
   assert.match(css,/\.school-page .school-section/);
   assert.match(css,/\.mx-home-sidebar-panel/);
 });
-test('release assets bumped to v11.5.34',()=>{
-  assert.match(html,/v11\.5\.34/);
-  assert.match(html,/deploy-app\.js\?v=11\.5\.34/);
-  assert.match(fs.readFileSync(path.join(root,'public/service-worker.js'),'utf8'),/mathsexpress-v11-5-34/);
+// Was pinned to the literal v11.5.34, so it failed on every later release
+// rather than catching the mistake it was written for. The real invariant is
+// that the service-worker cache name tracks the app's newest asset version: if
+// it does not, a release ships to browsers that keep serving the old copy.
+test('the service-worker cache name matches the newest asset version',()=>{
+  const sw=fs.readFileSync(path.join(root,'public/service-worker.js'),'utf8');
+  const versions=[...html.matchAll(/\?v=(\d+\.\d+\.\d+)/g)].map(m=>m[1]);
+  assert.ok(versions.length>=8,'app.html should cache-bust every bundle');
+  const newest=versions.sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).pop();
+  assert.match(sw,new RegExp(`mathsexpress-v${newest.replace(/\./g,'-')}\\b`),
+    `service worker should be mathsexpress-v${newest.replace(/\./g,'-')}-*, newest asset is ${newest}`);
 });
