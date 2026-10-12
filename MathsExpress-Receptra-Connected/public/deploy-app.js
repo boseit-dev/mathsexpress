@@ -1026,6 +1026,14 @@ function clearAuthGate() {
   if (root) root.innerHTML = '';
 }
 
+// Separate K–6 and 7–12 sign-in portals (?portal=primary|secondary), remembered on this device.
+function requestedAuthPortal(){
+  try{
+    const p=new URL(globalThis.location.href).searchParams.get('portal');
+    if(p==='primary'||p==='secondary'){ localStorage.setItem('mathsexpress-auth-portal',p); return p; }
+    const saved=localStorage.getItem('mathsexpress-auth-portal'); return saved==='primary'||saved==='secondary'?saved:'';
+  }catch{ return ''; }
+}
 function requestedAuthMode() {
   try { return new URLSearchParams(globalThis.location?.search || '').get('auth') === 'signup' ? 'signup' : 'login'; }
   catch { return 'login'; }
@@ -1060,14 +1068,16 @@ function showAuthGate(message = '') {
   try { if(globalThis.speechSynthesis?.speaking || globalThis.speechSynthesis?.pending) globalThis.speechSynthesis.cancel(); } catch {}
   ensureAuthStateListener();
   const signupMode=requestedAuthMode()==='signup';
-  try { document.title=`MathsExpress — ${signupMode?'Create account':'Log in'}`; } catch {}
+  const portal=requestedAuthPortal();
+  const primary=portal==='primary';
+  try { document.title=`MathsExpress ${primary?'Primary':portal==='secondary'?'Secondary':''} — ${signupMode?'Create account':'Log in'}`.replace('  ',' '); } catch {}
   root.innerHTML = `
     <div class="auth-backdrop">
-      <section class="auth-card auth-card-v1149" aria-label="MathsExpress account sign in">
+      <section class="auth-card auth-card-v1149 ${portal?`portal-${portal}`:''}" aria-label="MathsExpress account sign in">
         <aside class="auth-art auth-art-v1149" aria-hidden="true">
           <div class="auth-brand-lockup"><div class="auth-logo"><img src="./assets/mx-logo.png" alt="" aria-hidden="true"></div><div><strong>MathsExpress</strong><small>Learn · Practise · Progress</small></div></div>
           <div class="auth-clove-wrap">${cloveHtml('happy')}</div>
-          <div class="auth-art-copy"><span class="eyebrow">Your maths workspace</span><h1>Everything in one place.</h1><p>Assignments, practice, progress and rewards stay connected to your account.</p></div>
+          <div class="auth-art-copy">${primary?'<span class="eyebrow">Primary · K–6</span><h1>Let’s do some maths!</h1><p>Practise with Clove, earn rewards and finish the work your teacher sets.</p>':portal==='secondary'?'<span class="eyebrow">Secondary · Years 7–12</span><h1>Everything in one place.</h1><p>Assignments, tests, textbooks and progress for Years 7–12.</p>':'<span class="eyebrow">Your maths workspace</span><h1>Everything in one place.</h1><p>Assignments, practice, progress and rewards stay connected to your account.</p>'}</div>
           <div class="auth-feature-grid">
             <div class="auth-feature"><span>✓</span><div><b>Your year level</b><small>See learning that matches your class.</small></div></div>
             <div class="auth-feature"><span>✓</span><div><b>Saved progress</b><small>Keep your work across devices.</small></div></div>
@@ -1076,6 +1086,7 @@ function showAuthGate(message = '') {
         </aside>
         <div class="auth-forms auth-forms-v1149">
           ${`
+          <nav class="auth-portal-switch" aria-label="Choose your school portal"><a href="./app.html?auth=${signupMode?'signup':'login'}&portal=primary" class="${primary?'active':''}">Primary K–6</a><a href="./app.html?auth=${signupMode?'signup':'login'}&portal=secondary" class="${portal==='secondary'?'active':''}">Secondary 7–12</a></nav>
           <div class="auth-tabs"><button type="button" class="${signupMode?'':'active'}" data-auth-tab="login">Log in</button><button type="button" class="${signupMode?'active':''}" data-auth-tab="signup">Create account</button></div>
           <form id="auth-login-form" class="auth-form" ${signupMode?'hidden':''}>
             <div class="auth-form-head"><span class="eyebrow">Welcome back</span><h2>Log in to MathsExpress</h2><p>Continue from where you left off.</p></div>
@@ -1521,6 +1532,49 @@ async function openPlatformHealthModal() {
   } catch(error){ if(root) root.innerHTML=`<div class="school-error"><strong>Service check failed</strong><p>${escapeHtml(error.message||'Try again.')}</p></div>`; }
 }
 
+// Live class pulse: doing well / struggling / inactive, then drill into a group and a student.
+let livePulse={classId:'',data:null,group:'',studentId:'',timer:null};
+function livePulseGroup(st){
+  const now=Date.now();
+  const focusAge=st.focus_updated_at?now-Date.parse(st.focus_updated_at):Infinity;
+  const attemptAge=st.last_attempt_at?now-Date.parse(st.last_attempt_at):Infinity;
+  if(['hidden','away'].includes(st.state)&&focusAge<5*60000)return {group:'inactive',why:'MathsExpress is hidden or in another tab'};
+  if(focusAge>2*60000&&attemptAge>10*60000)return {group:'inactive',why:'No activity in the last 10 minutes'};
+  const last=Array.isArray(st.last6)?st.last6:[];
+  const right=last.filter(Boolean).length;
+  if(last.length>=3&&last.slice(0,3).every(x=>!x))return {group:'struggling',why:'Last 3 answers were wrong'};
+  if(last.length>=4&&right/last.length<0.5)return {group:'struggling',why:`${right}/${last.length} of recent answers correct`};
+  return {group:'well',why:last.length?`${right}/${last.length} of recent answers correct`:'Working, no answers yet'};
+}
+function livePulseHtml(){
+  const rows=(livePulse.data?.students||[]).map(st=>({...st,...livePulseGroup(st)}));
+  const groups={well:rows.filter(r=>r.group==='well'),struggling:rows.filter(r=>r.group==='struggling'),inactive:rows.filter(r=>r.group==='inactive')};
+  const labels={well:['Doing well','pulse-well'],struggling:['Struggling','pulse-struggling'],inactive:['Inactive','pulse-inactive']};
+  const tiles=`<div class="pulse-tiles">${Object.entries(groups).map(([k,list])=>`<button class="pulse-tile ${labels[k][1]} ${livePulse.group===k?'active':''}" data-action="pulse-group" data-group="${k}"><b>${list.length}</b><span>${labels[k][0]}</span></button>`).join('')}</div>`;
+  const rules='<p class="muted pulse-rules">Inactive: MathsExpress hidden/in another tab, or no activity for 10 minutes. Struggling: last 3 answers wrong, or under half of the last 4–6 correct. MathsExpress cannot see other apps, websites or the screen.</p>';
+  let detail='';
+  const st=rows.find(r=>String(r.student_id)===String(livePulse.studentId));
+  if(st){
+    const mins=Math.round((Number(st.time_on_task_seconds)||0)/60);
+    detail=`<section class="pulse-student"><button class="btn ghost small" data-action="pulse-group" data-group="${st.group}">← ${labels[st.group][0]}</button><h3>${escapeHtml(st.display_name)}</h3><div class="pulse-facts"><span><b>${escapeHtml(st.state)}</b> focus</span><span><b>${Number(st.hidden_count)||0}</b> times left the tab</span><span><b>${Number(st.recent_correct)||0}/${Number(st.recent_attempts)||0}</b> correct (30 min)</span><span><b>${mins} min</b> answering (30 min)</span></div><p class="muted">${escapeHtml(st.assignment_title?`Working on: ${st.assignment_title}`:'Not in an assignment right now')} · ${escapeHtml(st.why)}</p><h4>Recent wrong answers</h4><div class="simple-list">${(st.wrong||[]).map(w=>`<div><strong>${escapeHtml(w.assignment||'Task')} · ${escapeHtml(String(w.question_id||''))}</strong><span>Answered “${escapeHtml(w.answer||'—')}” · ${escapeHtml(new Date(w.at).toLocaleString())}${w.feedback?` · ${escapeHtml(w.feedback)}`:''}</span></div>`).join('')||'<p>No wrong answers in the last 14 days.</p>'}</div></section>`;
+  } else if(livePulse.group){
+    const list=groups[livePulse.group]||[];
+    detail=`<div class="simple-list pulse-list">${list.map(r=>`<button class="pulse-row" data-action="pulse-student" data-student-id="${escapeHtml(String(r.student_id))}"><strong>${escapeHtml(r.display_name)}</strong><span>${escapeHtml(r.why)}${r.assignment_title?` · ${escapeHtml(r.assignment_title)}`:''}</span></button>`).join('')||'<p>No students in this group.</p>'}</div>`;
+  }
+  return `${tiles}${rules}${detail}<p class="muted pulse-updated">Updated ${escapeHtml(new Date(livePulse.data?.generated_at||Date.now()).toLocaleTimeString())} · refreshes every 10 seconds</p>`;
+}
+async function refreshLivePulse(){
+  const body=document.getElementById('live-pulse-body'); if(!body){clearInterval(livePulse.timer);livePulse.timer=null;return;}
+  try{ const {data,error}=await accountClient.ensureClient().rpc('mathsexpress_class_live_pulse',{p_class_id:String(livePulse.classId)}); if(error)throw error; livePulse.data=data; const b=document.getElementById('live-pulse-body'); if(b)b.innerHTML=livePulseHtml(); }
+  catch(error){ body.innerHTML=`<p>${escapeHtml(error?.message||'Live class data is unavailable.')}</p>`; }
+}
+function openLivePulse(classId){
+  if(!canUseTeacherHub(account))return;
+  if(!classId)return showToast('Choose a class','Open a class first.');
+  clearInterval(livePulse.timer); livePulse={classId,data:null,group:'',studentId:'',timer:null};
+  openSimpleModal('Live class','<div id="live-pulse-body"><div class="school-loading"><span class="spinner"></span><strong>Loading live class…</strong></div></div>');
+  void refreshLivePulse(); livePulse.timer=setInterval(()=>void refreshLivePulse(),10000);
+}
 async function openClassFocusMonitor(classId) {
   if(!canUseTeacherHub(account)) return;
   openSimpleModal('Student focus monitor','<div class="school-loading"><span class="spinner"></span><strong>Loading focus status…</strong></div>');
@@ -2100,6 +2154,17 @@ function renderCompleteSuite() {
   return `<section class="ultimate-section complete-suite"><div class="complete-suite-intro calm-card"><div><span class="eyebrow">MathsExpress Complete</span><h2>Advanced learning, teaching and school platform tools</h2><p>These tools stay out of Home so the main experience remains simple. External provider integrations are clearly labelled until a real provider is connected.</p></div><span class="complete-count">${completeGroups.reduce((n,g)=>n+g.items.length,0)} tools</span></div>${completeGroups.map(group=>`<section class="complete-group"><div class="section-heading"><div><span class="eyebrow">${group.icon} Complete suite</span><h2>${escapeHtml(group.title)}</h2></div></div><div class="complete-grid">${group.items.map(([title,desc,action])=>`<article class="complete-card"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(desc)}</p><button class="btn secondary small" data-action="${escapeHtml(action)}">Open</button></article>`).join('')}</div></section>`).join('')}</section>`;
 }
 
+let toolSearchQuery='';
+function applyToolSearchFilter(){
+  const view=document.getElementById('app-view'); if(!view)return;
+  const q=toolSearchQuery.trim().toLowerCase();
+  const items=[...view.querySelectorAll('.ultimate-section .ultimate-card,.ultimate-section .access-toggle')];
+  let shown=0;
+  for(const el of items){ const hit=!q||el.textContent.toLowerCase().includes(q); el.hidden=!hit; if(hit)shown++; }
+  view.querySelectorAll('.ultimate-section').forEach(sec=>{ if(!q){sec.hidden=false;return;} sec.hidden=!sec.querySelector('.ultimate-card:not([hidden]),.access-toggle:not([hidden])'); });
+  view.querySelectorAll('.ultimate-section .section-heading,.ultimate-section .mastery-map-grid').forEach(el=>{el.hidden=Boolean(q);});
+  const empty=document.getElementById('tool-search-empty'); if(empty){empty.hidden=!q||shown>0; const sp=empty.querySelector('span'); if(sp)sp.textContent=toolSearchQuery.trim();}
+}
 function renderTools() {
   const view = document.getElementById('app-view');
   const mistakes = currentMistakes();
@@ -2109,11 +2174,14 @@ function renderTools() {
     ? [['study','Study'],['assessment','Tests & homework'],['live','Live class'],['school','School tools'],['access','Accessibility'],['complete','Complete suite']]
     : [['study','Study'],['assessment','Tests & homework'],['access','Accessibility']];
   if (!tabs.some(([id])=>id===activeToolTab)) activeToolTab='study';
+  const searching=Boolean(toolSearchQuery.trim());
+  const toolTabShown=(id)=>searching?tabs.some(([t])=>t===id):activeToolTab===id;
   view.innerHTML = `<div class="page ultimate-page">
     <div class="page-head"><div><span class="eyebrow">MathsExpress Power Tools</span><h1>Everything you need, without crowding Home.</h1><p>Study smarter, create assessments, run live lessons, manage school tools and personalise accessibility.</p></div><button class="btn secondary" data-route="calendar">Calendar & notifications</button></div>
-    <div class="ultimate-tabs">${tabs.map(([id,label])=>`<button class="${activeToolTab===id?'active':''}" data-action="tool-tab" data-tab="${id}">${label}</button>`).join('')}</div>
+    <div class="tool-search"><input id="tool-search-input" type="search" placeholder="Search all tools – e.g. calculator, poll, timer" value="${escapeHtml(toolSearchQuery)}" aria-label="Search tools" autocomplete="off"></div><p class="tool-search-empty" id="tool-search-empty" hidden>No tools match “<span></span>”.</p>
+    <div class="ultimate-tabs" ${searching?'hidden':''}>${tabs.map(([id,label])=>`<button class="${activeToolTab===id?'active':''}" data-action="tool-tab" data-tab="${id}">${label}</button>`).join('')}</div>
 
-    ${activeToolTab==='study'?`<section class="ultimate-section">
+    ${toolTabShown('study')?`<section class="ultimate-section">
       <div class="ultimate-grid">
         ${flags.helper?`<article class="ultimate-card feature-hero"><span>✦</span><div><h3>Maths Helper</h3><p>Ask full maths questions, get clear step-by-step explanations, hints, worked examples and feedback on your working.</p></div><button class="btn primary" data-action="open-tutor">Open helper</button></article>`:''}
         <article class="ultimate-card"><span>↺</span><h3>Mistake Book</h3><p>${mistakes.length ? `${mistakes.length} mistake pattern${mistakes.length===1?'':'s'} ready for revision.` : 'Wrong answers are automatically collected here for focused revision.'}</p><button class="btn secondary" data-action="open-mistakes">Review mistakes</button></article>
@@ -2126,7 +2194,7 @@ function renderTools() {
       <div class="mastery-map-grid">${curriculumMasteryCards()}</div>
     </section>`:''}
 
-    ${activeToolTab==='assessment'?`<section class="ultimate-section"><div class="ultimate-grid">
+    ${toolTabShown('assessment')?`<section class="ultimate-section"><div class="ultimate-grid">
       <article class="ultimate-card feature-hero"><span>📝</span><div><h3>Exam Mode</h3><p>Timed assessment setup with hints off, calculator rules, reading time and a score summary.</p></div><button class="btn primary" data-action="open-exam-generator">Create exam</button></article>
       <article class="ultimate-card"><span>▤</span><h3>Past-Test Generator</h3><p>Choose a year, topic, difficulty and question count to make a fresh test.</p><button class="btn secondary" data-action="open-test-generator">Generate test</button></article>
       <article class="ultimate-card"><span>⌁</span><h3>Homework Generator</h3><p>Build a ready-to-assign pack instantly from the 1,000,000-task library.</p><button class="btn secondary" data-action="open-homework-generator">Create homework</button></article>
@@ -2140,7 +2208,7 @@ function renderTools() {
       <article class="ultimate-card"><span>↻</span><h3>Recurring Homework</h3><p>Prepare weekly, fortnightly or daily homework dates automatically.</p><button class="btn secondary" data-action="open-recurring-homework">Plan recurring work</button></article>
     </div></section>`:''}
 
-    ${activeToolTab==='live'?`<section class="ultimate-section"><div class="ultimate-grid">
+    ${toolTabShown('live')?`<section class="ultimate-section"><div class="ultimate-grid">
       <article class="ultimate-card feature-hero"><span>●</span><div><h3>Live Lesson Mode</h3><p>Send one question to the class and see answers arrive live.</p></div><button class="btn primary" data-action="start-live-lesson">Start live lesson</button></article>
       <article class="ultimate-card"><span>?</span><h3>Quick Poll</h3><p>Ask a fast confidence or understanding question.</p><button class="btn secondary" data-action="open-poll">Create poll</button></article>
       <article class="ultimate-card"><span>✓</span><h3>Exit Ticket</h3><p>Create a three-question end-of-lesson check.</p><button class="btn secondary" data-action="create-exit-ticket">Create exit ticket</button></article>
@@ -2153,7 +2221,7 @@ function renderTools() {
     ${livePoll?`<div class="calm-card live-preview"><span class="eyebrow">Active poll</span><h3>${escapeHtml(livePoll.question)}</h3>${livePoll.options.map(o=>`<button class="poll-option" data-action="vote-poll" data-option="${o.id}">${mathHtml(o.label)} <b>${o.votes}</b></button>`).join('')}</div>`:''}
     </section>`:''}
 
-    ${activeToolTab==='school'?`<section class="ultimate-section"><div class="ultimate-grid">
+    ${toolTabShown('school')?`<section class="ultimate-section"><div class="ultimate-grid">
       <article class="ultimate-card feature-hero"><span>⌂</span><div><h3>School Administration</h3><p>Classes, co-teachers, student transfers, staff roles, branding, reports and school settings.</p></div><button class="btn primary" data-route="teacher-hub">Open School</button></article>
       <article class="ultimate-card"><span>👥</span><h3>Co-teachers & Relief</h3><p>Add another teacher to a class or grant temporary limited class access.</p><button class="btn secondary" data-action="open-staff-tools">Manage access</button></article>
       <article class="ultimate-card"><span>▦</span><h3>Head Teacher Dashboard</h3><p>Compare maths classes, curriculum coverage and intervention needs.</p><button class="btn secondary" data-action="open-head-dashboard">Open dashboard</button></article>
@@ -2171,15 +2239,16 @@ function renderTools() {
       <article class="ultimate-card"><span>✉</span><h3>Parent Emails</h3><p>Add parent contacts and send progress reports or teacher messages directly by email.</p><button class="btn secondary" data-action="open-parent-accounts">Manage parent emails</button></article>
     </div></section>`:''}
 
-    ${activeToolTab==='access'?`<section class="ultimate-section"><div class="accessibility-panel">
+    ${toolTabShown('access')?`<section class="ultimate-section"><div class="accessibility-panel">
       ${[['darkMode','Dark mode'],['highContrast','High contrast'],['largeText','Larger text'],['reducedMotion','Reduced motion'],['dyslexiaFriendly','Dyslexia-friendly text'],['readAloud','Read aloud by default']].map(([key,label])=>`<label class="access-toggle"><span><strong>${label}</strong><small>${key==='readAloud'?'Questions can be spoken with the browser speech engine.':'Saved on this device for this account.'}</small></span><input type="checkbox" data-action="toggle-access" data-pref="${key}" ${(state.accessibilityPrefs||{})[key]?'checked':''}></label>`).join('')}
       <article class="ultimate-card feature-hero"><span>🎨</span><div><h3>Theme & background</h3><p>Choose colours, gradients, patterns, card transparency or your own background picture.</p></div><button class="btn primary" data-action="open-theme-customizer">Customise</button></article>
       <article class="ultimate-card"><span>🔊</span><h3>Read this page</h3><p>Uses your browser’s built-in speech synthesis.</p><button class="btn secondary" data-action="read-current-page">Read page</button></article>
       <article class="ultimate-card"><span>⌨</span><h3>Keyboard-first navigation</h3><p>All important buttons remain native keyboard-focusable controls.</p></article>
     </div></section>`:''}
 
-    ${activeToolTab==='complete'?renderCompleteSuite():''}
+    ${toolTabShown('complete')?renderCompleteSuite():''}
   </div>`;
+  applyToolSearchFilter();
 }
 
 function renderCalendar() {
@@ -2518,7 +2587,8 @@ function lessonSupportHtml() {
 function scientificCalculatorHtml() {
   const keys=[
     ['AC','clear','utility'],['DEL','delete','utility'],['(', '(','utility'],[')',')','utility'],
-    ['sin','sin(','function'],['cos','cos(','function'],['tan','tan(','function'],['sqrt','sqrt(','function'],
+    ['sin','sin(','function'],['cos','cos(','function'],['tan','tan(','function'],['√','sqrt(','function'],
+    ['abs','abs(','function'],['x³','^3','function'],['1/x','1/(','function'],['×10ⁿ','*10^','function'],
     ['7','7','number'],['8','8','number'],['9','9','number'],['÷','/','operator'],
     ['4','4','number'],['5','5','number'],['6','6','number'],['×','*','operator'],
     ['1','1','number'],['2','2','number'],['3','3','number'],['−','-','operator'],
@@ -2937,12 +3007,12 @@ function renderAiChatMessages() {
     const isUser=m.role==='user';
     const isError=Boolean(m.error);
     const body=isUser ? `<p>${mathHtml(m.text).replace(/\n/g,'<br>')}</p>` : `<div class="ai-response-body">${renderAiFormattedText(m.text)}</div>`;
-    return `<div class="ai-chat-message ${isUser?'user':'assistant'}${isError?' ai-chat-error':''}"><div class="ai-chat-avatar">${isUser?'You':'AI'}</div><div class="ai-chat-bubble"><small>${isUser?'You':(isError?'Connection error':'MathsExpress AI')}</small>${body}</div></div>`;
+    return `<div class="ai-chat-message ${isUser?'user':'assistant'}${isError?' ai-chat-error':''}"><div class="ai-chat-avatar" aria-hidden="true">${isUser?'You':'🦊'}</div><div class="ai-chat-bubble"><small>${isUser?'You':(isError?'Connection error':'Clove')}</small>${body}</div></div>`;
   }).join('');
 }
 
 function renderAiThinking() {
-  return `<div class="ai-chat-message assistant ai-thinking-message"><div class="ai-chat-avatar">AI</div><div class="ai-chat-bubble"><small>MathsExpress AI</small><div class="ai-thinking" aria-label="MathsExpress AI is thinking"><span></span><span></span><span></span><b>Thinking through your question…</b></div></div></div>`;
+  return `<div class="ai-chat-message assistant ai-thinking-message"><div class="ai-chat-avatar" aria-hidden="true">🦊</div><div class="ai-chat-bubble"><small>Clove</small><div class="ai-thinking" aria-label="Clove is thinking"><span></span><span></span><span></span><b>Thinking through your question…</b></div></div></div>`;
 }
 
 function aiContextForRequest(context) {
@@ -3071,7 +3141,7 @@ function openAiHelperModal() {
   const context=currentAiContext();
   if(!aiChatHistory.length){ aiChatHistory=[]; }
   const contextLabel=context.prompt?`Current question: ${context.prompt}`:`Current focus: ${context.topic}`;
-  openSimpleModal('MathsExpress AI Helper',`<div class="ai-helper-shell">
+  openSimpleModal('Clove · maths helper',`<div class="ai-helper-shell">
     <div class="ai-context-strip"><span>AI</span><div><strong>${escapeHtml(context.topic)}</strong><small>${escapeHtml(contextLabel)}</small></div>${context.testMode||!context.tutorAllowed?'<b class="ai-lock-pill">Locked for test</b>':'<b id="ai-service-status" class="ai-ready-pill">Checking AI…</b>'}</div>
     <div id="ai-chat-log" class="ai-chat-log" aria-live="polite">${renderAiChatMessages()}</div>
     <div class="ai-suggestion-row">
@@ -3246,7 +3316,20 @@ async function hydrateHomeAssignedTasks(){
   const mount=document.getElementById('home-assigned-tasks-body');
   if(!mount || !account.authenticated) return;
   if(account.profile?.role!=='player'){
-    mount.innerHTML=`<div class="home-admin-shortcuts"><div><strong>${escapeHtml(platformRoleLabel(account.profile?.role))} workspace</strong><span>Student assignments do not appear on admin accounts.</span></div><button class="btn primary small" data-route="teacher-hub">Open School tools</button></div>`;
+    // Staff and admin accounts see the latest tasks set in their classes (and any tasks assigned to them).
+    const head=`<div class="home-admin-shortcuts"><div><strong>${escapeHtml(platformRoleLabel(account.profile?.role))} workspace</strong><span>Latest tasks in your classes.</span></div><button class="btn primary small" data-route="teacher-hub">Open School tools</button></div>`;
+    mount.innerHTML=head+'<div class="school-empty">Loading class tasks…</div>';
+    try{
+      const school=getSchoolClient();
+      const [own,classes]=await Promise.all([school.listStudentAssignments().catch(()=>[]),withStartupTimeout(school.listTeacherClasses(),5000,'Classes took too long to load.').catch(()=>[])]);
+      const live=(classes||[]).filter(c=>!c.archived).slice(0,12);
+      const groups=await Promise.all(live.map(c=>withStartupTimeout(school.listClassAssignments(c.id),3500,'Assignments took too long to load.').then(rows=>rows.map(r=>({...r,class_name:c.name||c.class_name||'Class'}))).catch(()=>[])));
+      if(routeFromHash().route!=='home')return;
+      const staffRows=groups.flat().sort((a,b)=>String(b.created_at||'').localeCompare(String(a.created_at||''))).slice(0,6);
+      const ownRows=(own||[]).map(effectiveStudentAssignment).slice(0,3);
+      const staffHtml=staffRows.map(a=>`<article class="home-assigned-task-card mx-home-task-card ${/test/i.test(a.assignment_type||'')?'test':''}"><div class="mx-home-task-visual" aria-hidden="true"><span>${/test/i.test(a.assignment_type||'')?'T':'∑'}</span></div><div class="mx-home-task-meta"><span class="mx-home-task-type">${escapeHtml(a.assignment_type||'Practice')}</span><span class="mx-home-task-due">${a.due_at?`Due ${escapeHtml(formatSchoolDate(a.due_at))}`:'No due date'}</span></div><h3>${escapeHtml(a.title||'Class task')}</h3><p>${escapeHtml(a.class_name)} · ${Number(a.question_count)||10} questions</p><div class="mx-home-task-footer"><span></span><div class="mx-home-task-action"><button class="btn ghost small" data-route="teacher-hub">Open class</button></div></div></article>`).join('');
+      mount.innerHTML=head+(ownRows.length||staffRows.length?`<div class="home-assigned-task-grid">${ownRows.map(homeAssignedTaskCard).join('')}${staffHtml}</div>`:'<div class="school-empty">No tasks have been set in your classes yet.</div>');
+    }catch{ mount.innerHTML=head+'<div class="school-empty">Class tasks could not be loaded right now.</div>'; }
     return;
   }
   try{
@@ -3259,6 +3342,25 @@ async function hydrateHomeAssignedTasks(){
   }catch(error){mount.innerHTML='<div class="school-empty">Class tasks will appear here when connected to your school account.</div>';}
 }
 
+// Completion screen: stars from accuracy, plus a server-checked finishing reward for practice runs.
+const claimedFinishRuns=new Set();
+function setFinishRewardText(text,ok=true){const el=document.getElementById('finish-reward');if(el){el.textContent=text;el.classList.toggle('muted',!ok);}}
+function finishStarsHtml(accuracy){const n=accuracy>=90?3:accuracy>=70?2:1;return `<div class="finish-stars" aria-label="${n} of 3 stars">${[1,2,3].map(i=>`<span class="${i<=n?'on':''}">★</span>`).join('')}</div>`;}
+function finishCardHtml({eyebrow,title,accuracy,stats=[],actions='',assignment=false}){
+  const pct=Math.max(0,Math.min(100,Math.round(Number(accuracy)||0)));
+  return `<div class="page generated-task-page"><div class="card finish-card pop">${cloveHtml('done')}<span class="eyebrow">${escapeHtml(eyebrow)}</span><h2>${escapeHtml(title)}</h2>${finishStarsHtml(pct)}<div class="finish-ring" style="--pct:${pct}"><b>${pct}%</b><small>accuracy</small></div><div class="task-finish-stats">${stats.map(([v,l])=>`<span><b>${escapeHtml(String(v))}</b> ${escapeHtml(l)}</span>`).join('')}</div><div id="finish-reward" class="task-finish-reward">${assignment?'Sending your result…':'Checking your finishing reward…'}</div><div class="hero-actions" style="justify-content:center">${actions}</div></div></div>`;
+}
+function claimPracticeFinishReward(runKey){
+  if(!account.authenticated)return setFinishRewardText('Sign in to earn finishing rewards.',false);
+  if(claimedFinishRuns.has(runKey))return setFinishRewardText('Finishing reward collected for this run.');
+  claimedFinishRuns.add(runKey);
+  getSchoolClient().claimPracticeCompletion(runKey).then(result=>{
+    if(Number.isFinite(Number(result?.coins)))state=persist({...state,coins:Number(result.coins),xp:Number(result.xp??state.xp??0)},{quiet:true});
+    if(Number(result?.coins_awarded)>0){setFinishRewardText(`+${result.coins_awarded} coins · +${result.xp_awarded} XP for finishing`);updateAccountChrome?.();}
+    else if(result?.daily_limit)setFinishRewardText('You have collected today’s 5 finishing rewards. More tomorrow!',false);
+    else setFinishRewardText('Finishing reward collected for this run.');
+  }).catch(error=>setFinishRewardText(error?.message||'Finishing reward unavailable right now.',false));
+}
 async function completeSchoolAssignmentAndReward(snapshot,payload){
   const school=getSchoolClient();
   let syncedCompletion=true;
@@ -3799,6 +3901,34 @@ function assignmentFullscreenAvailable(){
 }
 function removeAssignmentFullscreenGuard(){
   document.getElementById('assignment-fullscreen-guard')?.remove();
+  document.body?.classList.remove('assignment-guard-active');
+}
+// Leaving fullscreen swaps the unanswered question for a same-type question with different
+// numbers, so a question seen outside fullscreen cannot simply be copied elsewhere.
+function refreshQuestionAfterFullscreenExit(){
+  try{
+    const g=currentGeneratedTask;
+    if(g?.current && !g.feedback && g.task){
+      const avoid=(g.questions||[]).map(q=>questionFingerprint(q)).filter(Boolean);
+      const fresh=createGeneratedTaskRun(g.task,{runSeed:Date.now()+Math.floor(Math.random()*1e6),avoidFingerprints:avoid});
+      const idx=Math.max(0,Number(g.index)||0);
+      const q=fresh.questions[idx]||fresh.questions[0];
+      if(q){ g.questions[idx]=q; g.current=q; g.selectedChoice=''; saveActiveAssignmentSession(); renderGeneratedTask(); }
+      return;
+    }
+    const l=currentLesson;
+    if(l?.current && !l.feedback){
+      const pool=getQuestionsForLesson(l.lessonId);
+      const unused=pool.filter(q=>!l.asked.includes(q.id));
+      const same=unused.filter(q=>String(q.type||'')===String(l.current.type||''));
+      const next=(same.length?same:unused)[Math.floor(Math.random()*(same.length||unused.length))];
+      if(!next)return;
+      const pos=l.asked.indexOf(l.current.id);
+      if(pos>=0)l.asked[pos]=next.id; else l.asked.push(next.id);
+      if(l.questionStates)delete l.questionStates[String(l.current.id)];
+      l.current=next; l.selectedChoice=''; saveActiveAssignmentSession(); renderLesson();
+    }
+  }catch{}
 }
 function showAssignmentFullscreenGuard(){
   removeAssignmentFullscreenGuard();
@@ -3806,6 +3936,7 @@ function showAssignmentFullscreenGuard(){
   const guard=document.createElement('div');
   guard.id='assignment-fullscreen-guard';
   guard.className='assignment-fullscreen-guard';
+  document.body?.classList.add('assignment-guard-active');
   guard.innerHTML=`<section><span class="eyebrow">Assignment still active</span><h2>Return to fullscreen to continue</h2><p>Fullscreen keeps the assignment focused and hides the browser tabs and address bar. You can still leave using the MathsExpress back arrow.</p><div><button class="btn primary" data-action="assignment-return-fullscreen">Return to fullscreen</button><button class="btn secondary" data-action="leave-assignment">← Back to ${activeSchoolAssignment?.localOnly?'Learn':'Class'}</button></div></section>`;
   document.body.appendChild(guard);
 }
@@ -3832,7 +3963,7 @@ async function exitAssignmentFullscreen(){
 function handleAssignmentFullscreenChange(){
   const active=Boolean(activeSchoolAssignment?.id);
   document.body?.classList.toggle('assignment-browser-fullscreen',Boolean(document.fullscreenElement && active));
-  if(active && !document.fullscreenElement){ assessmentIntegrity.fullscreenExits=(assessmentIntegrity.fullscreenExits||0)+1; void recordAssessmentIntegrity('fullscreen-exit',{elapsed_seconds:assignmentElapsedSeconds()}); setTimeout(showAssignmentFullscreenGuard,80); }
+  if(active && !document.fullscreenElement){ assessmentIntegrity.fullscreenExits=(assessmentIntegrity.fullscreenExits||0)+1; void recordAssessmentIntegrity('fullscreen-exit',{elapsed_seconds:assignmentElapsedSeconds()}); refreshQuestionAfterFullscreenExit(); setTimeout(showAssignmentFullscreenGuard,80); }
   else removeAssignmentFullscreenGuard();
 }
 
@@ -4470,15 +4601,16 @@ function renderLesson() {
       activeSchoolAssignment.synced = true;
       const snapshot = { ...activeSchoolAssignment };
       completeSchoolAssignmentAndReward(snapshot, { answered:snapshot.answered, correct:snapshot.correct, timeSeconds:Math.round((Date.now()-snapshot.startedAt)/1000), masteryAfter:mastery })
-        .then((reward)=>showToast('Assignment complete', reward>0?`Result sent · +${reward} coins earned`:'Your result has been sent to your teacher.', 'success'))
+        .then((reward)=>{showToast('Assignment complete', reward>0?`Result sent · +${reward} coins earned`:'Your result has been sent to your teacher.', 'success');setFinishRewardText(reward>0?`+${reward} coins for finishing`:'Result sent to your teacher');})
         .catch((error)=>showToast('Progress saved locally', error.message || 'Teacher sync failed.'));
     }
-    view.innerHTML = `
-      <div class="page"><div class="card empty-state pop">
-        <div class="big">🏆</div><span class="eyebrow">Lesson complete</span><h2>${escapeHtml(lesson.title)}</h2>
-        <p>You completed every challenge in this run. Your lesson mastery is now <strong>${mastery}%</strong>.</p>
-        <div class="hero-actions" style="justify-content:center">${activeSchoolAssignment?`<button class="btn primary" data-action="leave-assignment">← Back to ${activeSchoolAssignment.localOnly?'Learn':'Class'}</button>`:`<button class="btn primary" data-action="restart-lesson" data-lesson-id="${lesson.id}">Practise again</button><button class="btn secondary" data-route="learn">Back to Algebra Path</button>`}</div>
-      </div></div>`;
+    const lessonAnswered=Number(activeSchoolAssignment?.answered)||currentLesson.asked.length;
+    const lessonCorrect=Number(activeSchoolAssignment?.correct);
+    const lessonAccuracy=Number.isFinite(lessonCorrect)&&lessonAnswered?Math.round(lessonCorrect/lessonAnswered*100):mastery;
+    view.innerHTML = finishCardHtml({eyebrow:'Lesson complete',title:lesson.title,accuracy:lessonAccuracy,assignment:Boolean(activeSchoolAssignment&&!activeSchoolAssignment.localOnly),
+      stats:[[currentLesson.asked.length,'questions'],[`${mastery}%`,'lesson mastery']],
+      actions:activeSchoolAssignment?`<button class="btn primary" data-action="leave-assignment">← Back to ${activeSchoolAssignment.localOnly?'Learn':'Class'}</button>`:`<button class="btn primary" data-action="restart-lesson" data-lesson-id="${lesson.id}">Practise again</button><button class="btn secondary" data-route="learn">Back to Learn</button>`});
+    if(!activeSchoolAssignment||activeSchoolAssignment.localOnly)claimPracticeFinishReward(`lesson:${currentLesson.runId}`);
     return;
   }
 
@@ -4686,12 +4818,15 @@ function renderGeneratedTask() {
       activeSchoolAssignment.synced = true;
       const snapshot = { ...activeSchoolAssignment };
       completeSchoolAssignmentAndReward(snapshot, { answered:run.answered, correct:run.correct, timeSeconds:Math.round((Date.now()-snapshot.startedAt)/1000), masteryAfter:accuracy })
-        .then((reward)=>showToast('Assignment complete', reward>0?`Result sent · +${reward} coins earned`:'Your result has been sent to your teacher.', 'success'))
+        .then((reward)=>{showToast('Assignment complete', reward>0?`Result sent · +${reward} coins earned`:'Your result has been sent to your teacher.', 'success');setFinishRewardText(reward>0?`+${reward} coins for finishing`:'Result sent to your teacher');})
         .catch((error)=>showToast('Progress saved locally', error.message || 'Teacher sync failed.'));
     }
     const postRunMastery=skillMasteryValue(task.skillId,task.yearLevel);
     const continueLabel=postRunMastery>=100?'Continue more →':'Practise again';
-    view.innerHTML = `<div class="page generated-task-page"><div class="card empty-state pop"><div class="big">✓</div>${cloveHtml('done')}<span class="eyebrow">Task complete</span><h2>${escapeHtml(task.skill)}</h2><p>You finished ${task.questionCount} questions with <strong>${accuracy}%</strong> attempt accuracy.</p>${postRunMastery>=100?`<p class="muted">Skill mastery: <strong>${Math.round(postRunMastery)}%</strong> — you've mastered this skill. Keep practising to build extra mastery.</p>`:''}<div class="task-finish-stats"><span><b>${run.correct}</b> correct</span><span><b>${run.answered}</b> attempts</span><span><b>${task.difficulty}</b> difficulty</span></div><div class="hero-actions" style="justify-content:center">${activeSchoolAssignment?`<button class="btn primary" data-action="leave-assignment">← Back to ${activeSchoolAssignment.localOnly?'Learn':'Class'}</button>`:`<button class="btn primary" data-action="start-library-task" data-task-id="${escapeHtml(task.id)}">${continueLabel}</button><button class="btn secondary" data-route="learn">Back to Learn</button>`}</div></div></div>`;
+    view.innerHTML = finishCardHtml({eyebrow:'Task complete',title:task.skill,accuracy,assignment:Boolean(activeSchoolAssignment&&!activeSchoolAssignment.localOnly),
+      stats:[[run.correct,'correct'],[run.answered,'attempts'],[task.difficulty,'difficulty'],...(postRunMastery>=100?[['Mastered','skill']]:[])],
+      actions:activeSchoolAssignment?`<button class="btn primary" data-action="leave-assignment">← Back to ${activeSchoolAssignment.localOnly?'Learn':'Class'}</button>`:`<button class="btn primary" data-action="start-library-task" data-task-id="${escapeHtml(task.id)}">${continueLabel}</button><button class="btn secondary" data-route="learn">Back to Learn</button>`});
+    if(!activeSchoolAssignment||activeSchoolAssignment.localOnly)claimPracticeFinishReward(`task:${task.id}:${run.runSeed}`.slice(0,80));
     return;
   }
   const q = run.current;
@@ -4997,11 +5132,14 @@ function classGameVisual(progress, mode, leaderboard=[]) {
   const blue=Number(g.blue_score)||0, red=Number(g.red_score)||0;
   return `${winnerBanner}<div class="score-battle-visual"><div class="score-battle-number blue"><span>BLUE</span><strong>${blue}</strong></div><div class="versus-mark">VS</div><div class="score-battle-number red"><span>RED</span><strong>${red}</strong></div></div>`;
 }
-function classGameLeaderboardHtml(leaderboard=[], progress=null) {
+function classGameLeaderboardHtml(leaderboard=[], progress=null, {staff}={}) {
   const rows=Array.isArray(leaderboard)?leaderboard:[];
   const totals=classGameTeamTotals(rows);
-  const teamRows=(team)=>rows.filter(row=>String(row.team||'').toLowerCase()===team.toLowerCase()).slice(0,10);
-  const renderTeam=(team)=>`<section class="class-team-board ${team.toLowerCase()}"><header><div><span>${team.toUpperCase()}</span><strong>${totals[team].players} player${totals[team].players===1?'':'s'}</strong></div><b>${totals[team].correct} ✓</b></header><div>${teamRows(team).map((row,i)=>`<article><b>${i+1}</b><span>${escapeHtml(row.display_name||'Student')}<small>${Number(row.correct)||0}/${Number(row.answered)||0} correct</small></span><strong>${Number(row.score)||0}</strong></article>`).join('')||'<div class="class-game-empty">Waiting for players…</div>'}</div></section>`;
+  // Students only see their own right/wrong counts (the server also withholds other players' counts).
+  const staffView=staff??(typeof canUseTeacherHub==='function'&&typeof account!=='undefined'&&canUseTeacherHub(account));
+  const teamScore=(team)=>rows.filter(row=>String(row.team||'').toLowerCase()===team.toLowerCase()).reduce((t,row)=>t+(Number(row.score)||0),0);
+  const teamRows=(team)=>rows.filter(row=>String(row.team||'').toLowerCase()===team.toLowerCase()&&(staffView||row.is_me)).slice(0,staffView?10:1);
+  const renderTeam=(team)=>`<section class="class-team-board ${team.toLowerCase()}"><header><div><span>${team.toUpperCase()}</span><strong>${totals[team].players} player${totals[team].players===1?'':'s'}</strong></div><b>${staffView?`${totals[team].correct} ✓`:`${teamScore(team)} pts`}</b></header><div>${teamRows(team).map((row,i)=>`<article><b>${staffView?i+1:'You'}</b><span>${escapeHtml(staffView?(row.display_name||'Student'):'Your answers')}<small>${Number(row.correct)||0}/${Number(row.answered)||0} correct</small></span><strong>${Number(row.score)||0}</strong></article>`).join('')||(staffView||!rows.some(r=>r.is_me)?'<div class="class-game-empty">Waiting for players…</div>':'')}</div></section>`;
   return `<div class="class-team-boards">${renderTeam('Blue')}${renderTeam('Gold')}</div>`;
 }
 
@@ -5077,10 +5215,51 @@ async function openLiveGameLeaderboard() {
   }
 }
 
-function classGameExpired(session,now=Date.now()){
-  const start=Date.parse(session?.created_at||'');return !Number.isFinite(start)||now-start>=600000;
+function classGameDurationMinutes(session){
+  const m=Number(session?.config?.duration_minutes);return Number.isFinite(m)&&m>=1?Math.min(30,Math.round(m)):10;
 }
-function leaveExpiredClassGame(){stopClassGamePolling();stopClassGameCooldown();activeClassGame=null;showToast('Class game ended','Class games last 10 minutes.');go('student-hub');}
+function classGameExpired(session,now=Date.now()){
+  const start=Date.parse(session?.created_at||'');return !Number.isFinite(start)||now-start>=classGameDurationMinutes(session)*60000;
+}
+const CLASS_GAME_TOPICS=[['mixed','Mixed topics'],['number','Number'],['algebra','Algebra'],['measurement','Measurement & Geometry'],['statistics','Statistics & Probability']];
+function classGameTopicFromText(text=''){
+  const t=String(text).toLowerCase();
+  if(/algebra|equation|pattern|linear|quadratic|function|calculus|derivative|indices/.test(t))return 'algebra';
+  if(/measure|geometr|area|perimeter|volume|angle|pythag|trig|shape|space|length/.test(t))return 'measurement';
+  if(/statist|probab|data|chance|mean|median|graph/.test(t))return 'statistics';
+  if(/number|fraction|decimal|percent|integer|place value|money|ratio|financ/.test(t))return 'number';
+  return 'mixed';
+}
+function classGameSettingsHtml(classId){
+  const cls=teacherHubClasses.find(c=>String(c.id)===String(classId));
+  const year=normaliseYearLevel(cls?.year_level??account.profile?.yearLevel);
+  return `<div class="class-game-settings"><label>Length<select id="class-game-duration">${[3,5,10,15,20,30].map(m=>`<option value="${m}" ${m===10?'selected':''}>${m} minutes</option>`).join('')}</select></label><label>Topic<select id="class-game-topic">${CLASS_GAME_TOPICS.map(([v,l])=>`<option value="${v}">${l}</option>`).join('')}</select></label><label>Year level<select id="class-game-year">${Array.from({length:13},(_,y)=>`<option value="${y}" ${y===year?'selected':''}>${y===0?'Kindergarten':`Year ${y}`}</option>`).join('')}</select></label><label>Based on an assignment<select id="class-game-assignment"><option value="">None – use the topic above</option></select></label></div>`;
+}
+async function loadClassGameAssignmentOptions(classId){
+  try{
+    const rows=await getSchoolClient().listClassAssignments(classId);
+    const sel=document.getElementById('class-game-assignment'); if(!sel)return;
+    sel.innerHTML='<option value="">None – use the topic above</option>'+rows.slice(0,40).map(r=>{
+      const task=r.task_id?getTaskById?.(r.task_id):null, lesson=r.lesson_id?getLessonById?.(r.lesson_id):null;
+      const topic=classGameTopicFromText([r.title,task?.title,task?.strand,task?.topic,lesson?.title,lesson?.strand,lesson?.topic,r.skill_id].filter(Boolean).join(' '));
+      const year=Number(task?.yearLevel??lesson?.yearLevel);
+      return `<option value="${escapeHtml(String(r.id))}" data-topic="${topic}" data-year="${Number.isFinite(year)?year:''}">${escapeHtml(r.title||task?.title||lesson?.title||'Assignment')}</option>`;
+    }).join('');
+    sel.onchange=()=>{const o=sel.selectedOptions[0];if(!o?.value)return;const t=document.getElementById('class-game-topic');if(t)t.value=o.dataset.topic||'mixed';const y=document.getElementById('class-game-year');if(y&&o.dataset.year!=='')y.value=o.dataset.year;};
+  }catch{}
+}
+function readClassGameSettings(){
+  const val=id=>document.getElementById(id)?.value||'';
+  const minutes=Math.max(1,Math.min(30,Number(val('class-game-duration'))||10));
+  const topic=CLASS_GAME_TOPICS.some(([v])=>v===val('class-game-topic'))?val('class-game-topic'):'mixed';
+  const year=Number(val('class-game-year'));
+  const sel=document.getElementById('class-game-assignment');
+  const config={duration_minutes:minutes,topic};
+  if(Number.isFinite(year)&&val('class-game-year')!=='')config.year_level=Math.max(0,Math.min(12,year));
+  if(sel?.value){config.assignment_id=sel.value;config.assignment_title=sel.selectedOptions[0]?.textContent||'';}
+  return config;
+}
+function leaveExpiredClassGame(){stopClassGamePolling();stopClassGameCooldown();activeClassGame=null;showToast('Class game finished','Time is up for this class game.');go('student-hub');}
 async function pollClassGameSnapshot() {
   if(classGamePollBusy || !activeClassGame) return;
   if(classGameExpired(activeClassGame.session))return leaveExpiredClassGame();
@@ -5658,13 +5837,14 @@ function shopPreviewPanelHtml(previewItem){
   const owned=state.ownedCosmetics.includes(item.id);
   const equipped=state.equipped?.[item.category]===item.id;
   const categoryLabel=item.category.replace(/([A-Z])/g,' $1').replace(/^./,m=>m.toUpperCase());
-  return `<aside class="shop-preview-column"><section class="card card-pad shop-preview-panel"><div class="section-title" style="margin-top:0"><div><span class="eyebrow">Live preview</span><h2>Character preview</h2></div><span class="tag purple">${escapeHtml(categoryLabel)}</span></div><p class="shop-preview-copy">Preview outfits, pets, backgrounds and other rewards before you buy them.</p><div class="shop-preview-stage">${cosmeticCharacterHtml({previewItem:item,showIdentity:true,spotlight:true})}</div><div class="shop-preview-meta"><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description)}</small></div><div class="shop-preview-actions"><span class="price ${item.price===0?'free':''}">${item.price===0?'FREE':`🪙 ${item.price}`}</span>${equipped?'<span class="tag green">Equipped</span>':owned?`<button class="btn small secondary" data-action="equip-item" data-item-id="${item.id}">Equip</button>`:`<button class="btn small primary" data-action="buy-item" data-item-id="${item.id}">Buy now</button>`}</div></div></section></aside>`;
+  return `<aside class="shop-preview-column"><section class="card card-pad shop-preview-panel"><div class="section-title" style="margin-top:0"><div><span class="eyebrow">Live preview</span><h2>Character preview</h2></div><span class="tag purple">${escapeHtml(categoryLabel)}</span></div><p class="shop-preview-copy">Preview outfits, pets, backgrounds and other rewards before you buy them.</p><div class="shop-preview-stage">${item.category==='theme'||item.category==='avatar'?`<div class="shop-preview-swatch">${shopCosmeticThumbHtml(item)}</div>`:cosmeticCharacterHtml({previewItem:item,showIdentity:true,spotlight:true})}</div><div class="shop-preview-meta"><div><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description)}</small></div><div class="shop-preview-actions"><span class="price ${item.price===0?'free':''}">${item.price===0?'FREE':`🪙 ${item.price}`}</span>${equipped?'<span class="tag green">Equipped</span>':owned?`<button class="btn small secondary" data-action="equip-item" data-item-id="${item.id}">Equip</button>`:`<button class="btn small primary" data-action="buy-item" data-item-id="${item.id}">Buy now</button>`}</div></div></section></aside>`;
 }
 
 function renderShop() {
   const view = document.getElementById('app-view');
   const categories=['all',...new Set(COSMETICS.map(x=>x.category))];
-  const visible=shopCategory==='all'?COSMETICS:COSMETICS.filter(x=>x.category===shopCategory);
+  const shopItems=COSMETICS.filter(x=>!x.seasonReward||state.ownedCosmetics.includes(x.id));
+  const visible=shopCategory==='all'?shopItems:shopItems.filter(x=>x.category===shopCategory);
   const fallbackPreview=visible.find(item=>state.ownedCosmetics.includes(item.id))||visible[0]||COSMETICS[0];
   if(!visible.some(item=>item.id===shopPreviewItemId)) shopPreviewItemId=fallbackPreview?.id||'';
   const previewItem=COSMETICS.find(item=>item.id===shopPreviewItemId)||fallbackPreview;
@@ -5755,6 +5935,7 @@ function updateCharacterDraftPreview(scope=document){
 function shopCosmeticThumbHtml(item){
   if(item.category==='gameSkin') return `<div class="mx-game-skin-thumb" data-skin="${escapeHtml(item.id)}"><i class="car-body"></i><i class="wheel left"></i><i class="wheel right"></i><small>${escapeHtml(item.name)}</small></div>`;
   if(item.category==='theme') return `<div class="mx-theme-thumb ${escapeHtml(item.id)}"><i></i><i></i><i></i><span>${escapeHtml(item.name.replace(' Theme',''))}</span></div>`;
+  if(item.category==='avatar') return `<div class="mx-avatar-thumb" style="--av:${escapeHtml(item.color||'#3d6bd8')}"><span>${escapeHtml(String(account.profile?.displayName||account.profile?.username||'M').trim().charAt(0).toUpperCase()||'M')}</span><small>${escapeHtml(item.name.replace(' Avatar',''))}</small></div>`;
   const withIdentity=item.category==='nameEffect'||item.category==='title';
   return `<div class="shop-character-thumb">${cosmeticCharacterHtml({previewItem:item,showIdentity:withIdentity,thumbnail:true})}</div>`;
 }
@@ -5812,7 +5993,7 @@ function renderLocker() {
         <section class="character-stage clean-character-stage locker-stage-card">${cosmeticCharacterHtml()}</section>
         <section class="locker-owned-card"><div class="section-title" style="margin-top:0"><h2>Owned cosmetics</h2><span>${owned.length}/${COSMETICS.length}</span></div><div class="shop-grid locker-owned-grid">${owned.map((item) => {
           const equipped = state.equipped?.[item.category] === item.id;
-          return `<article class="card shop-card locker-owned-item"><div class="item-icon">${item.icon}</div><div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.description)}</p></div><div class="price-row"><span class="tag">${escapeHtml(item.category)}</span>${equipped ? '<span class="tag green">Equipped</span>' : `<button class="btn small secondary" data-action="equip-item" data-item-id="${item.id}">Equip</button>`}</div></article>`;
+          return `<article class="card shop-card locker-owned-item"><div class="item-icon locker-thumb">${shopCosmeticThumbHtml(item)}</div><div><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.description)}</p></div><div class="price-row"><span class="tag">${escapeHtml(item.category)}</span>${equipped ? '<span class="tag green">Equipped</span>' : `<button class="btn small secondary" data-action="equip-item" data-item-id="${item.id}">Equip</button>`}</div></article>`;
         }).join('') || '<p class="lock-note">You don’t own any cosmetics yet. Visit the shop to earn or buy your first one.</p>'}</div></section>
       </div>
       <div class="locker-appearance-row">${characterAppearanceControlsHtml()}</div>
@@ -7169,7 +7350,7 @@ async function renderTeacherClass() {
     const skills = LESSONS.map(l=>l.id);
     root.innerHTML = `<section class="page school-page teacher-dashboard">
       <button class="back-link" data-route="teacher-hub">← School Hub</button>
-      <div class="class-detail-hero"><div><span class="eyebrow">${escapeHtml(yearLabel(cls.year_level))}</span><h1>${escapeHtml(cls.name || 'MathsExpress Class')}</h1><p class="class-detail-meta"><span>Student join code <b>${escapeHtml(cls.join_code || '------')}</b></span><span>${students.length} students</span><span>${assignments.length} tasks</span>${cls.room?`<span class="class-room-pill">Room ${escapeHtml(cls.room)}</span>`:''}${cls.archived?'<span class="class-archive-pill">Archived</span>':''}</p><div class="class-management-actions"><button class="btn ghost small" data-action="edit-class" data-class-id="${escapeHtml(classId)}">Edit class</button><button class="btn ghost small" data-action="toggle-class-archive" data-class-id="${escapeHtml(classId)}" data-archived="${cls.archived?'1':'0'}">${cls.archived?'Unarchive':'Archive'}</button><button class="btn danger small" data-action="delete-class" data-class-id="${escapeHtml(classId)}" data-class-name="${escapeHtml(cls.name||'this class')}">Delete</button></div></div><div class="hero-actions v10-class-actions"><button class="btn light" data-action="teacher-tab" data-tab="create">＋ Create assignment</button><details class="teacher-action-dropdown"><summary>More tools</summary><div><button class="btn ghost small" data-action="open-bulk-assign">Bulk assign</button><button class="btn ghost small" data-action="open-recognition">Sticker / note</button><button class="btn ghost small" data-action="open-class-expedition">Class expedition</button><button class="btn ghost small" data-action="open-focus-monitor" data-class-id="${escapeHtml(classId)}">Live focus</button><button class="btn ghost small" data-action="open-course-progress">Course progress</button><button class="btn ghost small" data-action="open-grouped-task-report">Task group report</button><button class="btn ghost small" data-action="open-class-planner">Planner</button><button class="btn ghost small" data-action="open-class-textbook-focus">Textbook focus</button><button class="btn ghost small" data-action="open-textbook-task-search">Search textbooks</button><button class="btn ghost small" data-action="export-gradebook">Export CSV</button><button class="btn ghost small" data-action="print-class-report">Print / PDF</button></div></details></div></div>
+      <div class="class-detail-hero"><div><span class="eyebrow">${escapeHtml(yearLabel(cls.year_level))}</span><h1>${escapeHtml(cls.name || 'MathsExpress Class')}</h1><p class="class-detail-meta"><span>Student join code <b>${escapeHtml(cls.join_code || '------')}</b></span><span>${students.length} students</span><span>${assignments.length} tasks</span>${cls.room?`<span class="class-room-pill">Room ${escapeHtml(cls.room)}</span>`:''}${cls.archived?'<span class="class-archive-pill">Archived</span>':''}</p><div class="class-management-actions"><button class="btn ghost small" data-action="edit-class" data-class-id="${escapeHtml(classId)}">Edit class</button><button class="btn ghost small" data-action="toggle-class-archive" data-class-id="${escapeHtml(classId)}" data-archived="${cls.archived?'1':'0'}">${cls.archived?'Unarchive':'Archive'}</button><button class="btn danger small" data-action="delete-class" data-class-id="${escapeHtml(classId)}" data-class-name="${escapeHtml(cls.name||'this class')}">Delete</button></div></div><div class="hero-actions v10-class-actions"><button class="btn light" data-action="teacher-tab" data-tab="create">＋ Create assignment</button><details class="teacher-action-dropdown"><summary>More tools</summary><div><button class="btn ghost small" data-action="open-bulk-assign">Bulk assign</button><button class="btn ghost small" data-action="open-recognition">Sticker / note</button><button class="btn ghost small" data-action="open-class-expedition">Class expedition</button><button class="btn primary small" data-action="open-live-pulse" data-class-id="${escapeHtml(classId)}">Live class</button><button class="btn ghost small" data-action="open-focus-monitor" data-class-id="${escapeHtml(classId)}">Live focus</button><button class="btn ghost small" data-action="open-course-progress">Course progress</button><button class="btn ghost small" data-action="open-grouped-task-report">Task group report</button><button class="btn ghost small" data-action="open-class-planner">Planner</button><button class="btn ghost small" data-action="open-class-textbook-focus">Textbook focus</button><button class="btn ghost small" data-action="open-textbook-task-search">Search textbooks</button><button class="btn ghost small" data-action="export-gradebook">Export CSV</button><button class="btn ghost small" data-action="print-class-report">Print / PDF</button></div></details></div></div>
       ${teacherSummaryCards(dashboard)}
       <div class="class-report-tabs" role="tablist" aria-label="Class report sections"><button type="button" role="tab" class="${teacherClassReportTab==='insights'?'active':''}" aria-selected="${teacherClassReportTab==='insights'}" data-action="class-report-tab" data-tab="insights">Insights</button><button type="button" role="tab" class="${teacherClassReportTab==='planner'?'active':''}" aria-selected="${teacherClassReportTab==='planner'}" data-action="class-report-tab" data-tab="planner">Planner</button><button type="button" role="tab" class="${teacherClassReportTab==='mastery'?'active':''}" aria-selected="${teacherClassReportTab==='mastery'}" data-action="class-report-tab" data-tab="mastery">Mastery</button><button type="button" role="tab" class="${teacherClassReportTab==='tasks'?'active':''}" aria-selected="${teacherClassReportTab==='tasks'}" data-action="class-report-tab" data-tab="tasks">Tasks</button></div>
       <div class="teacher-report-grid"><section class="school-section" data-report-panel="insights" ${teacherClassReportTab==='insights'?'':'hidden'}><div class="section-heading"><div><span class="eyebrow">Class Insights</span><h2>Students to watch</h2></div><span>${analytics.activeStudents}/${students.length} active this week</span></div><div class="student-table student-table-actions"><div class="student-row head"><span>Student</span><span>Recent score</span><span>Mastery</span><span>Status</span><span>Actions</span></div>${students.map(student=>{ const sa=attempts.filter(a=>a.student_id===student.user_id); const avg=sa.length?Math.round(sa.reduce((n,a)=>n+Number(a.score_percent||0),0)/sa.length):0; const sm=mastery.filter(m=>m.student_id===student.user_id); const mm=sm.length?Math.round(sm.reduce((n,m)=>n+Number(m.mastery||0),0)/sm.length):0; const focus=focusRows.find(f=>String(f.user_id)===String(student.user_id)); const focusFresh=focus?.updated_at && Date.now()-new Date(focus.updated_at).getTime()<90000; const focusState=focusFresh?(focus.state||'active'):'offline'; const focusLabel=focusState==='active'?'On MathsExpress':focusState==='hidden'||focusState==='away'?'Away from tab':'Offline'; return `<div class="student-row"><span><b>${escapeHtml(student.display_name)}</b><small>${escapeHtml(student.username || student.email || '')}</small></span><span>${avg}%</span><span><div class="mini-progress"><i style="width:${mm}%"></i></div>${mm}%</span><span class="live-state ${focusState==='active'?'working':focusState==='hidden'||focusState==='away'?'away':'offline'}">${focusLabel}${focus?.hidden_count?` · ${Number(focus.hidden_count)} switches`:''}</span><span class="student-row-actions"><details class="row-action-menu"><summary>Actions</summary><div><button class="btn ghost small" data-action="open-student-identity-editor" data-student-id="${escapeHtml(student.user_id)}">Edit account</button><button class="btn ghost small" data-action="open-teacher-feedback" data-student-id="${escapeHtml(student.user_id)}">Feedback</button><button class="btn ghost small" data-action="open-parent-message-teacher" data-student-id="${escapeHtml(student.user_id)}">Parent message</button><button class="btn ghost small" data-action="open-year-override" data-student-id="${escapeHtml(student.user_id)}">Year override</button></div></details></span></div>`}).join('') || '<div class="school-empty">Students who join with the class code will appear here.</div>'}</div></section>
@@ -7757,10 +7938,29 @@ function v7Portfolio(){
   const snap=portfolioSnapshot({name:state.playerName,mastery:state.skillMasteryMap||state.mastery||{},achievements:state.achievements||[],feedback:state.teacherFeedback||[],bestWork:state.v7BestWork||[]});
   openSimpleModal('Student Portfolio',`<div class="owner-analytics-strip"><div><b>${snap.averageMastery}%</b><small>average mastery</small></div><div><b>${snap.achievements.length}</b><small>recent badges</small></div><div><b>${snap.bestWork.length}</b><small>saved work</small></div></div><div class="simple-modal-actions"><button class="btn primary" data-action="v7-save-portfolio">Save snapshot</button><button class="btn secondary" data-action="v7-download-portfolio">Download summary</button></div>`);
 }
-function v7Season(){
-  const season=seasonDefinition(new Date()); const progress=state.v7SeasonProgress||{};
-  openSimpleModal(season.name,`<h3>${escapeHtml(season.theme)} Season</h3><div class="simple-list">${season.quests.map(q=>`<div><strong>${escapeHtml(q.label)}</strong><span>${Math.min(q.target,Number(progress[q.id])||0)}/${q.target}</span></div>`).join('')}</div><p>Season progress is separate from school grades and resets each term.</p>`);
+// Seasons are server-backed: 7-week windows, season XP from the reward ledger, class standings
+// by accuracy and completed work, and a rank title for finishing a season.
+async function v7Season(){
+  openSimpleModal('Season','<div class="school-loading"><span class="spinner"></span><strong>Loading season…</strong></div>');
+  try{
+    const r=unwrapRpc(await accountClient.ensureClient().rpc('mathsexpress_my_season',{}));
+    const ranks=Array.isArray(r.ranks)?r.ranks:[];
+    const label=x=>String(x||'').replace(/^./,m=>m.toUpperCase());
+    const xp=Number(r.season_xp)||0; const next=ranks.find(k=>xp<Number(k.xp));
+    const prev=[...ranks].reverse().find(k=>xp>=Number(k.xp));
+    const lo=Number(prev?.xp||0), hi=Number(next?.xp||lo||1);
+    const pct=next?Math.round((xp-lo)/Math.max(1,hi-lo)*100):100;
+    const daysLeft=Math.max(0,Math.ceil((Date.parse(r.ends_at)-Date.now())/86400000));
+    const classes=Array.isArray(r.class_standings)?r.class_standings:[];
+    openSimpleModal(`Season ${Number(r.season)||1}`,`<div class="season-panel"><div class="season-head"><div class="season-rank ${escapeHtml(r.rank)}">${escapeHtml(label(r.rank))}</div><div><strong>${xp.toLocaleString()} season XP</strong><small>${daysLeft} day${daysLeft===1?'':'s'} left · ends ${escapeHtml(new Date(r.ends_at).toLocaleDateString())}</small></div></div>
+      <div class="season-bar"><i style="width:${pct}%"></i></div><p class="muted">${next?`${(hi-xp).toLocaleString()} XP to ${escapeHtml(label(next.id))}`:'Top rank reached!'} · Ranks: ${ranks.map(k=>`${escapeHtml(label(k.id))} ${Number(k.xp).toLocaleString()}`).join(' · ')}</p>
+      <p class="muted">Season XP and rank reset when a new season starts. Achievements, coins and items are kept. Finishing a season at Bronze or above earns a Season title.</p>
+      ${Number(r.season)>1&&!r.previous_season_claimed?'<button class="btn primary" data-action="claim-season-reward">Claim last season’s reward</button>':''}
+      <h3>Class standings</h3><p class="muted">${escapeHtml(r.score_formula||'')}</p>
+      <div class="simple-list season-classes">${classes.map((c,i)=>`<div class="${c.is_mine?'mine':''}"><strong>${i+1}. ${escapeHtml(c.name||'Class')}${c.is_mine?' (your class)':''}</strong><span>${Number(c.accuracy)}% accuracy · ${Number(c.completion)}% work done · <b>${Number(c.score)}</b></span></div>`).join('')||'<p>Join a class to see class standings.</p>'}</div></div>`);
+  }catch(error){openSimpleModal('Season',`<p>${escapeHtml(error?.message||'Season data is unavailable right now.')}</p>`);}
 }
+function unwrapRpc(res){if(res?.error)throw res.error;return res?.data||{};}
 function v7DailyPuzzle(){
   const p=dailyPuzzle(localDateString(),normaliseYearLevel(account.profile?.yearLevel));
   openSimpleModal('Daily Maths Puzzle',`<form id="v7-daily-puzzle-form" class="school-form"><input type="hidden" name="puzzleKey" value="${escapeHtml(p.id)}"><input type="hidden" name="answerKey" value="${escapeHtml(p.answer)}"><h3>${mathHtml(p.prompt)}</h3><label>Your answer<input name="answer" required autocomplete="off"></label><button class="btn primary" type="submit">Check puzzle</button></form>`);
@@ -8343,6 +8543,9 @@ function handleClick(event) {
   if (action === 'open-planner-task') { return openSimpleModal('Add study task',`<form id="planner-task-form" class="school-form"><label>Task<input name="title" required placeholder="e.g. Revise trigonometry"></label><div class="form-two"><label>Date<input name="date" type="date" required value="${localDateString()}"></label><label>Type<select name="type"><option>Study</option><option>Homework</option><option>Revision</option><option>Test</option><option>Goal</option></select></label></div><button class="btn primary" type="submit">Add to planner</button></form>`); }
   if (action === 'toggle-planner-task') { const id=actionEl.dataset.taskId||''; persist({...state,plannerTasks:(state.plannerTasks||[]).map(x=>x.id===id?{...x,done:!x.done}:x)},{quiet:true}); return renderCalendar(); }
   if (action === 'refresh-class-focus') { return renderTeacherClass(); }
+  if (action === 'open-live-pulse') { return openLivePulse(actionEl.dataset.classId||selectedTeacherClassId); }
+  if (action === 'pulse-group') { livePulse.group=actionEl.dataset.group||''; livePulse.studentId=''; const b=document.getElementById('live-pulse-body'); if(b)b.innerHTML=livePulseHtml(); return; }
+  if (action === 'pulse-student') { livePulse.studentId=actionEl.dataset.studentId||''; const b=document.getElementById('live-pulse-body'); if(b)b.innerHTML=livePulseHtml(); return; }
   if (action === 'open-focus-monitor') { return openClassFocusMonitor(actionEl.dataset.classId||selectedTeacherClassId); }
   if (action === 'refresh-focus-modal') { return openClassFocusMonitor(actionEl.dataset.classId||selectedTeacherClassId); }
   if (action === 'remove-education-domain') { const domain=actionEl.dataset.domain||''; getSchoolClient().removeEducationDomain(domain).then(()=>{showToast('Domain removed',domain,'success');openEducationDomainsModal();}).catch(e=>showToast('Could not remove domain',e.message)); return; }
@@ -8554,7 +8757,8 @@ Alex,alex@example.com,9"></textarea></label><p class="muted">Existing MathsExpre
     selectedTeacherClassId = targetClass;
     if (tool === 'games') {
       const root = document.getElementById('modal-root');
-      root.innerHTML = `<div class="modal-backdrop"><div class="modal pop relaxed-tool-modal classroom-games-modal"><span class="eyebrow">Classroom games</span><h2>Choose a live maths game</h2><p class="lock-note">Students are split into balanced Blue and Red teams automatically. Every game uses one synced class state.</p><div class="classroom-game-menu">${CLASSROOM_MODES.map((mode) => `<button class="classroom-game-pick" data-action="launch-class-game" data-mode="${mode.id}"><strong>${escapeHtml(mode.label || mode.name || mode.id)}</strong><span>${escapeHtml(mode.description||'Live class maths game')}</span></button>`).join('')}</div><div class="simple-modal-actions"><button class="btn ghost" data-action="close-school-modal">Close</button></div></div></div>`;
+      void loadClassGameAssignmentOptions(targetClass);
+      root.innerHTML = `<div class="modal-backdrop"><div class="modal pop relaxed-tool-modal classroom-games-modal"><span class="eyebrow">Classroom games</span><h2>Choose a live maths game</h2><p class="lock-note">Students are split into balanced Blue and Red teams automatically. Every game uses one synced class state.</p>${classGameSettingsHtml(targetClass)}<div class="classroom-game-menu">${CLASSROOM_MODES.map((mode) => `<button class="classroom-game-pick" data-action="launch-class-game" data-mode="${mode.id}"><strong>${escapeHtml(mode.label || mode.name || mode.id)}</strong><span>${escapeHtml(mode.description||'Live class maths game')}</span></button>`).join('')}</div><div class="simple-modal-actions"><button class="btn ghost" data-action="close-school-modal">Close</button></div></div></div>`;
       return;
     }
     go('teacher-class', targetClass);
@@ -8618,7 +8822,7 @@ Alex,alex@example.com,9"></textarea></label><p class="muted">Existing MathsExpre
   if (action === 'skill-mini-check') { startSkillMiniCheck(actionEl.dataset.skillId,actionEl.dataset.skillYear); return; }
   if (action === 'start-school-assignment') { void enterAssignmentFullscreen({quiet:true}); const assignmentId=actionEl.dataset.assignmentId; const classId=actionEl.dataset.classId || ''; const assignmentTitle=actionEl.dataset.assignmentTitle || 'Assigned work'; const className=actionEl.dataset.className || 'MathsExpress class'; const dueAt=actionEl.dataset.dueAt || ''; const lessonId=actionEl.dataset.lessonId || ''; const taskId=actionEl.dataset.taskId || ''; const testMode=actionEl.dataset.testMode==='1'; const tutorAllowed=actionEl.dataset.tutorAllowed!=='0'; const hintsAllowed=actionEl.dataset.hintsAllowed!=='0'; const calculatorAllowed=actionEl.dataset.calculatorEnabled!=='0'; const gamesLocked=actionEl.dataset.gamesLocked==='1'; const focusRequired=actionEl.dataset.focusRequired==='1'; const timeLimitMinutes=Math.max(0,Number(actionEl.dataset.timeLimit)||0); const videosAllowed=actionEl.dataset.videosAllowed!=='0'; const startAt=actionEl.dataset.startAt||''; const exactStart=actionEl.dataset.exactStart==='1'; const scheduledMs=startAt?new Date(startAt).getTime():NaN; const timerStart=exactStart&&Number.isFinite(scheduledMs)?Math.min(Date.now(),scheduledMs):Date.now(); const school=getSchoolClient(); Promise.all([school.startAssignment(assignmentId),school.getAssignment(assignmentId).catch(()=>null)]).then(([startResult,assignmentRow]) => { const rowStart=assignmentRow?.start_at||assignmentRow?.config?.start_at||startAt; const rowScheduledMs=rowStart?new Date(rowStart).getTime():NaN; const rowExact=Boolean(assignmentRow?.config?.exact_scheduled_start??exactStart); const strictTest=Boolean(testMode||assignmentRow?.test_mode||(assignmentRow?.assignment_type==='test'||assignmentRow?.assignment_type==='topic-test')||assignmentRow?.config?.testMode||assignmentRow?.config?.strict_test_mode); activeSchoolAssignment={ id:assignmentId, classId, assignmentTitle, className, dueAt, lessonId:assignmentRow?.lesson_id||lessonId, taskId:assignmentRow?.config?.task_library_id||taskId, questionSeed:Number(assignmentRow?.config?.question_seed)||0, customWorksheet:assignmentRow?.config?.custom_worksheet||null, testMode:strictTest, tutorAllowed:strictTest?false:tutorAllowed, hintsAllowed:strictTest?false:hintsAllowed, calculatorAllowed:strictTest?false:calculatorAllowed, videosAllowed:strictTest?false:videosAllowed, gamesLocked:strictTest?true:gamesLocked, focusRequired:strictTest?true:focusRequired, timeLimitMinutes, answered:0, correct:0, startedAt:rowExact&&Number.isFinite(rowScheduledMs)?Math.min(Date.now(),rowScheduledMs):timerStart, exactScheduledStart:rowExact, scheduledStartAt:rowStart||'', unlimitedRetry:Boolean(startResult?.unlimited_retry), synced:false, returnRoute:'student-hub' }; void enterAssignmentFullscreen({quiet:true}); saveActiveAssignmentSession(); startFocusHeartbeat(); syncStudentFocusStatus('active',{force:true}); showToast('Assignment started', rowExact&&rowStart?'The timer uses the class scheduled start time.':focusRequired?'Focus status is active for this task.':'Your assignment has started.', 'success'); if (assignmentRow?.config?.custom_worksheet?.questions?.length) startAssignedCustomWorksheet(assignmentRow); else if ((assignmentRow?.config?.task_library_id||taskId) && getTaskById(assignmentRow?.config?.task_library_id||taskId)) startAssignedGeneratedTask(assignmentRow?.config?.task_library_id||taskId); else if ((assignmentRow?.lesson_id||lessonId) && getLessonById(assignmentRow?.lesson_id||lessonId)) startAssignedLesson(assignmentRow?.lesson_id||lessonId); else { clearActiveAssignment({returnToAssigned:false}); showToast('Assignment unavailable','This assignment does not have a valid task attached.'); go('student-hub'); } }).catch((error)=>showToast('Couldn’t start assignment', error.message)); return; }
   if (action === 'quick-check-in') { const weakest = recommendedLesson(); showToast('Skills Check-In', `Starting with ${weakest.title}.`, 'success'); return startLesson(weakest.id); }
-  if (action === 'launch-class-game') { if (!canUseTeacherHub(account)) return; const mode = actionEl.dataset.mode; const classId = selectedTeacherClassId || ''; if (!classId) { teacherHubTab='classes'; showToast('Choose a class', 'Open a class first, then launch the live game.'); return renderTeacherHub(); } getSchoolClient().createClassroomSession(classId, mode, { seconds:60 }).then(()=>showToast('Live game created', 'Session is ready for your class.', 'reward')).catch((error)=>showToast('Couldn’t launch game', error.message)); return; }
+  if (action === 'launch-class-game') { if (!canUseTeacherHub(account)) return; const mode = actionEl.dataset.mode; const classId = selectedTeacherClassId || ''; if (!classId) { teacherHubTab='classes'; showToast('Choose a class', 'Open a class first, then launch the live game.'); return renderTeacherHub(); } getSchoolClient().createClassroomSession(classId, mode, readClassGameSettings()).then(()=>showToast('Live game created', 'Session is ready for your class.', 'reward')).catch((error)=>showToast('Couldn’t launch game', error.message)); return; }
   if (action === 'create-revision') { teacherHubTab='library'; taskLibraryFilters = { ...taskLibraryFilters, type:'revision' }; go('teacher-hub'); showToast('Revision tasks ready', 'Pick a revision task, preview it, then Quick Assign.', 'success'); return; }
   if (action === 'export-gradebook') {
     if (!lastTeacherReport) { showToast('Nothing to export', 'Open a class report first.'); return; }
@@ -8731,6 +8935,14 @@ Alex,alex@example.com,9"></textarea></label><p class="muted">Existing MathsExpre
       }
       showToast('Purchase failed',message||'Try again.');
     });
+    return;
+  }
+  if (action === 'claim-season-reward') {
+    accountClient.ensureClient().rpc('mathsexpress_claim_season_reward',{}).then(res=>{
+      const r=unwrapRpc(res); const owned=new Set(state.ownedCosmetics||[]); if(r.item_id)owned.add(r.item_id);
+      state=persist({...state,ownedCosmetics:[...owned]},{quiet:true});
+      showToast(r.already_claimed?'Already claimed':'Season reward unlocked',`Season ${r.season}: ${String(r.rank||'').replace(/^./,m=>m.toUpperCase())} title`,'reward'); v7Season();
+    }).catch(e=>showToast('Season reward',e?.message||'Not available'));
     return;
   }
   if (action === 'equip-item') {
@@ -9058,6 +9270,12 @@ async function bootstrap() {
     }catch{}
   }
   document.addEventListener('keydown', handleKeyDown);
+  document.addEventListener('input',(event)=>{
+    if(event.target?.id!=='tool-search-input')return;
+    const had=Boolean(toolSearchQuery.trim()); toolSearchQuery=String(event.target.value||'').slice(0,80);
+    if(had!==Boolean(toolSearchQuery.trim())){ renderTools(); const box=document.getElementById('tool-search-input'); if(box){box.focus(); box.setSelectionRange(box.value.length,box.value.length);} }
+    else applyToolSearchFilter();
+  });
   document.addEventListener('fullscreenchange',handleAssignmentFullscreenChange);
   document.addEventListener('visibilitychange',()=>{ if(document.hidden) void flushCloudAppState(); if(activeSchoolAssignment?.id){ const hidden=document.hidden; syncStudentFocusStatus(hidden?'hidden':'active',{force:true}); if(hidden){assessmentIntegrity.tabLeaves=(assessmentIntegrity.tabLeaves||0)+1; void recordAssessmentIntegrity('tab-hidden',{elapsed_seconds:assignmentElapsedSeconds()}); if(activeSchoolAssignment?.testMode)showToast('Test focus changed','Stay in the test window. Screenshots and recording are not allowed.');} else void recordAssessmentIntegrity('focus-return',{elapsed_seconds:assignmentElapsedSeconds()}); } });
   globalThis.addEventListener('blur',()=>{ if(activeSchoolAssignment?.id && !document.hidden){syncStudentFocusStatus('away',{force:true});void recordAssessmentIntegrity('window-blur',{elapsed_seconds:assignmentElapsedSeconds()});} });

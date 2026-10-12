@@ -52,10 +52,21 @@ test('class game leaderboard correctly includes Gold players and escapes student
   const {classGameLeaderboardHtml}=gameFns();
   const html=classGameLeaderboardHtml([
     {team:'Gold',display_name:'<script>bad</script>',score:14,correct:3,answered:4}
-  ]);
+  ],null,{staff:true});
   assert.match(html,/GOLD/);
   assert.match(html,/&lt;script&gt;bad&lt;\/script&gt;/);
   assert.doesNotMatch(html,/<script>/);
+});
+
+test('v11.5.25: students only see their own class-game counts',()=>{
+  const {classGameLeaderboardHtml}=gameFns();
+  const html=classGameLeaderboardHtml([
+    {team:'Gold',display_name:'Other Kid',score:14,correct:null,answered:null,is_me:false},
+    {team:'Blue',display_name:'Me',score:6,correct:2,answered:3,is_me:true}
+  ],null,{staff:false});
+  assert.doesNotMatch(html,/Other Kid/);
+  assert.match(html,/2\/3 correct/);
+  assert.match(html,/14 pts/);
 });
 
 function serviceWorker(){

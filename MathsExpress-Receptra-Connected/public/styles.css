@@ -5937,3 +5937,63 @@ html.mx-theme-dark .card,html.mx-theme-dark .panel,html.mx-theme-dark .mx-home-p
 /* v11.5.22 — Match the deployed Blue/Gold teams in every colour mode. */
 .score-battle-number.gold>span,.class-team-board.gold header span,.class-team-board.gold header>b{color:#9c6710}
 :where(.mx-dark,.mx-theme-dark) .score-battle-number.gold>span,:where(.mx-dark,.mx-theme-dark) .class-team-board.gold header span,:where(.mx-dark,.mx-theme-dark) .class-team-board.gold header>b{color:#ffda79!important}
+
+/* v11.5.25 — the question must not show through the "Return to fullscreen" overlay */
+.assignment-fullscreen-guard{background:#f7f7f7}
+body.assignment-guard-active #app-view{visibility:hidden}
+:where(.mx-dark,.mx-theme-dark) .assignment-fullscreen-guard{background:#12141b!important}
+/* v11.5.25 — class game settings */
+.class-game-settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin:12px 0 16px}
+.class-game-settings label{display:grid;gap:4px;font-size:13px;font-weight:600}
+.class-game-settings select{padding:8px 10px;border-radius:10px;border:1px solid var(--line,#dad5ca);background:var(--panel,#fff);color:inherit;font:inherit}
+.tool-search{margin:4px 0 12px}
+.tool-search input{width:100%;max-width:560px;padding:12px 16px;border-radius:14px;border:1px solid var(--line,#dad5ca);background:var(--panel,#fff);color:inherit;font:inherit;font-size:16px}
+.tool-search-empty{color:var(--muted,#68655e);margin:0 0 12px}
+:where(.mx-dark,.mx-theme-dark) .tool-search input{background:#1b1e27!important;color:#eef0f6!important;border-color:#3a3f4e!important}
+/* v11.5.25 — bigger calculator */
+.modal:has(.scientific-calculator){width:min(600px,96vw)!important;max-width:600px!important}
+.scientific-calculator .calculator-display-wrap{padding:20px 22px}
+.scientific-calculator .calculator-expression{font-size:22px!important}
+.scientific-calculator .calculator-result{font-size:42px;min-height:56px}
+.scientific-calculator .calculator-grid{gap:9px}
+.scientific-calculator .calc-key{min-height:60px;font-size:18px;border-radius:12px}
+.scientific-calculator .calc-key.number{font-size:20px}
+@media (max-width:520px){.scientific-calculator .calc-key{min-height:52px;font-size:16px}}
+/* v11.5.25 — completion screen */
+.finish-card{max-width:560px;margin:24px auto;text-align:center;display:grid;justify-items:center;gap:10px;padding:32px 24px}
+.finish-card h2{margin:0}
+.finish-stars{display:flex;gap:6px;font-size:34px;line-height:1}
+.finish-stars span{color:#d8d3c8}.finish-stars span.on{color:#f5b301;text-shadow:0 2px 8px rgba(245,179,1,.35)}
+.finish-ring{--pct:0;width:132px;height:132px;border-radius:50%;display:grid;place-content:center;background:conic-gradient(#3b7c5a calc(var(--pct)*1%),rgba(127,127,127,.18) 0);position:relative}
+.finish-ring::before{content:"";position:absolute;inset:12px;border-radius:50%;background:var(--panel,#fffdf8)}
+.finish-ring b,.finish-ring small{position:relative}.finish-ring b{font-size:30px}.finish-ring small{font-size:12px;opacity:.75}
+.task-finish-reward{padding:10px 16px;border-radius:999px;background:#fff4d6;color:#6b4e00;font-weight:700}
+.task-finish-reward.muted{background:rgba(127,127,127,.12);color:inherit;font-weight:600}
+:where(.mx-dark,.mx-theme-dark) .finish-ring::before{background:#1b1e27}
+:where(.mx-dark,.mx-theme-dark) .task-finish-reward:not(.muted){background:#3a3115;color:#ffe08a}
+/* v11.5.25 — shop avatars, locker thumbs, seasons */
+.mx-avatar-thumb{display:grid;place-items:center;gap:6px;padding:10px}
+.mx-avatar-thumb span{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--av);color:#fff;font-weight:800;font-size:26px;box-shadow:0 6px 18px rgba(0,0,0,.18);border:3px solid rgba(255,255,255,.7)}
+.mx-avatar-thumb small{font-size:12px;font-weight:700}
+.shop-preview-swatch{display:grid;place-items:center;min-height:220px}
+.shop-preview-swatch .mx-avatar-thumb span{width:120px;height:120px;font-size:48px}
+.shop-preview-swatch .mx-theme-thumb{transform:scale(1.6)}
+.locker-thumb{width:96px;min-width:96px;height:96px;overflow:hidden;display:grid;place-items:center;border-radius:14px}
+.locker-thumb .mx-character-card{transform:scale(.42);transform-origin:center}
+.season-panel{display:grid;gap:12px}
+.season-head{display:flex;gap:14px;align-items:center}.season-head small{display:block;opacity:.75}
+.season-rank{padding:10px 16px;border-radius:12px;font-weight:800;background:#e9e5dc;color:#3c3a35}
+.season-rank.bronze{background:#e7c3a0;color:#5a3412}.season-rank.silver{background:#d9dee5;color:#39424d}.season-rank.gold{background:#f6dc7a;color:#5c4400}
+.season-rank.platinum{background:#bfe8e4;color:#11504a}.season-rank.diamond{background:#c9dcff;color:#16357a}.season-rank.champion{background:linear-gradient(135deg,#7a4fd1,#e0457b);color:#fff}
+.season-bar{height:12px;border-radius:99px;background:rgba(127,127,127,.18);overflow:hidden}.season-bar i{display:block;height:100%;background:linear-gradient(90deg,#3b7c5a,#5fb98a)}
+.season-classes .mine{outline:2px solid #3b7c5a;border-radius:10px}
+/* v11.5.25 — K–6 / 7–12 portals */
+.auth-portal-switch{display:flex;gap:6px;margin-bottom:12px;padding:4px;border-radius:12px;background:rgba(127,127,127,.12)}
+.auth-portal-switch a{flex:1;text-align:center;padding:8px 10px;border-radius:9px;font-weight:700;font-size:14px;color:inherit;text-decoration:none}
+.auth-portal-switch a.active{background:var(--panel,#fff);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.auth-card.portal-primary .auth-art{background:linear-gradient(160deg,#ffcf5c,#ff8f6b)!important}
+.auth-card.portal-primary .auth-art *{color:#3a2200!important}
+.auth-card.portal-primary .auth-form input,.auth-card.portal-primary .auth-submit{font-size:18px;min-height:52px;border-radius:14px}
+.auth-card.portal-secondary .auth-art{background:linear-gradient(160deg,#24345f,#3b7c5a)!important}
+.auth-card.portal-secondary .auth-art *{color:#f3f5fb!important}
+:where(.mx-dark,.mx-theme-dark) .auth-portal-switch a.active{background:#2a2f3c}

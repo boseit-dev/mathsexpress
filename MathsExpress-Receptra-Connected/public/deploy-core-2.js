@@ -993,7 +993,7 @@ function createStudyBotReply({ message = '', context = {}, history = [] } = {}) 
   } else if(percentage && !currentQuestionRequest){
     text=percentage.text;
   } else if (intent === 'welcome') {
-    text = `I’m your MathsExpress AI Helper. Ask me about ${c.topic || 'maths'}, paste your working, or say “give me a hint”. I’ll respond to what you actually ask.`;
+    text = `I’m Clove, your MathsExpress maths helper. Ask me about ${c.topic || 'maths'}, paste your working, or say “give me a hint”. I’ll respond to what you actually ask.`;
   } else if (intent === 'chat') {
     text = chatReply(message);
   } else if (intent === 'why') {

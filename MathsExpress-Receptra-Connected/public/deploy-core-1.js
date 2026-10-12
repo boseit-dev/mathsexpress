@@ -2667,7 +2667,10 @@ const COSMETICS = [
   ...['Notebook','Grid Paper','Night Sky','Ocean','Forest','Desert','Arcade','Circuit','Galaxy','Stadium','Mountain','Aurora'].map((name,i)=>({id:`background-${name.toLowerCase().replaceAll(' ','-')}`,category:'background',name:`${name} Background`,price:160+i*80,icon:'▧',description:`A ${name.toLowerCase()} profile and locker background.`})),
   ...['Rookie Solver','Algebra Ace','Geometry Guru','Number Ninja','Data Detective','Probability Pro','Equation Expert','Revision Ranger','Streak Star','Mastery Mentor','Maths Champion','Ultimate Scholar'].map((name,i)=>({id:`title-${name.toLowerCase().replaceAll(' ','-')}`,category:'title',name,price:100+i*100,icon:'★',description:`Display the title “${name}” beside your name.`})),
   ...['Classic','Graphite','Mint','Sunset','Ocean','Lavender','Midnight','Solar','Arcade','Forest'].map((name,i)=>({id:`theme-${name.toLowerCase()}`,category:'theme',name:`${name} Theme`,price:i===0?0:220+i*95,icon:'◫',description:`A ${name.toLowerCase()} MathsExpress dashboard theme.`})),
-  ...['Student Blue','Scholar Green','Problem Purple','Graph Orange','Data Teal','Geometry Red','Night Navy','Gold Legend','Pixel Lime','Galaxy Violet'].map((name,i)=>({id:`avatar-${name.toLowerCase().replaceAll(' ','-')}`,category:'avatar',name:`${name} Avatar`,price:90+i*65,icon:'●',description:`A profile avatar style called ${name}.`})),
+  ...['Fraction Fixer','Graph Guardian','Angle Hunter','Pattern Seeker','Proof Builder','Calculus Captain','Statistics Star','Measurement Master'].map((name,i)=>({id:`title-${name.toLowerCase().replaceAll(' ','-')}`,category:'title',name,price:[250,350,450,550,800,1100,650,500][i],icon:'★',description:`Display the title “${name}” beside your name.`})),
+  // Season rewards: earned by reaching a season rank, never sold in the shop.
+  ...['Bronze','Silver','Gold','Platinum','Diamond','Champion'].map((rank)=>({id:`title-season-${rank.toLowerCase()}`,category:'title',name:`Season ${rank}`,price:0,seasonReward:true,icon:'★',description:`Earned by reaching ${rank} rank in a MathsExpress season.`})),
+  ...['Student Blue','Scholar Green','Problem Purple','Graph Orange','Data Teal','Geometry Red','Night Navy','Gold Legend','Pixel Lime','Galaxy Violet'].map((name,i)=>({id:`avatar-${name.toLowerCase().replaceAll(' ','-')}`,category:'avatar',name:`${name} Avatar`,price:90+i*65,icon:'●',color:['#3d6bd8','#2f9b62','#7a4fd1','#e07a2b','#1f9c9c','#d24545','#24345f','#c99a17','#7cc23a','#5b2fb0'][i],description:`A profile avatar style called ${name}.`})),
 ];
 function getCosmeticById(itemId) {
   return COSMETICS.find((item) => item.id === itemId) ?? null;
@@ -3950,7 +3953,7 @@ class MathRiftSchoolClient {
   }
 
   async listActiveClassroomSessions() {
-    return unwrap(await this.client.from('mathrift_classroom_sessions').select('id,class_id,mode,status,config,team_state,created_at').in('status', ['lobby','playing']).gte('created_at',new Date(Date.now()-600000).toISOString()).order('created_at', { ascending:false }).limit(20)) || [];
+    return unwrap(await this.client.from('mathrift_classroom_sessions').select('id,class_id,mode,status,config,team_state,created_at').in('status', ['lobby','playing']).gte('created_at',new Date(Date.now()-1800000).toISOString()).order('created_at', { ascending:false }).limit(20)) || [];
   }
 
   async joinClassroomGame(sessionId) {
@@ -4292,6 +4295,7 @@ class MathRiftSchoolClient {
     // The _v114 variant was never created in the database; calling it first logged a 404 on every correct answer.
     return unwrap(await this.client.rpc('mathsexpress_award_question_reward',{p_event_key:payload.p_event_key,p_correct:payload.p_correct,p_xp:payload.p_xp,p_game_time_seconds:payload.p_game_time_seconds})) || {};
   }
+  async claimPracticeCompletion(runKey) { return unwrap(await this.client.rpc('mathsexpress_claim_practice_completion',{p_run_key:String(runKey||'').slice(0,80)})) || {}; }
   async claimDailyMission(missionId) { return unwrap(await this.client.rpc('mathsexpress_claim_daily_mission',{p_mission_id:String(missionId||'')})) || {}; }
   async spendGameTime(seconds) { return unwrap(await this.client.rpc('mathsexpress_spend_game_time',{p_seconds:Math.max(0,Math.min(300,Math.floor(Number(seconds)||0)))})) || {}; }
   async purchaseCosmeticServer(itemId) { return unwrap(await this.client.rpc('mathsexpress_purchase_cosmetic',{p_item_id:String(itemId||'')})) || {}; }

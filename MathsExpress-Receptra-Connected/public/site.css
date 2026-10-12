@@ -20,3 +20,23 @@ body::before{content:'';position:fixed;top:0;left:0;width:var(--page-progress,0%
 .mx-reveal.mx-in-view{opacity:1;transform:none}
 .site-cta{transition:transform .2s,box-shadow .2s}.site-cta:hover{transform:translateY(-3px);box-shadow:0 10px 30px #6674ff44}
 @media(prefers-reduced-motion:reduce){.mx-reveal{opacity:1;transform:none;transition:none}.site-cta:hover{transform:none}}
+/* v11.5.25 — school visits slides and plans */
+.visit-slides{max-width:860px;margin:0 auto;overflow:hidden;border-radius:22px;background:#fffdf8;border:1px solid rgba(0,0,0,.08)}
+.visit-track{display:flex;transition:transform .5s ease}
+.visit-slide{min-width:100%;box-sizing:border-box;padding:42px 48px;display:grid;gap:14px;text-align:center}
+.visit-quote{font-size:clamp(20px,3vw,28px);font-weight:750;line-height:1.25}
+.visit-slide p{margin:0;opacity:.8;font-size:17px}
+.visit-controls{display:flex;justify-content:center;align-items:center;gap:14px;padding:0 0 20px}
+.visit-controls button{width:38px;height:38px;border-radius:50%;border:1px solid rgba(0,0,0,.15);background:transparent;font-size:22px;cursor:pointer;color:inherit}
+.visit-dots{display:flex;gap:8px}.visit-dots i{width:9px;height:9px;border-radius:50%;background:rgba(127,127,127,.35);cursor:pointer}.visit-dots i.on{background:#3b7c5a}
+.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;max-width:1080px;margin:0 auto}
+.plan-card{position:relative;display:grid;align-content:start;gap:10px;padding:28px;border-radius:22px;background:#fffdf8;border:1px solid rgba(0,0,0,.08)}
+.plan-card.featured{border:2px solid #3b7c5a;box-shadow:0 18px 50px rgba(59,124,90,.15)}
+.plan-card h3{margin:0;font-size:24px}.plan-for{margin:0;opacity:.7}
+.plan-card ul{margin:6px 0 14px;padding-left:20px;display:grid;gap:6px}
+.plan-badge{position:absolute;top:-12px;left:24px;padding:4px 12px;border-radius:99px;background:#3b7c5a;color:#fff;font-size:12px;font-weight:700}
+@media (max-width:600px){.visit-slide{padding:30px 22px}}
+.site-login{white-space:nowrap;padding:11px 10px}
+@media(max-width:1240px){.site-nav-wrap{gap:20px}.site-nav{gap:18px;margin-left:8px}}
+.portal-links{margin:14px 0 0;font-size:14px;color:#5c5d6b}.portal-links a{font-weight:800;color:var(--purple)!important;text-decoration:underline!important}
+.plan-card .site-cta,.plan-card .site-secondary{justify-self:start;margin-top:auto}
