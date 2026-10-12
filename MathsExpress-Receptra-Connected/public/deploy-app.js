@@ -3998,8 +3998,13 @@ function renderHome() {
   const homeYear = normaliseYearLevel(account.profile?.yearLevel);
   const homePath = learningPathRows(homeYear);
   const rec = recommendedLearningPathSkill() || homePath[0] || null;
-  const recommendations = homePath.filter((skill)=>skill.unlocked && (!rec || skill.id!==rec.id)).sort((a,b)=>a.mastery-b.mastery).slice(0,2);
-  const practiceTiles=[rec,...recommendations].filter(Boolean).slice(0,3);
+  const unlocked=homePath.filter(skill=>skill.unlocked);
+  const primaryPool=unlocked.filter(skill=>(Number(skill.mastery)||0)<80);
+  const eligible=primaryPool.length?primaryPool:unlocked;
+  const seed=Number(localDateString().replaceAll('-',''))+(Math.floor(Number(m.questionsAnswered||0)/3));
+  const rotation=eligible.length?seed%eligible.length:0;
+  const ordered=[...eligible.slice(rotation),...eligible.slice(0,rotation)];
+  const practiceTiles=[...ordered,...unlocked.filter(skill=>!ordered.some(row=>row.id===skill.id))].slice(0,3);
   const firstName=String(state.playerName||account.profile?.displayName||'Student').trim().split(/\s+/)[0]||'Student';
   const weeklyTarget=Math.max(1,Number(state.weeklyGoalQuestions)||30);
   const weeklyDone=Math.max(0,Number(state.weeklyQuestionsCompleted)||0);
@@ -4046,26 +4051,9 @@ function renderHome() {
                 <div class="mx-home-practice-copy"><strong>${escapeHtml(skill.title||skill.skill||'Maths practice')}</strong><small>${Math.round(skill.mastery||0)}% mastery · ${escapeHtml(skill.strand||'Mathematics')}</small></div>
                 <div class="mx-home-mastery"><i style="width:${Math.min(100,Math.max(0,Math.round(skill.mastery||0)))}%"></i></div>
               </button>`).join('') || `<button class="mx-home-practice-card empty" data-route="learn"><div class="mx-home-practice-art"><span>+</span></div><div class="mx-home-practice-copy"><strong>Choose your first skill</strong><small>Explore ${escapeHtml(yearLabel(homeYear))} maths.</small></div></button>`}
-              <div class="mx-home-practice-card mx-home-coming-soon" aria-disabled="true"><span class="mx-home-lock" aria-hidden="true">🔒</span><div class="mx-home-practice-art"><span>▤</span></div><div class="mx-home-practice-copy"><strong>Worksheet Builder</strong><small>Build your own practice worksheet.</small><em>Coming soon</em></div></div>
             </div>
           </section>
 
-          <section class="mx-home-panel mx-home-pomodoro-panel">
-            <div class="mx-home-panel-head">
-              <div><span class="mx-home-kicker mx-home-kicker-with-badge">Focus mode <b class="mx-home-new-badge">NEW</b></span><h2>Pomodoro</h2></div>
-              <button class="mx-home-pill-link" data-action="open-study-timer">Open timer</button>
-            </div>
-            <button class="mx-home-pomodoro-card ${focusTimer.running?'running':''} ${focusTimer.mode==='break'?'is-break':''}" data-action="open-study-timer" type="button">
-              <span class="mx-home-pomodoro-icon" aria-hidden="true">◷</span>
-              <span class="mx-home-pomodoro-copy"><strong>Study with fewer distractions</strong><small>25-minute focus blocks with 5-minute breaks. The timer keeps running while you use MathsExpress.</small><span class="mx-home-pomodoro-time"><b id="home-pomodoro-display">${focusTime}</b><i id="home-pomodoro-mode">${focusLabel}</i></span></span>
-              <span class="mx-home-pomodoro-action">${focusTimer.running?'Timer running →':(focusTimer.mode==='break'?'Continue break →':'Start focus →')}</span>
-            </button>
-          </section>
-
-          <section class="mx-home-panel mx-home-leaderboard-main">
-            <div class="mx-home-panel-head"><div><span class="mx-home-kicker">Class ranking</span><h2>Leaderboard</h2></div><button class="mx-home-pill-link" data-route="elo">View full ELO</button></div>
-            <div id="home-class-champion" class="mx-home-champion-loading"><span class="spinner"></span><small>Loading class ranking…</small></div>
-          </section>
         </main>
 
         <aside class="mx-home-side-column" aria-label="Student shortcuts">
@@ -4088,6 +4076,23 @@ function renderHome() {
             <p>Earn more by answering maths questions.</p>
             <button class="mx-home-side-action" data-route="games">Open games</button>
           </section>
+          <section class="mx-home-panel mx-home-sidebar-panel mx-home-pomodoro-panel">
+            <div class="mx-home-panel-head">
+              <div><span class="mx-home-kicker mx-home-kicker-with-badge">Focus mode <b class="mx-home-new-badge">NEW</b></span><h2>Pomodoro</h2></div>
+              <button class="mx-home-pill-link" data-action="open-study-timer">Open timer</button>
+            </div>
+            <button class="mx-home-pomodoro-card ${focusTimer.running?'running':''} ${focusTimer.mode==='break'?'is-break':''}" data-action="open-study-timer" type="button">
+              <span class="mx-home-pomodoro-icon" aria-hidden="true">◷</span>
+              <span class="mx-home-pomodoro-copy"><strong>Study with fewer distractions</strong><small>25-minute focus blocks with 5-minute breaks. The timer keeps running while you use MathsExpress.</small><span class="mx-home-pomodoro-time"><b id="home-pomodoro-display">${focusTime}</b><i id="home-pomodoro-mode">${focusLabel}</i></span></span>
+              <span class="mx-home-pomodoro-action">${focusTimer.running?'Timer running →':(focusTimer.mode==='break'?'Continue break →':'Start focus →')}</span>
+            </button>
+          </section>
+
+          <section class="mx-home-panel mx-home-sidebar-panel mx-home-leaderboard-main">
+            <div class="mx-home-panel-head"><div><span class="mx-home-kicker">Class ranking</span><h2>Leaderboard</h2></div><button class="mx-home-pill-link" data-route="elo">View full ELO</button></div>
+            <div id="home-class-champion" class="mx-home-champion-loading"><span class="spinner"></span><small>Loading class ranking…</small></div>
+          </section>
+
         </aside>
       </div>
 
@@ -4922,6 +4927,29 @@ async function openAssessmentReviewModal(assignmentId,studentId,studentName='Stu
     const attempts=data?.attempts||[],steps=data?.steps||[],overrides=data?.overrides||[],fixes=data?.fixes||[];
     openSimpleModal(`Review · ${escapeHtml(studentName)}`,`<div class="v82-review-summary"><span><b>${attempts.length}</b> submissions</span><span><b>${steps.length}</b> marked steps</span><span><b>${fixes.filter(x=>x.status==='fixed').length}</b> fixes</span><span><b>${(integrity||[]).length}</b> integrity events</span></div><div class="v82-review-list">${attempts.length?attempts.map((a,i)=>`<article><header><strong>Question ${escapeHtml(a.question_id||String(i+1))}</strong><span>${Number(a.score_awarded||0)}/${Number(a.score_possible||1)} marks</span></header><p><b>Answer:</b> ${mathHtml(a.answer_text||'No final answer')}</p>${Array.isArray(a.working)&&a.working.length?`<ol>${a.working.map(w=>`<li>${mathHtml(typeof w==='string'?w:(w.text||JSON.stringify(w)))}</li>`).join('')}</ol>`:''}${a.feedback?`<p class="muted"><b>Feedback:</b> ${escapeHtml(a.feedback)}</p>`:''}${a.marking_rationale?`<details><summary>AI marking rationale</summary><p>${escapeHtml(a.marking_rationale)}</p></details>`:''}</article>`).join(''):'<div class="school-empty">No submitted question attempts yet.</div>'}</div><h3>Integrity timeline</h3><div class="v82-integrity-list">${(integrity||[]).map(e=>`<div><strong>${escapeHtml(String(e.event_type).replaceAll('-',' '))}</strong><small>${new Date(e.created_at).toLocaleString()}</small><span>${escapeHtml(JSON.stringify(e.payload||{}))}</span></div>`).join('')||'<p>No tab/fullscreen/paste events recorded.</p>'}</div>${overrides.length?`<p class="muted">${overrides.length} teacher mark override${overrides.length===1?'':'s'} saved.</p>`:''}`);
   }catch(error){showToast('Review unavailable',error.message||'Try again.');}
+}
+async function openClassControlsModal(classId=''){
+  const cid=String(classId||selectedTeacherClassId||teacherHubClasses.find(c=>!c.archived)?.id||'');
+  if(!cid)return showToast('Choose a class','Select or open a class first.');
+  openSimpleModal('Class permissions','<div class="school-loading"><span class="spinner"></span><strong>Loading permissions…</strong></div>');
+  try{
+    const {data,error}=await accountClient.ensureClient().rpc('mathsexpress_class_controls',{p_class_id:cid});
+    if(error)throw error;
+    const permissions=data||{};
+    const toggle=(name,title,description)=>`<label class="mx-permission-row"><input type="checkbox" name="${name}" ${permissions[name]!==false?'checked':''}><span><strong>${title}</strong><small>${description}</small></span></label>`;
+    openSimpleModal('Class permissions',`<form id="class-controls-form" class="school-form"><input type="hidden" name="classId" value="${escapeHtml(cid)}"><p>Only teachers of this class can change these permissions. Changes apply to all students in the class.</p>${toggle('games_enabled','Class games','Allow students to join class games')}${toggle('announcements_enabled','Announcements','Show class announcements to students')}${toggle('student_posts_enabled','Student posts','Allow students to post and reply to class discussions')}<button class="btn primary" type="submit">Save permissions</button></form>`);
+  }catch(error){openSimpleModal('Class permissions',`<div class="school-error">${escapeHtml(error.message||'Unable to load class settings.')}</div>`);}
+}
+async function openClassAnnouncementsModal(classId=''){
+  const cid=String(classId||selectedTeacherClassId||teacherHubClasses.find(c=>!c.archived)?.id||'');
+  const cls=teacherHubClasses.find(c=>String(c.id)===cid);
+  if(!cid||!cls)return showToast('Choose a class','Select or open a class first.');
+  openSimpleModal('Manage class announcements','<div class="school-loading"><span class="spinner"></span><strong>Loading announcements…</strong></div>');
+  try{
+    const rows=await getSchoolClient().listStudioContent({schoolId:cls.school_id,classId:cid,limit:100});
+    const own=rows.filter(item=>item.content_type==='announcement'&&String(item.class_id||'')===cid);
+    openSimpleModal('Manage class announcements',`<div class="mx-announcement-manager"><button class="btn primary small" data-action="open-announcement">New announcement</button>${own.map(item=>`<article><div><strong>${escapeHtml(item.title||'Announcement')}</strong><small>${escapeHtml(formatSchoolDate(item.created_at))}</small><p>${escapeHtml(item.body||'')}</p></div><button class="btn danger small" data-action="archive-class-announcement" data-content-id="${Number(item.id)}" data-class-id="${escapeHtml(cid)}">Delete</button></article>`).join('')||'<p>No announcements in this class.</p>'}</div>`);
+  }catch(error){openSimpleModal('Manage class announcements',`<div class="school-error">${escapeHtml(error.message||'Unable to load announcements.')}</div>`);}
 }
 function openBulkAssignModal(){
   const classes=teacherHubClasses.filter(c=>!c.archived); const task=TASK_LIBRARY.find(t=>String(t.id)===String(taskLibraryFilters.skillId))||TASK_LIBRARY[0];
@@ -7170,10 +7198,13 @@ function classHubGameListHtml(rows=[]){
   if(!rows.length) return '<div class="class-hub-empty">No live class game right now.</div>';
   return rows.map(session=>{const mode=classGameMode(session.mode);return `<button class="class-live-game-card" data-action="join-class-game" data-session-id="${escapeHtml(session.id)}"><span class="live-dot"></span><div><strong>${escapeHtml(mode.name)}</strong><small>Teacher game is live · Join now</small></div><b>Join →</b></button>`}).join('');
 }
+let activeClassFeedPosts=[];
+let studentClassControls={games_enabled:true,announcements_enabled:true,student_posts_enabled:true};
 function classHubAnnouncementHtml(rows=[]){
-  const announcements=rows.filter(x=>x.content_type==='announcement').slice(0,8);
-  if(!announcements.length) return '<div class="class-hub-empty">No class announcements yet.</div>';
-  return announcements.map(item=>`<article class="class-announcement"><div><span>Announcement</span><small>${escapeHtml(formatSchoolDate(item.created_at))}</small></div><h3>${escapeHtml(item.title||'Class announcement')}</h3><p>${escapeHtml(item.body||'')}</p></article>`).join('');
+  const announcements=studentClassControls.announcements_enabled===false?[]:rows.filter(x=>x.content_type==='announcement').slice(0,8);
+  const notices=announcements.map(item=>`<article class="class-announcement"><div><span>Announcement</span><small>${escapeHtml(formatSchoolDate(item.created_at))}</small></div><h3>${escapeHtml(item.title||'Class announcement')}</h3><p>${escapeHtml(item.body||'')}</p></article>`);
+  const posts=activeClassFeedPosts.filter(t=>t.visibility==='class'&&String(t.subject||'').startsWith('Post: ')).slice(0,12).map(t=>`<article class="class-announcement mx-class-post"><div><span>Class post · ${escapeHtml(t.student_name||'Classmate')}</span><small>${escapeHtml(formatSchoolDate(t.created_at))}</small></div><h3>${escapeHtml(String(t.subject||'').replace(/^Post: /,''))}</h3><p>${escapeHtml(t.body||'')}</p></article>`);
+  return [...notices,...posts].join('')||'<div class="class-hub-empty">No class updates yet.</div>';
 }
 async function hydrateClassHubExtras(cls){
   if(!cls || routeFromHash().route!=='student-hub') return;
@@ -7185,6 +7216,18 @@ async function hydrateClassHubExtras(cls){
   };
 
   // Load every card independently. One slow endpoint must never hold the entire Class page hostage.
+  void safe(accountClient.ensureClient().rpc('mathsexpress_class_controls',{p_class_id:String(cls.id)}),null,3500).then(result=>{
+    if(!stillHere())return;
+    if(result?.data){studentClassControls=result.data;}
+    const button=document.getElementById('class-student-post-button');if(button)button.hidden=studentClassControls.student_posts_enabled===false;
+    const games=document.getElementById('class-live-games');if(games&&studentClassControls.games_enabled===false)games.innerHTML='<div class="class-hub-empty">Your teacher has paused class games.</div>';
+    const announcements=document.getElementById('class-announcements');if(announcements)announcements.innerHTML=classHubAnnouncementHtml(studioContent);
+  });
+  void safe(accountClient.ensureClient().rpc('mathsexpress_list_discussion_threads',{p_class_id:String(cls.id),p_limit:30}),null,3500).then(result=>{
+    if(!stillHere()||result?.error)return;
+    activeClassFeedPosts=Array.isArray(result?.data)?result.data:[];
+    const node=document.getElementById('class-announcements');if(node)node.innerHTML=classHubAnnouncementHtml(studioContent);
+  });
   void safe(school.listStudioContent({schoolId:cls.school_id,classId:cls.id,limit:24}),[],3500).then(content=>{
     if(!stillHere()) return;
     studioContent=content||[];
@@ -7301,6 +7344,7 @@ async function renderStudentHub() {
     if(!selectedStudentClassId || !classes.some(c=>String(c.id)===String(selectedStudentClassId))) selectedStudentClassId=String(classes[0].id);
     const cls=classes.find(c=>String(c.id)===String(selectedStudentClassId))||classes[0];
     selectedStudentClassId=String(cls.id);
+    activeClassFeedPosts=[];studentClassControls={games_enabled:true,announcements_enabled:true,student_posts_enabled:true};
     const adjusted=assignments.map(effectiveStudentAssignment).filter(a=>!a.class_id || String(a.class_id)===String(cls.id));
     const active=adjusted.filter(a=>!['completed','overdue'].includes(a._effectiveStatus));
     const past=adjusted.filter(a=>['completed','overdue'].includes(a._effectiveStatus));
@@ -7314,7 +7358,7 @@ async function renderStudentHub() {
       <nav class="class-hub-tabs"><button class="${tab==='class'?'active':''}" data-action="student-hub-tab" data-tab="class">Overview</button><button class="${tab==='tasks'?'active':''}" data-action="student-hub-tab" data-tab="tasks">Tasks <b>${active.length}</b></button><button class="${tab==='activity'?'active':''}" data-action="student-hub-tab" data-tab="activity">Activity</button><button class="${tab==='skills'?'active':''}" data-action="student-hub-tab" data-tab="skills">Skills</button><button class="${tab==='settings'?'active':''}" data-action="student-hub-tab" data-tab="settings">Settings</button></nav>
       ${tab==='class'?`<div class="class-hub-grid"><main>
         <section class="class-hub-section live-class-section"><div class="class-section-head"><div><span class="eyebrow">Live now</span><h2>Class games</h2></div><small>Updates automatically</small></div><div id="class-live-games">${classHubGameListHtml(live)}</div></section>
-        <section class="class-hub-section"><div class="class-section-head"><div><span class="eyebrow">From your teacher</span><h2>Announcements</h2></div><button class="btn ghost small" data-action="open-discussion-board" data-class-id="${escapeHtml(cls.id)}">Ask teacher</button></div><div id="class-announcements"><div class="school-loading compact"><span class="spinner"></span><strong>Loading announcements…</strong></div></div></section>
+        <section class="class-hub-section"><div class="class-section-head"><div><span class="eyebrow">From your teacher</span><h2>Announcements</h2></div><div class="simple-actions"><button class="btn ghost small" data-action="open-discussion-board" data-class-id="${escapeHtml(cls.id)}">Ask teacher</button><button class="btn secondary small" id="class-student-post-button" data-action="open-class-post" data-class-id="${escapeHtml(cls.id)}">Post to class</button></div></div><div id="class-announcements"><div class="school-loading compact"><span class="spinner"></span><strong>Loading announcements…</strong></div></div></section>
         <section class="class-hub-section"><div class="class-section-head"><div><span class="eyebrow">Next up</span><h2>Class tasks</h2></div><button class="text-link" data-action="student-hub-tab" data-tab="tasks">View all</button></div><div class="assignment-list compact-class-task-list">${active.slice(0,3).map(studentAssignmentCard).join('')||'<div class="class-hub-empty">You are caught up.</div>'}</div></section>
       </main><aside>
         <section id="class-expedition-card" class="class-side-card"><div class="school-loading compact"><span class="spinner"></span><strong>Loading expedition…</strong></div></section>
@@ -7965,7 +8009,7 @@ async function renderTeacherHub() {
 
     const yearOptions = YEAR_LEVEL_OPTIONS.map(o=>o.value);
     root.innerHTML = `<section class="page school-page teacher-dashboard school-hierarchy-dashboard school-tab-${escapeHtml(schoolHubTab)}">
-      <div class="school-hub-head"><div><span class="eyebrow">School Dashboard</span><h1>${escapeHtml(selectedSchool.display_name || selectedSchool.name)}</h1><p>School ID ${escapeHtml(selectedSchool.code)} · ${escapeHtml(selectedSchool.curriculum || 'NSW')} · <strong>${escapeHtml(schoolRoleLabel(staffRole))}</strong></p></div><div class="school-switcher school-head-actions">${schools.length>1?`<select data-action="switch-school" aria-label="Choose school">${schools.map((item)=>`<option value="${item.id}" ${String(item.id)===String(selectedSchool.id)?'selected':''}>${escapeHtml(item.name)}</option>`).join('')}</select>`:''}<button class="btn primary" data-action="open-custom-assignment">＋ Create task</button><div class="teacher-more-wrap compact-teacher-tools"><button class="btn secondary teacher-more-button" data-action="toggle-teacher-more" aria-expanded="false">Tools <span>⌄</span></button><div class="teacher-more-menu" hidden><button data-action="teacher-tab" data-tab="library">Task Library</button><button data-action="teacher-more-action" data-tool="planner">Planner</button><button data-action="school-tab" data-tab="students">Students</button><button data-action="open-template-folders">Template folders</button><button data-action="open-authored-question-studio">Reviewed Question Studio</button><button data-action="open-integration-center">Integrations & SSO</button><button data-action="open-tutorial-video-manager">Tutorial videos</button><button data-action="teacher-more-action" data-tool="games">Classroom games</button><button data-action="open-announcement">Class announcement</button><button data-action="open-teacher-rewards">Give coins / Game Time</button></div></div></div></div>
+      <div class="school-hub-head"><div><span class="eyebrow">School Dashboard</span><h1>${escapeHtml(selectedSchool.display_name || selectedSchool.name)}</h1><p>School ID ${escapeHtml(selectedSchool.code)} · ${escapeHtml(selectedSchool.curriculum || 'NSW')} · <strong>${escapeHtml(schoolRoleLabel(staffRole))}</strong></p></div><div class="school-switcher school-head-actions">${schools.length>1?`<select data-action="switch-school" aria-label="Choose school">${schools.map((item)=>`<option value="${item.id}" ${String(item.id)===String(selectedSchool.id)?'selected':''}>${escapeHtml(item.name)}</option>`).join('')}</select>`:''}<button class="btn primary" data-action="open-custom-assignment">＋ Create task</button><div class="teacher-more-wrap compact-teacher-tools"><button class="btn secondary teacher-more-button" data-action="toggle-teacher-more" aria-expanded="false">Tools <span>⌄</span></button><div class="teacher-more-menu" hidden><button data-action="teacher-tab" data-tab="library">Task Library</button><button data-action="teacher-more-action" data-tool="planner">Planner</button><button data-action="school-tab" data-tab="students">Students</button><button data-action="open-template-folders">Template folders</button><button data-action="open-authored-question-studio">Reviewed Question Studio</button><button data-action="open-integration-center">Integrations & SSO</button><button data-action="open-tutorial-video-manager">Tutorial videos</button><button data-action="teacher-more-action" data-tool="games">Classroom games</button><button data-action="open-announcement">Class announcement</button><button data-action="open-class-announcements">Manage announcements</button><button data-action="open-class-controls">Student permissions</button><button data-action="open-teacher-rewards">Give coins / Game Time</button></div></div></div></div>
       ${teacherStartHereHtml()}
       <nav class="school-section-tabs" aria-label="School sections">${SCHOOL_HUB_TABS.map((tab)=>`<button class="${schoolHubTab===tab.id?'active':''}" data-action="school-tab" data-tab="${tab.id}">${tab.label}</button>`).join('')}</nav>
 
@@ -8010,7 +8054,7 @@ async function renderTeacherClass() {
     const skills = LESSONS.map(l=>l.id);
     root.innerHTML = `<section class="page school-page teacher-dashboard">
       <button class="back-link" data-route="teacher-hub">← School Hub</button>
-      <div class="class-detail-hero"><div><span class="eyebrow">${escapeHtml(yearLabel(cls.year_level))}</span><h1>${escapeHtml(cls.name || 'MathsExpress Class')}</h1><p class="class-detail-meta"><span>Student join code <b>${escapeHtml(cls.join_code || '------')}</b></span><span>${students.length} students</span><span>${assignments.length} tasks</span>${cls.room?`<span class="class-room-pill">Room ${escapeHtml(cls.room)}</span>`:''}${cls.archived?'<span class="class-archive-pill">Archived</span>':''}</p><div class="class-management-actions"><button class="btn ghost small" data-action="edit-class" data-class-id="${escapeHtml(classId)}">Edit class</button><button class="btn ghost small" data-action="toggle-class-archive" data-class-id="${escapeHtml(classId)}" data-archived="${cls.archived?'1':'0'}">${cls.archived?'Unarchive':'Archive'}</button><button class="btn danger small" data-action="delete-class" data-class-id="${escapeHtml(classId)}" data-class-name="${escapeHtml(cls.name||'this class')}">Delete</button></div></div><div class="hero-actions v10-class-actions"><button class="btn light" data-action="teacher-tab" data-tab="create">＋ Create assignment</button><details class="teacher-action-dropdown"><summary>More tools</summary><div><button class="btn ghost small" data-action="open-bulk-assign">Bulk assign</button><button class="btn ghost small" data-action="open-recognition">Sticker / note</button><button class="btn ghost small" data-action="open-class-expedition">Class expedition</button><button class="btn primary small" data-action="open-live-pulse" data-class-id="${escapeHtml(classId)}">Live class</button><button class="btn ghost small" data-action="open-focus-monitor" data-class-id="${escapeHtml(classId)}">Live focus</button><button class="btn ghost small" data-action="open-course-progress">Course progress</button><button class="btn ghost small" data-action="open-grouped-task-report">Task group report</button><button class="btn ghost small" data-action="open-class-planner">Planner</button><button class="btn ghost small" data-action="open-class-textbook-focus">Textbook focus</button><button class="btn ghost small" data-action="open-textbook-task-search">Search textbooks</button><button class="btn ghost small" data-action="export-gradebook">Export CSV</button><button class="btn ghost small" data-action="print-class-report">Print / PDF</button></div></details></div></div>
+      <div class="class-detail-hero"><div><span class="eyebrow">${escapeHtml(yearLabel(cls.year_level))}</span><h1>${escapeHtml(cls.name || 'MathsExpress Class')}</h1><p class="class-detail-meta"><span>Student join code <b>${escapeHtml(cls.join_code || '------')}</b></span><span>${students.length} students</span><span>${assignments.length} tasks</span>${cls.room?`<span class="class-room-pill">Room ${escapeHtml(cls.room)}</span>`:''}${cls.archived?'<span class="class-archive-pill">Archived</span>':''}</p><div class="class-management-actions"><button class="btn ghost small" data-action="edit-class" data-class-id="${escapeHtml(classId)}">Edit class</button><button class="btn ghost small" data-action="toggle-class-archive" data-class-id="${escapeHtml(classId)}" data-archived="${cls.archived?'1':'0'}">${cls.archived?'Unarchive':'Archive'}</button><button class="btn danger small" data-action="delete-class" data-class-id="${escapeHtml(classId)}" data-class-name="${escapeHtml(cls.name||'this class')}">Delete</button></div></div><div class="hero-actions v10-class-actions"><button class="btn light" data-action="teacher-tab" data-tab="create">＋ Create assignment</button><details class="teacher-action-dropdown"><summary>More tools</summary><div><button class="btn ghost small" data-action="open-bulk-assign">Bulk assign</button><button class="btn ghost small" data-action="open-class-controls">Student permissions</button><button class="btn ghost small" data-action="open-class-announcements">Manage announcements</button><button class="btn ghost small" data-action="open-recognition">Sticker / note</button><button class="btn ghost small" data-action="open-class-expedition">Class expedition</button><button class="btn primary small" data-action="open-live-pulse" data-class-id="${escapeHtml(classId)}">Live class</button><button class="btn ghost small" data-action="open-focus-monitor" data-class-id="${escapeHtml(classId)}">Live focus</button><button class="btn ghost small" data-action="open-course-progress">Course progress</button><button class="btn ghost small" data-action="open-grouped-task-report">Task group report</button><button class="btn ghost small" data-action="open-class-planner">Planner</button><button class="btn ghost small" data-action="open-class-textbook-focus">Textbook focus</button><button class="btn ghost small" data-action="open-textbook-task-search">Search textbooks</button><button class="btn ghost small" data-action="export-gradebook">Export CSV</button><button class="btn ghost small" data-action="print-class-report">Print / PDF</button></div></details></div></div>
       ${teacherSummaryCards(dashboard)}
       <div class="class-report-tabs" role="tablist" aria-label="Class report sections"><button type="button" role="tab" class="${teacherClassReportTab==='insights'?'active':''}" aria-selected="${teacherClassReportTab==='insights'}" data-action="class-report-tab" data-tab="insights">Insights</button><button type="button" role="tab" class="${teacherClassReportTab==='planner'?'active':''}" aria-selected="${teacherClassReportTab==='planner'}" data-action="class-report-tab" data-tab="planner">Planner</button><button type="button" role="tab" class="${teacherClassReportTab==='mastery'?'active':''}" aria-selected="${teacherClassReportTab==='mastery'}" data-action="class-report-tab" data-tab="mastery">Mastery</button><button type="button" role="tab" class="${teacherClassReportTab==='tasks'?'active':''}" aria-selected="${teacherClassReportTab==='tasks'}" data-action="class-report-tab" data-tab="tasks">Tasks</button></div>
       <div class="teacher-report-grid"><section class="school-section" data-report-panel="insights" ${teacherClassReportTab==='insights'?'':'hidden'}><div class="section-heading"><div><span class="eyebrow">Class Insights</span><h2>Students to watch</h2></div><span>${analytics.activeStudents}/${students.length} active this week</span></div><div class="student-table student-table-actions"><div class="student-row head"><span>Student</span><span>Recent score</span><span>Mastery</span><span>Status</span><span>Actions</span></div>${students.map(student=>{ const sa=attempts.filter(a=>a.student_id===student.user_id); const avg=sa.length?Math.round(sa.reduce((n,a)=>n+Number(a.score_percent||0),0)/sa.length):0; const sm=mastery.filter(m=>m.student_id===student.user_id); const mm=sm.length?Math.round(sm.reduce((n,m)=>n+Number(m.mastery||0),0)/sm.length):0; const focus=focusRows.find(f=>String(f.user_id)===String(student.user_id)); const focusFresh=focus?.updated_at && Date.now()-new Date(focus.updated_at).getTime()<90000; const focusState=focusFresh?(focus.state||'active'):'offline'; const focusLabel=focusState==='active'?'On MathsExpress':focusState==='hidden'||focusState==='away'?'Away from tab':'Offline'; return `<div class="student-row"><span><b>${escapeHtml(student.display_name)}</b><small>${escapeHtml(student.username || student.email || '')}</small></span><span>${avg}%</span><span><div class="mini-progress"><i style="width:${mm}%"></i></div>${mm}%</span><span class="live-state ${focusState==='active'?'working':focusState==='hidden'||focusState==='away'?'away':'offline'}">${focusLabel}${focus?.hidden_count?` · ${Number(focus.hidden_count)} switches`:''}</span><span class="student-row-actions"><details class="row-action-menu"><summary>Actions</summary><div><button class="btn ghost small" data-action="open-student-identity-editor" data-student-id="${escapeHtml(student.user_id)}">Edit account</button><button class="btn ghost small" data-action="open-teacher-feedback" data-student-id="${escapeHtml(student.user_id)}">Feedback</button><button class="btn ghost small" data-action="open-parent-message-teacher" data-student-id="${escapeHtml(student.user_id)}">Parent message</button><button class="btn ghost small" data-action="open-year-override" data-student-id="${escapeHtml(student.user_id)}">Year override</button></div></details></span></div>`}).join('') || '<div class="school-empty">Students who join with the class code will appear here.</div>'}</div></section>
@@ -8132,8 +8176,77 @@ async function handleSchoolSubmit(event) {
     if (form.id === 'recognition-form') {
       event.preventDefault(); if(!canUseTeacherHub(account))throw new Error('Only teachers can send recognition.'); if(!data.get('classId')||!data.get('studentId'))throw new Error('Choose a class and student first.'); await school.giveRecognition(data.get('classId'),data.get('studentId'),data.get('message'),data.get('sticker')); document.getElementById('modal-root').innerHTML=''; showToast('Recognition sent','The sticker and teacher note are on the student dashboard.','success'); return renderTeacherClass();
     }
+    if(form.id==='class-post-form'){
+      event.preventDefault();
+      const classId=String(data.get('classId')||selectedStudentClassId||'');
+      const subject=String(data.get('subject')||'').trim().slice(0,100);
+      const body=String(data.get('body')||'').trim().slice(0,2000);
+      if(!subject||!body)throw new Error('Add a title and message.');
+      const {error}=await accountClient.ensureClient().rpc('mathsexpress_create_class_post',{p_class_id:classId,p_subject:subject,p_body:body});
+      if(error)throw error;
+      document.getElementById('modal-root').innerHTML='';
+      showToast('Posted to class','Your message is visible in class updates.','success');
+      if(routeFromHash().route==='student-hub')return renderStudentHub();
+      return;
+    }
+    if(form.id==='class-controls-form'){
+      event.preventDefault();
+      const classId=String(data.get('classId')||'');
+      const {error}=await accountClient.ensureClient().rpc('mathsexpress_set_class_controls',{p_class_id:classId,p_games_enabled:data.get('games_enabled')==='on',p_announcements_enabled:data.get('announcements_enabled')==='on',p_student_posts_enabled:data.get('student_posts_enabled')==='on'});
+      if(error)throw error;
+      document.getElementById('modal-root').innerHTML='';
+      showToast('Class permissions updated','Students will receive the new rules.','success');
+      return;
+    }
     if (form.id === 'bulk-assign-form') {
-      event.preventDefault(); const ids=data.getAll('classIds').map(String).filter(Boolean); if(!ids.length)throw new Error('Choose at least one class.'); const task=getTaskById(String(data.get('taskId')||''))||TASK_LIBRARY[0]; if(!task)throw new Error('Task not found.'); const due=data.get('dueAt')?new Date(data.get('dueAt')).toISOString():null; const mode=String(data.get('mode')||'adaptive'); let created=0; for(const classId of ids){const a=await school.createAndAssignTask({classId,title:String(data.get('title')||task.title),type:mode==='adaptive'?'adaptive':task.type,topic:task.topic?.toLowerCase?.()||'mathematics',lessonId:task.lessonId,difficulty:mode==='adaptive'?'adaptive':task.difficulty,questionCount:task.questionCount,requiredMastery:task.masteryTarget,taskLibraryId:task.id,dueAt:due,hintsAllowed:true,testMode:false});created++;if(a?.id)void fireAndForgetRpc('mathsexpress_queue_parent_due_notifications',{p_assignment_id:String(a.id)});} document.getElementById('modal-root').innerHTML=''; showToast('Bulk assignment sent',`${created} class${created===1?'':'es'} received the task.`,'success'); return renderTeacherHub();
+      event.preventDefault();
+      if(form.dataset.submitting==='1')return;
+      const ids=[...new Set(data.getAll('classIds').map(String).filter(Boolean))];
+      if(!ids.length)throw new Error('Choose at least one class.');
+      if(ids.length>40)throw new Error('Please assign to 40 or fewer classes at once.');
+      const task=getTaskById(String(data.get('taskId')||''))||TASK_LIBRARY[0];
+      if(!task)throw new Error('Task not found.');
+      const due=data.get('dueAt')?new Date(data.get('dueAt')).toISOString():null;
+      const mode=String(data.get('mode')||'adaptive');
+      const allowedTypes=new Set(['practice','adaptive','lesson','worksheet','test','readiness','template','revision','recommended','self-directed-adaptive','express']);
+      const assignmentType=mode==='adaptive'?'adaptive':(allowedTypes.has(task.type)?task.type:'practice');
+      const submit=form.querySelector('[type="submit"]');
+      const text=submit?.textContent||'Assign to selected classes';
+      form.dataset.submitting='1';if(submit)submit.disabled=true;
+      const progress=document.createElement('p');progress.className='bulk-assign-progress';progress.setAttribute('role','status');progress.setAttribute('aria-live','polite');progress.textContent=`Assigning to ${ids.length} classes…`;
+      form.append(progress);
+      let index=0,created=0;const failures=[];
+      const run=async()=>{
+        while(index<ids.length){
+          const classId=ids[index++];
+          try{
+            const a=await school.createAndAssignTask({classId,title:String(data.get('title')||task.title),type:assignmentType,topic:task.topic?.toLowerCase?.()||'mathematics',lessonId:task.lessonId,difficulty:mode==='adaptive'?'adaptive':task.difficulty,questionCount:task.questionCount,requiredMastery:task.masteryTarget,taskLibraryId:task.id,dueAt:due,hintsAllowed:true,testMode:false});
+            created++;
+            if(a?.id)void fireAndForgetRpc('mathsexpress_queue_parent_due_notifications',{p_assignment_id:String(a.id)});
+          }catch(error){
+            failures.push({classId,message:String(error?.message||'Unknown error')});
+          }
+          progress.textContent=`${created} of ${ids.length} assigned · ${failures.length} failed`;
+          await new Promise(resolve=>setTimeout(resolve,0));
+        }
+      };
+      try{
+        await Promise.all(Array.from({length:Math.min(2,ids.length)},run));
+        if(failures.length){
+          const message=failures.slice(0,4).map(f=>`${teacherHubClasses.find(c=>String(c.id)===f.classId)?.name||'Class'}: ${f.message}`).join(' | ');
+          showToast(`${created} assigned · ${failures.length} failed`,message);
+          progress.textContent=`Finished: ${created} assigned, ${failures.length} failed. Fix these classes and try again.`;
+        }else{
+          document.getElementById('modal-root').innerHTML='';
+          showToast('Bulk assignment sent',`${created} class${created===1?'':'es'} received the task.`,'success');
+          schoolHubTab='assignments';
+          return renderTeacherHub();
+        }
+      }finally{
+        delete form.dataset.submitting;
+        if(submit){submit.disabled=false;submit.textContent=text;}
+      }
+      return;
     }
     if (form.id === 'education-domain-form') {
       event.preventDefault();
@@ -9382,6 +9495,20 @@ function handleClick(event) {
   if (action === 'create-exit-ticket') { exitTicket=createExitTicket('Current lesson',3); const classId=selectedTeacherClassId||teacherHubClasses.find(c=>!c.archived)?.id||null; const schoolId=selectedSchoolId||teacherHubClasses.find(c=>c.id===classId)?.school_id||null; if(classId&&schoolId) getSchoolClient().createStudioContent({schoolId,classId,type:'exit-ticket',title:'Exit Ticket',body:'Three-question end-of-lesson check',payload:{count:3}}).then(r=>{exitTicket.remoteId=r?.id||null;}).catch(()=>{}); showToast('Exit Ticket created','3-question end-of-lesson check is ready.','success'); teacherHubTab='library'; taskLibraryFilters={...taskLibraryFilters,questionCount:5}; return; }
   if (action === 'start-live-lesson') { if(!canUseTeacherHub(account))return showToast('Teacher feature','Teacher or Owner access is required.'); const classId=selectedTeacherClassId||teacherHubClasses.find(c=>!c.archived)?.id; if(!classId)return showToast('Choose a class','Create or open a class first.'); const schoolId=selectedSchoolId||teacherHubClasses.find(c=>c.id===classId)?.school_id||null; const school=getSchoolClient(); Promise.all([school.createClassroomSession(classId,'team-quiz',{liveLesson:true,questionCount:10}),schoolId?school.createStudioContent({schoolId,classId,type:'live-lesson',title:'Live Lesson',body:'Teacher-led live maths lesson',payload:{questionCount:10}}):Promise.resolve(null)]).then(()=>showToast('Live Lesson started','Students can join it from Games.','success')).catch(e=>showToast('Couldn’t start',e.message)); return; }
   if (action === 'open-student-groups') { const members=(lastTeacherReport?.students||[]).map((x,i)=>({id:x.studentId||x.user_id||i,name:x.displayName||x.display_name||'Student',mastery:Number(x.mastery||0)})); if(!members.length)return showToast('Open a class report first','Student Groups uses the students in the class report you open.'); const groups=buildStudentGroups(members,'balanced',3); return openSimpleModal('Student Groups',`<div class="differentiation-grid">${groups.map(g=>`<article><span class="eyebrow">${escapeHtml(g.name)}</span>${g.students.map(st=>`<p>${escapeHtml(st.name||st.displayName||'Student')}</p>`).join('')||'<p>Empty</p>'}</article>`).join('')}</div>`); }
+  if(action==='open-class-post'){
+    const classId=String(actionEl.dataset.classId||selectedStudentClassId||'');
+    if(!classId)return showToast('Choose a class','Open your class first.');
+    return openSimpleModal('Post to class',`<form id="class-post-form" class="school-form"><input type="hidden" name="classId" value="${escapeHtml(classId)}"><p>Share a message with your classmates and teacher. Your teacher can close or hide posts.</p><label>Title<input name="subject" required maxlength="100" placeholder="Class question or study tip"></label><label>Message<textarea name="body" required maxlength="2000" rows="4"></textarea></label><button class="btn primary" type="submit">Post to class</button></form>`);
+  }
+  if (action === 'open-class-controls') {void openClassControlsModal(actionEl.dataset.classId);return;}
+  if (action === 'open-class-announcements') {void openClassAnnouncementsModal(actionEl.dataset.classId);return;}
+  if (action === 'archive-class-announcement') {
+    const id=Number(actionEl.dataset.contentId), classId=String(actionEl.dataset.classId||'');
+    if(!Number.isSafeInteger(id)||id<1)return;
+    if(!globalThis.confirm?.('Delete this announcement? Students will no longer see it.'))return;
+    accountClient.ensureClient().rpc('mathsexpress_archive_class_announcement',{p_content_id:id}).then(({error})=>{if(error)throw error;showToast('Announcement deleted','It has been hidden from the class.','success');return openClassAnnouncementsModal(classId);}).catch(error=>showToast('Could not delete announcement',error.message));
+    return;
+  }
   if (action === 'open-announcement') { const classes=teacherHubClasses.filter(c=>!c.archived); return openSimpleModal('Class announcement',`<form id="announcement-form" class="school-form"><label>Class<select name="classId" required>${classes.map(c=>`<option value="${escapeHtml(c.id)}" ${String(c.id)===String(selectedTeacherClassId)?'selected':''}>${escapeHtml(c.name)}</option>`).join('')}</select></label><label>Title<input name="title" required maxlength="100"></label><label>Message<textarea name="body" rows="5" required maxlength="500"></textarea></label><button class="btn primary" type="submit">Send to class</button></form>`); }
   if (action === 'open-certificate') { const c=createCertificate({student:state.playerName,reason:'Outstanding progress in mathematics'}); return openSimpleModal('Certificate',`<div class="certificate-preview"><span>★</span><h2>${escapeHtml(c.title)}</h2><p>This certificate is presented to</p><h1>${escapeHtml(c.student)}</h1><p>${escapeHtml(c.reason)}</p><small>${escapeHtml(c.date)}</small></div>`,`<button class="btn primary" data-action="print-certificate">Print certificate</button>`); }
   if (action === 'print-certificate') { globalThis.print?.(); return; }
@@ -9869,6 +9996,14 @@ function handleV950Change(event){
   if(action==='school-usage-range'){schoolUsageRangeDays=Number(el.value)||30;void openSchoolUsageDashboard();return;}
   if(action==='district-range'){districtRangeDays=Number(el.value)||90;void openDistrictDashboard();return;}
   // These dropdowns were rendered without any change handler, so picking an option did nothing.
+  if(action==='switch-student-class'){
+    const next=String(el.value||'');
+    if(!next || next===String(selectedStudentClassId))return;
+    selectedStudentClassId=next;
+    studentHubTab='class';
+    stopClassHubLiveRefresh();
+    return void renderStudentHub();
+  }
   if(action==='switch-school'){selectedSchoolId=String(el.value||'');selectedTeacherClassId='';return renderTeacherHub();}
   if(action==='learn-year-select'){if(!canUseTeacherHub(account))return;learnYearLevel=normaliseYearLevel(el.value);return renderLearn();}
   if(action==='learning-path-year-select'){if(!canUseTeacherHub(account))return;persist({...state,learningPathYear:normaliseYearLevel(el.value)},{quiet:true});return renderLearningPath();}

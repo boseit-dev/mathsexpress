@@ -6152,3 +6152,36 @@ body.mx-reduced-motion .clove-mascot,body.mx-reduced-motion .clove-mascot img{an
 :where(.mx-dark,.mx-theme-dark) .mx-skill-detail-lead,:where(.mx-dark,.mx-theme-dark) .mx-skill-detail-list button{background:#252534!important;color:#f4f1ff!important;border-color:#4c4961!important}
 :where(.mx-dark,.mx-theme-dark) .assignment-side-rail .mx-assignment-bot-button{background:#302b49!important;color:#d5caff!important}
 @media(max-width:560px){.mx-skill-detail-list button{padding:11px 12px}.mx-skill-detail-lead{padding:14px}}
+
+/* v11.5.34 classroom and home layout cleanup */
+:root{--mx-dashboard-blue:#e3f9ff}
+.school-page:not(.mx-dark) .school-section,.school-page:not(.mx-dark) .school-hub-head,.school-page:not(.mx-dark) .teacher-start-here,.school-page:not(.mx-dark) .teacher-class-card-wrap,.school-page:not(.mx-dark) .school-settings-panel{background:#e3f9ff!important;border-color:#c7eaf4!important}
+.mx-coin-counter{display:inline-flex;align-items:center;gap:7px;border:1px solid #f0db9e!important;border-radius:18px!important;background:linear-gradient(135deg,#fff9e8,#fff1bf)!important;box-shadow:0 2px 8px #b9913922;padding:5px 11px!important;color:#784d09!important}
+.mx-coin-counter .v10-coin-icon{display:inline-grid;place-items:center;background:linear-gradient(140deg,#ffe18a,#dca63a);border:2px solid #f9d974;border-radius:50%;width:23px;height:23px;box-shadow:inset 0 0 0 2px #c98838;color:#fff2a9!important;font-size:11px;font-weight:900}
+.mx-coin-counter strong{font-size:14px;font-variant-numeric:tabular-nums;color:#784d09!important}
+.mx-home-sidebar-panel{margin-top:14px;padding:18px!important}
+.mx-home-sidebar-panel .mx-home-pomodoro-card{display:flex;gap:12px;align-items:start;padding:14px;min-height:0}
+.mx-home-sidebar-panel .mx-home-pomodoro-icon{flex:0 0 44px;width:44px;height:44px;font-size:20px}
+.mx-home-sidebar-panel .mx-home-pomodoro-copy{min-width:0}
+.mx-home-sidebar-panel .mx-home-pomodoro-copy small{font-size:12px}
+.mx-home-sidebar-panel .mx-home-pomodoro-action{font-size:12px}
+.mx-home-sidebar-panel .mx-home-panel-head{gap:8px;flex-wrap:wrap}
+.mx-home-sidebar-panel .mx-home-pill-link{font-size:13px!important;padding:8px 12px!important}
+.mx-home-sidebar-panel .mx-home-panel-head h2{font-size:21px!important}
+.mx-permission-row{display:flex!important;align-items:center;gap:12px;padding:14px;border:1px solid #d7e7e8;border-radius:14px;background:#f5fcff}
+.mx-permission-row input{width:19px;height:19px;flex:none}
+.mx-permission-row span{display:grid;gap:4px}.mx-permission-row small{color:#5e6975;font-size:12px}
+.mx-announcement-manager{display:grid;gap:12px}
+.mx-announcement-manager article{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px;background:#f1faff;border-radius:14px;border:1px solid #d9eaee}
+.mx-announcement-manager article>div{min-width:0}.mx-announcement-manager article small{display:block;margin:4px 0;color:#667}
+.bulk-assign-progress{margin:12px 0 0;padding:12px;border-radius:12px;background:#e3f9ff;color:#254b5e;font-weight:700}
+.class-title-line{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.class-hub-select{max-width:min(380px,90vw);min-width:220px;min-height:48px;font-size:17px!important;padding:10px 42px 10px 16px!important;border:1px solid #cfdcdd;border-radius:14px;background:#fff;cursor:pointer}
+@media(max-width:900px){.mx-home-sidebar-panel .mx-home-pomodoro-card{flex-wrap:wrap}.mx-announcement-manager article{align-items:flex-start}.class-hub-select{min-width:170px}}
+:where(.mx-dark,.mx-theme-dark) .mx-coin-counter{background:#42311b!important;border-color:#74582e!important;color:#f8deaa!important}:where(.mx-dark,.mx-theme-dark) .mx-coin-counter strong{color:#f8deaa!important}
+:where(.mx-dark,.mx-theme-dark) .mx-home-sidebar-panel,:where(.mx-dark,.mx-theme-dark) .mx-announcement-manager article,:where(.mx-dark,.mx-theme-dark) .mx-permission-row{background:#242934!important;border-color:#394456!important}
+
+:where(.mx-dark,.mx-theme-dark) .school-page .school-section,:where(.mx-dark,.mx-theme-dark) .school-page .school-hub-head,:where(.mx-dark,.mx-theme-dark) .school-page .teacher-start-here,:where(.mx-dark,.mx-theme-dark) .school-page .teacher-class-card-wrap,:where(.mx-dark,.mx-theme-dark) .school-page .school-settings-panel{background:#242934!important;border-color:#384358!important}
+
+.school-page:not(.mx-dark) .school-overview-main,.school-page:not(.mx-dark) .school-role-card,.school-page:not(.mx-dark) .school-count-grid button{background:#e3f9ff!important;border-color:#c7eaf4!important}
+:where(.mx-dark,.mx-theme-dark) .school-page .school-overview-main,:where(.mx-dark,.mx-theme-dark) .school-page .school-role-card,:where(.mx-dark,.mx-theme-dark) .school-page .school-count-grid button{background:#242934!important;border-color:#384358!important}

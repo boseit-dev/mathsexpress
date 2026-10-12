@@ -58,7 +58,7 @@ test('CSP allows the exact Receptra origin for scripts, frames, and connections'
 
 test('service worker refreshes cached homepage and caches installer', () => {
   const sw = fs.readFileSync(path.join(pub, 'service-worker.js'),'utf8');
-  assert.match(sw, /mathsexpress-v11-5-33-learn-cleanup/);
+  assert.match(sw, /mathsexpress-v11-5-34-class-controls/);
   assert.match(sw, /'\.\/receptra-widget\.js'/);
 });
 

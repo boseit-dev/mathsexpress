@@ -34,6 +34,6 @@ test('account creation is handled on the server, not with a browser-exposed admi
 test('owner action patch refreshes the static script and service worker cache', () => {
   const appHtml = fs.readFileSync(path.join(root, 'public/app.html'), 'utf8');
   const sw = fs.readFileSync(path.join(root, 'public/service-worker.js'), 'utf8');
-  assert.match(appHtml, /deploy-app\.js\?v=11\.5\.33/);
-  assert.match(sw, /mathsexpress-v11-5-33-learn-cleanup/);
+  assert.match(appHtml, /deploy-app\.js\?v=11\.5\.34/);
+  assert.match(sw, /mathsexpress-v11-5-34-class-controls/);
 });
