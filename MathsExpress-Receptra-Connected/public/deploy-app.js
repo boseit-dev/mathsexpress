@@ -692,6 +692,51 @@ function setOwnerActivityAutoRefresh(active) {
 
 const pendingLearningUpdates=new Set();
 const pendingMissionClaims=new Set();
+// The daily mission card uses the same server evidence as the rewards RPC.
+// Local quest counters are useful for offline achievements, but must not offer Claim.
+let dailyMissionStatus=null;
+let dailyMissionStatusOwner='';
+function dailyMissionUserId(){return String(account.profile?.userId||account.session?.user?.id||'');}
+function missionSchoolDay(){
+  try{
+    const parts=new Intl.DateTimeFormat('en-AU',{timeZone:'Australia/Sydney',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+    const fields=Object.fromEntries(parts.map(x=>[x.type,x.value]));
+    return `${fields.year}-${fields.month}-${fields.day}`;
+  }catch{return localDateString();}
+}
+let dailyMissionStatusLoadedAt=0;
+let dailyMissionStatusLoading=null;
+let dailyMissionStatusError='';
+function redrawDailyMissionCards(){
+  if(routeFromHash().route!=='learn')return;
+  const target=document.querySelector('.daily-mission-grid');
+  if(target)target.innerHTML=dailyMissionCards();
+}
+async function refreshDailyMissionStatus(force=false){
+  if(!account.authenticated)return null;
+  const day=missionSchoolDay();
+  const userId=dailyMissionUserId();
+  if(dailyMissionStatusOwner!==userId){dailyMissionStatus=null;dailyMissionStatusLoadedAt=0;}
+  if(dailyMissionStatusLoading)return dailyMissionStatusLoading;
+  if(!force && dailyMissionStatus?.day===day && Date.now()-dailyMissionStatusLoadedAt<10000)return dailyMissionStatus;
+  dailyMissionStatusError='';
+  const load=getSchoolClient().myDailyMissions().then(data=>{
+    if(!data || typeof data!=='object' || !data.missions || typeof data.missions!=='object')throw new Error('Daily mission progress was unavailable');
+    if(!account.authenticated || dailyMissionUserId()!==userId)return null;
+    dailyMissionStatus=data;
+    dailyMissionStatusOwner=userId;
+    dailyMissionStatusLoadedAt=Date.now();
+    return data;
+  }).catch(error=>{
+    if(dailyMissionUserId()===userId){dailyMissionStatus=null;dailyMissionStatusLoadedAt=0;}
+    dailyMissionStatusError=String(error?.message||'Could not load today’s progress.');
+    console.warn('Daily missions could not be refreshed',error);
+    throw error;
+  }).finally(()=>{dailyMissionStatusLoading=null;redrawDailyMissionCards();});
+  dailyMissionStatusLoading=load;
+  redrawDailyMissionCards();
+  return load;
+}
 function trackLearningUpdate(promise){const tracked=Promise.resolve(promise);pendingLearningUpdates.add(tracked);tracked.finally(()=>pendingLearningUpdates.delete(tracked)).catch(()=>{});return tracked;}
 function trackActivityEvent(eventType, category='system', action='', details={}) {
   if(!account.authenticated) return Promise.resolve(null);
@@ -1024,7 +1069,14 @@ function loadStateForAccount(profile) {
 }
 
 function syncAccountSession(snapshot = accountClient.snapshot()) {
+  const previousUser=dailyMissionUserId();
   account = snapshot;
+  if(previousUser!==dailyMissionUserId()){
+    dailyMissionStatus=null;
+    dailyMissionStatusOwner='';
+    dailyMissionStatusLoadedAt=0;
+    dailyMissionStatusError='';
+  }
   updateAccountChrome();
   if (account.authenticated && account.profile) loadStateForAccount(account.profile);
 }
@@ -1730,31 +1782,46 @@ function ensureDailyMissions(){
 }
 function dailyMissionCards(){
   ensureDailyMissions();
-  const claimed=new Set(state.dailyMissionClaims||[]);
+  const live=dailyMissionStatusOwner===dailyMissionUserId()&&dailyMissionStatus?.day===missionSchoolDay()?dailyMissionStatus.missions:null;
   return Object.values(QUEST_DEFINITIONS).map(q=>{
-    const row=state.quests?.[q.id]||{progress:0,target:q.target,complete:false};
-    const done=Boolean(row.complete); const isClaimed=claimed.has(q.id); const reward=DAILY_MISSION_REWARDS[q.id]||{label:'5 coins'};
-    const pct=Math.min(100,Math.round((Number(row.progress)||0)/Math.max(1,Number(row.target)||1)*100));
-    return `<article class="daily-mission-card ${done?'complete':''}"><div class="daily-mission-icon">${done?'✓':'✦'}</div><div class="daily-mission-copy"><strong>${escapeHtml(q.title)}</strong><small>${escapeHtml(q.description)}</small><div class="daily-mission-progress"><i style="width:${pct}%"></i></div><span>${Number(row.progress)||0}/${Number(row.target)||0} · ${escapeHtml(reward.label||'Reward')}</span></div><button class="btn ${done&&!isClaimed?'primary':'ghost'} small" data-action="claim-daily-mission" data-mission-id="${escapeHtml(q.id)}" ${!done||isClaimed?'disabled':''}>${isClaimed?'Claimed':done?'Claim':'In progress'}</button></article>`;
+    const row=live?.[q.id];
+    const ready=Boolean(row);
+    const progress=ready?Math.max(0,Number(row.progress)||0):0;
+    const done=ready&&Boolean(row.complete);
+    const isClaimed=ready&&Boolean(row.claimed);
+    const reward=DAILY_MISSION_REWARDS[q.id]||{label:'5 coins'};
+    const pct=ready?Math.min(100,Math.round(progress/Math.max(1,Number(q.target)||1)*100)):0;
+    const buttonLabel=ready?(isClaimed?'Claimed':done?'Claim':'In progress'):(dailyMissionStatusError?'Retry':'Checking…');
+    const buttonAction=ready?'claim-daily-mission':'refresh-daily-missions';
+    const disabled=ready?(!done||isClaimed):!dailyMissionStatusError;
+    const progressText=ready?`${Math.min(progress,q.target)}/${q.target}`:'Checking server progress';
+    return `<article class="daily-mission-card ${done?'complete':''}"><div class="daily-mission-icon">${done?'✓':'✦'}</div><div class="daily-mission-copy"><strong>${escapeHtml(q.title)}</strong><small>${escapeHtml(q.description)}</small><div class="daily-mission-progress"><i style="width:${pct}%"></i></div><span>${escapeHtml(progressText)} · ${escapeHtml(reward.label||'Reward')}</span></div><button class="btn ${done&&!isClaimed?'primary':'ghost'} small" data-action="${buttonAction}" data-mission-id="${escapeHtml(q.id)}" ${disabled?'disabled':''}>${buttonLabel}</button></article>`;
   }).join('');
 }
 async function claimDailyMission(id){
   ensureDailyMissions();
-  const q=state.quests?.[id]; const claimed=new Set(state.dailyMissionClaims||[]);
-  if(!q?.complete || claimed.has(id) || pendingMissionClaims.has(id)) return;
+  if(!QUEST_DEFINITIONS[id] || pendingMissionClaims.has(id))return;
   pendingMissionClaims.add(id);
   try{
+    // Wait for any question writes before consulting the verified mission counts.
     await Promise.allSettled([...pendingLearningUpdates]);
+    const latest=await refreshDailyMissionStatus(true);
+    const row=latest?.missions?.[id];
+    if(!row?.complete){
+      showToast('Keep practising',`The server has recorded ${Math.max(0,Number(row?.progress)||0)} of ${QUEST_DEFINITIONS[id].target} needed for this mission.`);
+      return;
+    }
+    if(row.claimed){showToast('Already claimed','This reward has already been claimed today.');return;}
     const result=await getSchoolClient().claimDailyMission(id);
-    claimed.add(id);
-    state=persist({...state,coins:Number(result.coins??state.coins??0),xp:Number(result.xp??state.xp??0),dailyMissionClaims:[...claimed]},{quiet:true});
-    if(account.profile) account={...account,profile:{...account.profile,coins:Number(result.coins??account.profile.coins??0),xp:Number(result.xp??account.profile.xp??0)}};
+    state=persist({...state,coins:Number(result.coins??state.coins??0),xp:Number(result.xp??state.xp??0)},{quiet:true});
+    if(account.profile)account={...account,profile:{...account.profile,coins:Number(result.coins??account.profile.coins??0),xp:Number(result.xp??account.profile.xp??0)}};
     updateChrome();
     const reward=DAILY_MISSION_REWARDS[id]||{label:'Mission reward'};
     showToast(result.already_claimed?'Already claimed':'Mission claimed',result.already_claimed?'This mission was already claimed today.':reward.label,'reward');
-    if(routeFromHash().route==='learn') renderLearn();
-  }catch(error){showToast('Could not claim mission',error?.message||'Your progress could not sync. Try Claim again.');}
-  finally{pendingMissionClaims.delete(id);}
+    await refreshDailyMissionStatus(true);
+  }catch(error){
+    showToast('Could not claim mission',error?.message||'Your progress could not sync. Try Claim again.');
+  }finally{pendingMissionClaims.delete(id);}
 }
 
 function questRows() {
@@ -2305,13 +2372,19 @@ function planBlocksPractice(){
 }
 function planDailyKey(key){ return planInTeacherWork()?`asg:${activeSchoolAssignment.id}:${key}`.slice(0,180):key; }
 function recordPlanAttempt(key,correct){
-  if(!account.authenticated)return;
-  getSchoolClient().recordDailyQuestionAttempt(planDailyKey(key),correct).then(r=>{
+  if(!account.authenticated)return Promise.resolve();
+  const write=getSchoolClient().recordDailyQuestionAttempt(planDailyKey(key),correct).then(r=>{
     if(planState&&r&&r.questions_left!==undefined){ planState={...planState,questions_today:r.questions_today,questions_left:r.questions_left}; updatePlanChrome(); }
+    dailyMissionStatusLoadedAt=0;
+    return r;
   }).catch(error=>{
     const msg=planErrorMessage(error);
     if(msg){ if(planState)planState={...planState,questions_left:0}; updatePlanChrome(); showUpgradeModal(msg); }
+    else console.warn('A question could not be recorded for Daily Missions',error);
+    throw error;
   });
+  // Claim waits for these writes, not only for XP/reward requests.
+  return trackLearningUpdate(write.catch(()=>null));
 }
 // Feature locks run in the capture phase, before any other click handler.
 const PLAN_LOCKED_ACTIONS={
@@ -4056,6 +4129,9 @@ function renderLearn() {
     </div>`;
   const focusClass=selectedStudentClassId||null;
   if(focusClass && String(focusClass)!==activeClassSkillFocusClassId) void loadClassSkillFocus(focusClass,{render:true});
+  if(account.authenticated && (dailyMissionStatusOwner!==dailyMissionUserId() || dailyMissionStatus?.day!==missionSchoolDay() || Date.now()-dailyMissionStatusLoadedAt>10000)){
+    void refreshDailyMissionStatus().catch(()=>{});
+  }
 }
 
 function startLesson(lessonId) {
@@ -5235,7 +5311,7 @@ async function submitLessonAnswer() {
   currentLesson.recent = currentLesson.recent.slice(-3);
 
   const rewardKey=`lesson:${currentLesson.runId}:${q.id}`;
-  if(account.authenticated&&attemptNumber===1) recordPlanAttempt(rewardKey,result.correct);
+  if(account.authenticated) void recordPlanAttempt(rewardKey,result.correct);
   let nextState = applyQuestionResult(state, { eventId:`${rewardKey}:attempt:${attemptNumber}`, firstAttempt:attemptNumber===1, correct: result.correct, topic:q.topic, lessonId:q.lessonId, xp:q.xp, difficulty:q.difficulty });
   if (result.correct) nextState = awardQuestionGameTime(nextState, rewardKey);
   else nextState = { ...nextState, mistakeBook: [...(nextState.mistakeBook || []), { questionId:q.id, prompt:q.prompt, skill:getLessonById(q.lessonId)?.title || q.topic || 'Maths', correct:false, createdAt:new Date().toISOString() }].slice(-500) };
@@ -5429,7 +5505,7 @@ async function submitGeneratedTaskAnswer() {
 
   if(correct!==initialMarkedCorrect)currentGeneratedTask.correct=Math.max(0,currentGeneratedTask.correct+(correct?1:-1));
   const rewardKey=`generated:${currentGeneratedTask.task.id}:${currentGeneratedTask.startedAt}:${q.id}`;
-  if(account.authenticated&&attemptsBefore===0) recordPlanAttempt(rewardKey,correct);
+  if(account.authenticated && !needsReview) void recordPlanAttempt(rewardKey,correct);
   let nextState = state;
   if (!needsReview) {
     nextState = applyQuestionResult(state, { eventId:`${rewardKey}:attempt:${attemptNumber}`, firstAttempt:attemptsBefore===0, correct, difficulty:q.complexity, xp:q.xp, topic:'curriculum', lessonId:null });
@@ -9117,7 +9193,8 @@ function handleClick(event) {
   }
   if (action === 'owner-adjust-user-rewards') { const userId=actionEl.dataset.userId||''; getSchoolClient().ownerAdjustUserRewards(userId,{coinsDelta:document.getElementById('owner-user-coins-delta')?.value||0,xpDelta:document.getElementById('owner-user-xp-delta')?.value||0,gameTimeDelta:document.getElementById('owner-user-game-delta')?.value||0}).then(()=>{showToast('Rewards updated','Coins, XP and Game Time were updated.','success');openOwnerUserDetail(userId);}).catch(e=>showToast('Could not update rewards',e.message)); return; }
   if (action === 'owner-send-password-reset') { const email=actionEl.dataset.email||''; if(!email)return showToast('No email','This account has no email address.'); accountClient.resetPassword(email).then(()=>showToast('Password reset sent','A secure password-reset email was requested.','success')).catch(e=>showToast('Could not send reset',e.message)); return; }
-  if (action === 'claim-daily-mission') { claimDailyMission(actionEl.dataset.missionId||''); return; }
+  if (action === 'claim-daily-mission') { void claimDailyMission(actionEl.dataset.missionId||''); return; }
+  if (action === 'refresh-daily-missions') { void refreshDailyMissionStatus(true).catch(()=>showToast('Daily missions unavailable','Please check your connection and try again.')); return; }
   if (action === 'mark-notice-read') { const id=actionEl.dataset.noticeId||''; persist({...state,notifications:(state.notifications||[]).map(n=>n.id===id?{...n,read:true}:n)},{quiet:true}); return renderHome(); }
   if (action === 'learning-path-year') { if(!canUseTeacherHub(account)) return; persist({...state,learningPathYear:normaliseYearLevel(actionEl.dataset.year)},{quiet:true}); return renderLearningPath(); }
   if (action === 'start-recommended-path' || action === 'start-adaptive-practice') { const skill=recommendedLearningPathSkill(); const task=taskForLearningSkill(skill,'adaptive',10); if(!task)return showToast('No practice found','Choose a skill from Learn.'); activeSchoolAssignment=null; return startGeneratedTask(task.id,{returnRoute:routeFromHash().route}); }
