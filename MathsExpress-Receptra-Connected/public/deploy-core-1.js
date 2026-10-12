@@ -1271,6 +1271,71 @@ function dragDropQuestion(task,index,prompt,items,answer,solution,complexity,hin
   return {id:`${task.id}:q${index+1}`,lessonId:task.lessonId,topic:task.topic.toLowerCase(),difficulty:complexity,complexity,type:'drag-drop',prompt,items,answer,hints:[hint,solution],workedSolution:solution,xp:14+complexity*8};
 }
 
+// v11.5.27: HSC-level question forms for Year 12. Every answer is computed from the same values
+// shown in the prompt, so the marking key always matches the question.
+function seniorHscQuestion(task, index, r, form, g) {
+  const m = form % 4;
+  const k = int(r, 2, 5), b = int(r, 1, 4), n = int(r, 2, 4);
+  if (g === 'calculus-diff') {
+    if (m === 0) { const a = int(r,1,3); return numericQuestion(task,index,`f(x) = (${a}x + ${b})^${n}. Find f′(1).`, n*a*(a+b)**(n-1), `Chain rule: f′(x) = ${n}·${a}(${a}x + ${b})^${n-1}; at x = 1 this is ${n*a}×${a+b}^${n-1}.`,3,'Use the chain rule: differentiate the outside, then multiply by the derivative of the inside.'); }
+    if (m === 1) { return numericQuestion(task,index,`y = x²(x + ${b}). Find dy/dx when x = ${k}.`, 3*k*k+2*b*k, `Product rule: dy/dx = 2x(x + ${b}) + x² = 3x² + ${2*b}x; at x = ${k}: ${3*k*k} + ${2*b*k}.`,3,'Use the product rule, or expand first.'); }
+    if (m === 2) { return numericQuestion(task,index,`f(x) = x³ − ${3*k*k}x. Find the x-coordinate of the local minimum.`, k, `f′(x) = 3x² − ${3*k*k} = 0 gives x = ±${k}; f″(${k}) = ${6*k} > 0, so the minimum is at x = ${k}.`,3,'Set f′(x) = 0, then use f″(x) to classify.'); }
+    return numericQuestion(task,index,`Find the gradient of the tangent to y = e^(${k}x) + ${b}x at x = 0.`, k+b, `dy/dx = ${k}e^(${k}x) + ${b}; at x = 0 this is ${k} + ${b}.`,3,'d/dx e^(kx) = k·e^(kx).');
+  }
+  if (g === 'calculus-int') {
+    if (m === 0) return numericQuestion(task,index,`Evaluate ∫₀^${k} (3x² + ${2*b}x) dx.`, k**3+b*k*k, `[x³ + ${b}x²] from 0 to ${k} = ${k**3} + ${b*k*k}.`,3,'Integrate each term, then substitute the limits.');
+    if (m === 1) { const kk = pick(r,[3,6]); return numericQuestion(task,index,`Find the area enclosed between y = x² and y = ${kk}x.`, kk**3/6, `They meet at x = 0 and x = ${kk}. Area = ∫₀^${kk} (${kk}x − x²) dx = ${kk}³/6.`,3,'Find where the curves meet, then integrate (top − bottom).'); }
+    if (m === 2) return numericQuestion(task,index,`Evaluate ∫₁^(e^${n}) (1/x) dx.`, n, `∫ 1/x dx = ln x; ln(e^${n}) − ln 1 = ${n}.`,3,'The antiderivative of 1/x is ln|x|.');
+    return numericQuestion(task,index,`Evaluate ∫₀^${k} (2x + ${b}) dx.`, k*k+b*k, `[x² + ${b}x] from 0 to ${k} = ${k*k} + ${b*k}.`,2);
+  }
+  if (g === 'logarithm') {
+    if (m === 0) return numericQuestion(task,index,`Solve log₂(x + ${b}) = ${n+1}.`, 2**(n+1)-b, `x + ${b} = 2^${n+1} = ${2**(n+1)}, so x = ${2**(n+1)-b}.`,3,'Rewrite the log equation in index form.');
+    if (m === 1) return numericQuestion(task,index,`Solve 3^(2x − 1) = ${3**(2*n-1)}.`, n, `${3**(2*n-1)} = 3^${2*n-1}, so 2x − 1 = ${2*n-1} and x = ${n}.`,3,'Write both sides as powers of 3.');
+    if (m === 2) return numericQuestion(task,index,`Evaluate log₂(${2**(n+2)}) + log₂(${2**k}) − log₂(4).`, n+2+k-2, `${n+2} + ${k} − 2 = ${n+k}.`,2,'Use the log laws or evaluate each term.');
+    return numericQuestion(task,index,`If logₐ2 = 0.4 and logₐ3 = 0.6, find logₐ(${2**b*3}).`, Number((0.4*b+0.6).toFixed(2)), `logₐ(2^${b}×3) = ${b}×0.4 + 0.6.`,3,'Break the number into powers of 2 and 3.');
+  }
+  if (g === 'exponential') {
+    if (m % 2 === 0) { const P=pick(r,[100,200,500]); return numericQuestion(task,index,`A population of ${P} doubles every ${n} years (P = P₀e^(kt)). Find the population after ${3*n} years.`, P*8, `${3*n} years is 3 doubling periods, so ${P} × 2³ = ${P*8}.`,3,'Count the number of doubling periods.'); }
+    return numericQuestion(task,index,`How many real solutions does e^(2x) − ${k+1}e^x + ${k} = 0 have?`, 2, `Let u = e^x: (u − 1)(u − ${k}) = 0 gives u = 1 or ${k}, so x = 0 or ln ${k}.`,3,'Substitute u = e^x to get a quadratic.');
+  }
+  if (g === 'trig-function') {
+    if (m === 0) return numericQuestion(task,index,`How many solutions does sin x = 1/2 have for 0 ≤ x ≤ ${2*k}π?`, 2*k, `There are 2 solutions in each 2π cycle, and there are ${k} cycles.`,3,'Count the solutions in one period, then the number of periods.');
+    if (m === 1) { const kk=pick(r,[2,3,4,6]); return numericQuestion(task,index,`What is the period of y = ${b}sin(${kk}x), in degrees?`, 360/kk, `Period = 360° ÷ ${kk}.`,2); }
+    if (m === 2) return numericQuestion(task,index,`What is the maximum value of y = ${k}cos x + ${b}?`, k+b, `cos x has a maximum of 1, so ${k}(1) + ${b}.`,2);
+    return numericQuestion(task,index,`Solve 2cos x = 1 for 0° ≤ x ≤ 360°. Give the sum of the solutions (degrees).`, 360, `cos x = 1/2 gives x = 60° and 300°; the sum is 360°.`,3,'Use the exact value, then the quadrants where cosine is positive.');
+  }
+  if (g === 'sequence') {
+    if (m === 0) return numericQuestion(task,index,`Find the limiting sum of ${2*k} + ${k} + ${k}/2 + …`, 4*k, `a = ${2*k}, r = 1/2, so S∞ = ${2*k} ÷ (1 − 1/2) = ${4*k}.`,3,'S∞ = a / (1 − r) when |r| < 1.');
+    if (m === 1) { const nn=int(r,8,15); return numericQuestion(task,index,`Find the sum of the first ${nn} terms of ${b}, ${b+k}, ${b+2*k}, …`, nn*(2*b+(nn-1)*k)/2, `Sₙ = n/2[2a + (n − 1)d] = ${nn}/2 × (${2*b} + ${(nn-1)*k}).`,3,'Arithmetic series formula.'); }
+    return numericQuestion(task,index,`Find the sum of the first ${n+3} terms of ${b} + ${2*b} + ${4*b} + …`, b*(2**(n+3)-1), `Geometric: a = ${b}, r = 2, Sₙ = a(rⁿ − 1)/(r − 1) = ${b}(2^${n+3} − 1).`,3,'Geometric series formula.');
+  }
+  if (g === 'polynomial') {
+    if (m % 2 === 0) return numericQuestion(task,index,`Find the remainder when P(x) = x³ + ${b}x − ${k} is divided by (x − ${n}).`, n**3+b*n-k, `Remainder theorem: P(${n}) = ${n**3} + ${b*n} − ${k}.`,3,'Remainder theorem: substitute the root of the divisor.');
+    return numericQuestion(task,index,`The roots of x³ − ${k+b+n}x² + … = 0 are α, β and γ. Find α + β + γ.`, k+b+n, `For ax³ + bx² + … the sum of roots is −b/a = ${k+b+n}.`,3,'Sum of roots = −b/a.');
+  }
+  if (g === 'function-eval') {
+    if (m % 2 === 0) return numericQuestion(task,index,`f(x) = x² + ${b} and g(x) = ${k}x − 1. Find f(g(2)).`, (2*k-1)**2+b, `g(2) = ${2*k-1}, then f(${2*k-1}) = ${(2*k-1)**2} + ${b}.`,3,'Work from the inside out.');
+    return numericQuestion(task,index,`f(x) = ${k}x + ${b}. Find f⁻¹(${k*n+b}).`, n, `Solve ${k}x + ${b} = ${k*n+b}: x = ${n}.`,3,'f⁻¹(y) is the x that gives y.');
+  }
+  if (g === 'probability-conditional') { const X=pick(r,[5,10,15]); return numericQuestion(task,index,`In a group, 20 students play basketball and ${X} of them also play soccer. A basketballer is chosen at random. Find P(soccer | basketball).`, X/20, `P(S | B) = ${X}/20.`,3,'Restrict the sample space to basketballers.'); }
+  if (g === 'distribution') {
+    if (m % 2 === 0) return numericQuestion(task,index,`X takes values 0, 1, 2, 3 with probabilities 0.1, 0.2, 0.3, 0.4. Find E(X).`, 2, `E(X) = 0(0.1) + 1(0.2) + 2(0.3) + 3(0.4) = 2.`,3,'E(X) = Σ x·P(X = x).');
+    const mu=pick(r,[50,60,70]), sd=pick(r,[5,8,10]); return numericQuestion(task,index,`Scores are normally distributed with mean ${mu} and standard deviation ${sd}. Find the z-score of ${mu+k*sd}.`, k, `z = (${mu+k*sd} − ${mu}) ÷ ${sd} = ${k}.`,2,'z = (x − μ) / σ.');
+  }
+  if (g === 'finance-annuity') { const P=pick(r,[1000,2000,5000]); return numericQuestion(task,index,`$${P} is invested at the end of each year for 2 years at 10% p.a. compound interest. Find the future value of the annuity ($).`, Math.round(P*2.1), `FV = ${P}[(1.1)² − 1] ÷ 0.1 = ${P} × 2.1.`,3,'FV = M[(1 + r)ⁿ − 1] / r.'); }
+  if (g === 'trig-right') {
+    const [p1,p2] = pick(r,[[8,3],[5,8],[8,5],[3,8]]);
+    return numericQuestion(task,index,`In triangle ABC, b = ${p1}, c = ${p2} and A = 60°. Find a.`, 7, `Cosine rule: a² = ${p1}² + ${p2}² − 2(${p1})(${p2})cos 60° = ${p1*p1+p2*p2-p1*p2} = 49, so a = 7.`,3,'Cosine rule: a² = b² + c² − 2bc cos A.');
+  }
+  if (g === 'measurement-composite') { const sf=pick(r,[2,3,4]), A=pick(r,[6,10,12,15]); return numericQuestion(task,index,`Two similar shapes have a length scale factor of 1 : ${sf}. The smaller has area ${A} cm². Find the area of the larger (cm²).`, A*sf*sf, `Area scale factor = ${sf}² = ${sf*sf}, so ${A} × ${sf*sf}.`,3,'Areas scale by the square of the length scale factor.'); }
+  if (g === 'networks') { const x=int(r,2,6), y=int(r,2,6), z=int(r,3,9); return numericQuestion(task,index,`A network has edges A–B ${x} km, B–D ${y} km, A–C ${z} km, C–D ${x+y+1} km and B–C ${Math.max(1,z-x)} km. Find the shortest path length from A to D (km).`, Math.min(x+y, z+x+y+1, x+Math.max(1,z-x)+x+y+1), `Compare the routes A–B–D = ${x+y}, A–C–D = ${z+x+y+1}, A–B–C–D = ${x+Math.max(1,z-x)+x+y+1}; the shortest is ${Math.min(x+y, z+x+y+1, x+Math.max(1,z-x)+x+y+1)}.`,3,'List every route from A to D and compare totals.'); }
+  if (g === 'probability-compound') { const t=pick(r,[[7,6],[8,5],[9,4],[10,3],[6,5]]); return numericQuestion(task,index,`Two fair dice are rolled. Find P(sum = ${t[0]}) as a fraction of 36 — give the number of favourable outcomes.`, t[1], `Count the pairs that add to ${t[0]}: there are ${t[1]} of the 36 outcomes.`,3,'Use a 6 × 6 table of outcomes.'); }
+  if (g === 'linear-graph') { const fixed=pick(r,[200,300,500]), price=pick(r,[15,20,25]), cost=pick(r,[5,10]); return numericQuestion(task,index,`A business has fixed costs of $${fixed} and makes items for $${cost} each, selling them for $${price}. How many items must be sold to break even?`, fixed/(price-cost), `Break-even when ${price}n = ${fixed} + ${cost}n, so n = ${fixed} ÷ ${price-cost}.`,3,'Set income equal to costs.'); }
+  if (g === 'modelling') { const V=pick(r,[20000,30000,40000]); return numericQuestion(task,index,`A car worth $${V} depreciates by 10% per year (declining balance). Find its value after 2 years ($).`, Math.round(V*0.81), `V = ${V} × 0.9² = ${V} × 0.81.`,3,'Use V = V₀(1 − r)ⁿ.'); }
+  if (g === 'ratio-rate') { const kmh=pick(r,[36,54,72,90]); return numericQuestion(task,index,`Convert ${kmh} km/h to metres per second.`, kmh/3.6, `${kmh} km/h × 1000 ÷ 3600 = ${kmh/3.6} m/s.`,2,'1 km/h = 1000 m ÷ 3600 s.'); }
+  if (g === 'statistics-distribution' || g === 'sampling') { const mu=pick(r,[40,55,70]), sd=pick(r,[4,5,10]); return numericQuestion(task,index,`A data set has mean ${mu} and standard deviation ${sd}. What score is ${k} standard deviations above the mean?`, mu+k*sd, `${mu} + ${k}×${sd}.`,2); }
+  return null;
+}
 function generateByFamily(task, index) {
   const r = rngFor(`${task.id}:${index}`);
   // Variant and task type now change the mathematical form, not just the numbers.
@@ -1280,6 +1345,8 @@ function generateByFamily(task, index) {
   const g = task.generator;
   const a = int(r, 2, tier === 1 ? 9 : 14), b = int(r, 2, tier === 3 ? 15 : 10), c = int(r, 1, tier === 3 ? 12 : 8);
 
+  // Year 12 uses HSC-level forms (multi-step, chain/product rule, log equations, ...) instead of the Year 11 basics.
+  if (Number(task.yearLevel) === 12) { const hsc = seniorHscQuestion(task, index, r, form, g); if (hsc) return hsc; }
   // K–2 question families use smaller numbers, short language and visualisable contexts.
   if (g === 'early-counting') {
     const max = task.yearLevel === 0 ? 20 : task.yearLevel === 1 ? 100 : 1000;

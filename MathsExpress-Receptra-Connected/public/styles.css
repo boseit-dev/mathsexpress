@@ -6008,3 +6008,89 @@ body.assignment-guard-active #app-view{visibility:hidden}
 .upgrade-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:2px 10px;border-radius:99px;background:#3b7c5a;color:#fff;font-size:11px;font-weight:700}
 :where(.mx-dark,.mx-theme-dark) .plan-question-meter{background:#3a3115;color:#ffe08a;border-color:#5a4a1e}
 @media (max-width:520px){.plan-question-meter{left:8px;bottom:8px}}
+/* v11.5.27 — numbered badges stay perfect circles */
+.game-time-steps b,.onboarding-steps b,.step-number,.numbered-step b{flex:0 0 32px;width:32px;height:32px;min-width:32px;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;line-height:1;font-size:15px;font-variant-numeric:tabular-nums}
+.game-time-steps span{line-height:1.35}
+/* v11.5.27 — self-directed (no school) accounts: hide class and school features */
+body.mx-self-directed [data-route="student-hub"],
+body.mx-self-directed [data-action="open-student-parent"],
+body.mx-self-directed [data-action="join-class-game"],
+body.mx-self-directed [data-action="open-class-challenge"],
+body.mx-self-directed [data-action="open-class-growth"],
+body.mx-self-directed .mx-home-assigned-panel,
+body.mx-self-directed .home-assigned-task-card{display:none!important}
+.optional-tag{font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:rgba(127,127,127,.15);margin-left:4px}
+/* v11.5.27 — Learn hub */
+.learn-hub{display:grid;gap:14px;margin:6px 0 18px}
+.learn-hub-card{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:18px 20px;border-radius:18px;border:1px solid rgba(127,127,127,.2);background:var(--panel,#fffdf8)}
+.learn-hub-card h2{margin:4px 0;font-size:20px}.learn-hub-card p{margin:0;opacity:.8}
+.placement-card{background:linear-gradient(135deg,#eef6ff,#f4f1ff)}.review-card{background:linear-gradient(135deg,#fff6e8,#fffdf5)}
+.learn-hub-head{display:flex;justify-content:space-between;align-items:end;margin-top:4px}.learn-hub-head h2{margin:2px 0 0}
+.topic-progress-list{display:grid;gap:10px}
+.topic-progress{padding:14px 16px;border-radius:16px;border:1px solid rgba(127,127,127,.18);background:var(--panel,#fff)}
+.topic-progress-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.topic-progress-top span{font-size:13px;opacity:.75}
+.topic-bar{height:12px;border-radius:99px;background:rgba(127,127,127,.16);margin:10px 0;overflow:hidden}
+.topic-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#3b7c5a,#6cc493);transition:width .4s}
+.topic-progress-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.topic-progress-actions small{opacity:.8}
+.learn-browse{margin-top:8px}.learn-browse>summary{cursor:pointer;font-weight:700;padding:12px 0;opacity:.85}
+.skill-map{display:grid;gap:14px}.skill-map-legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px}
+.skill-map-legend span{padding:3px 10px;border-radius:99px}
+.skill-map-strand h3{margin:0 0 8px;font-size:15px}
+.skill-map-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.skill-node{display:grid;gap:2px;text-align:left;max-width:190px;padding:8px 10px;border-radius:12px;border:2px solid transparent;font:inherit;cursor:pointer}
+.skill-node b{font-size:13px}.skill-node small{font-size:11px;opacity:.8}
+.skill-arrow{opacity:.5;font-weight:800}
+.mastered,.skill-node.mastered{background:#dff3e6;color:#1d5a37}.learning,.skill-node.learning{background:#fff1c7;color:#6b4e00}
+.needs-work,.skill-node.needs-work{background:#fde0dc;color:#8a2a1d}.not-started,.skill-node.not-started{background:#eeeeee;color:#55575c}
+.mistake-explain-list{display:grid;gap:10px}.mistake-explain-list article{padding:12px;border-radius:12px;background:rgba(127,127,127,.08)}
+.mistake-explain-list p{margin:6px 0}.mistake-explain-list span{font-weight:700}
+:where(.mx-dark,.mx-theme-dark) .learn-hub-card,:where(.mx-dark,.mx-theme-dark) .topic-progress{background:#1b1e27!important;border-color:#3a3f4e!important;color:#eef0f6}
+:where(.mx-dark,.mx-theme-dark) .skill-node.mastered{background:#173726;color:#bff0d2}:where(.mx-dark,.mx-theme-dark) .skill-node.learning{background:#3a3115;color:#ffe08a}
+:where(.mx-dark,.mx-theme-dark) .skill-node.needs-work{background:#3d1d19;color:#ffc2b8}:where(.mx-dark,.mx-theme-dark) .skill-node.not-started{background:#2a2d36;color:#d8dbe4}
+@media(max-width:620px){.learn-hub-card{flex-direction:column;align-items:flex-start}}
+/* v11.5.27 — expandable task textbook */
+.task-textbook-toolbar{display:flex;justify-content:flex-end;margin:-4px 0 8px}
+.modal.task-textbook-modal{width:min(820px,96vw)!important;max-width:820px!important}
+.modal.task-textbook-modal.textbook-expanded{width:96vw!important;max-width:96vw!important;height:92vh;max-height:92vh;overflow:auto}
+.modal.task-textbook-modal.textbook-expanded .task-textbook-panel{font-size:17px;line-height:1.6}
+/* v11.5.27 — Clove moves: gentle idle bob, pose-specific animations, pop-in */
+@keyframes clove-bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-6px) rotate(-1.5deg)}}
+@keyframes clove-wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-6deg)}75%{transform:rotate(6deg)}}
+@keyframes clove-jump{0%,100%{transform:translateY(0) scale(1)}30%{transform:translateY(-16px) scale(1.04)}55%{transform:translateY(0) scale(.97,1.03)}}
+@keyframes clove-tilt{0%,100%{transform:rotate(0)}50%{transform:rotate(5deg)}}
+@keyframes clove-breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.035)}}
+@keyframes clove-pop{0%{opacity:0;transform:scale(.6) translateY(10px)}70%{opacity:1;transform:scale(1.06)}100%{transform:scale(1)}}
+.clove-mascot{animation:clove-pop .5s ease-out both}
+.clove-mascot img{transform-origin:50% 90%;animation:clove-bob 3.2s ease-in-out infinite}
+.clove-happy img,.clove-thumbsup img{animation:clove-wiggle 2.6s ease-in-out infinite}
+.clove-celebrate img,.clove-done img{animation:clove-jump 1.4s ease-in-out infinite}
+.clove-thinking img,.clove-idea img,.clove-reading img{animation:clove-tilt 2.8s ease-in-out infinite}
+.clove-sleep img{animation:clove-breathe 3.6s ease-in-out infinite}
+.clove-mascot:hover img{animation-duration:.9s}
+.clove-avatar-img{width:100%;height:100%;object-fit:contain;border-radius:50%}
+.clove-think-anim{animation:clove-tilt 1.2s ease-in-out infinite}
+.learn-hub-card .clove-mascot{flex:0 0 72px;width:72px}.learn-hub-card .clove-mascot img{width:72px;height:auto}
+.upgrade-modal .clove-mascot{justify-self:center;width:96px}.upgrade-modal .clove-mascot img{width:96px;height:auto}
+@media (prefers-reduced-motion: reduce){.clove-mascot,.clove-mascot img,.clove-think-anim{animation:none!important}}
+body.mx-reduced-motion .clove-mascot,body.mx-reduced-motion .clove-mascot img{animation:none!important}
+/* v11.5.27 — cleaner level / time / points / coins strip */
+.v10-icon-stats{display:inline-flex!important;align-items:stretch;gap:0!important;padding:3px!important;border-radius:14px!important;background:var(--panel,#fff)!important;border:1px solid rgba(36,35,43,.1)!important;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+.v10-icon-stats .stat-pill{display:flex!important;align-items:center;gap:6px;padding:6px 12px!important;border:0!important;border-radius:11px!important;background:transparent!important;box-shadow:none!important;min-height:32px}
+.v10-icon-stats .stat-pill+.stat-pill{border-left:1px solid rgba(36,35,43,.1)!important;border-radius:0!important}
+.v10-icon-stats .stat-pill strong{font-variant-numeric:tabular-nums;font-weight:800;font-size:14px;letter-spacing:-.01em}
+.v10-icon-stats .level-pill{background:linear-gradient(135deg,#3b7c5a,#5fae84)!important;border-radius:11px!important;color:#fff!important}
+.v10-icon-stats .level-pill .v10-level-label,.v10-icon-stats .level-pill strong{color:#fff!important}
+.v10-icon-stats .v10-level-label{font-size:10px;font-weight:900;opacity:.9}
+.v10-icon-stats .v10-stat-icon{font-size:15px;line-height:1}
+.v10-icon-stats .coin-pill strong{color:#9a6b00}
+:where(.mx-dark,.mx-theme-dark) .v10-icon-stats{background:#1b1e27!important;border-color:#3a3f4e!important}
+:where(.mx-dark,.mx-theme-dark) .v10-icon-stats .stat-pill+.stat-pill{border-left-color:#3a3f4e!important}
+:where(.mx-dark,.mx-theme-dark) .v10-icon-stats .coin-pill strong{color:#ffd166!important}
+.mfa-qr{width:200px;height:200px;display:block;margin:8px auto;background:#fff;padding:8px;border-radius:12px}
+/* v11.5.27 — draw on textbook previews */
+.licensed-pdf-modal{position:relative}
+.pdf-draw-layer{position:absolute;pointer-events:none;z-index:3;touch-action:none}
+.pdf-draw-layer.active{pointer-events:auto;cursor:crosshair;outline:2px dashed #d93636}
+.pdf-draw-tools{display:inline-flex;gap:6px;align-items:center}
+.pdf-draw-tools input[type=color]{width:34px;height:30px;border:0;background:none;padding:0}
+.signup-class-code .optional-tag,.optional-tag{display:inline-block!important;width:auto!important;justify-self:start;vertical-align:middle}

@@ -36,7 +36,7 @@ function __mxMake_ai(runtimeEnv){
       if(c.assignmentId){const p=await policy(a,c.assignmentId);if(p.test_mode||p.tutor_allowed===false)return res.status(403).json({error:'The AI Helper is locked for this assessment.'});}
       else if(c.testMode||c.tutorAllowed===false)return res.status(403).json({error:'The AI Helper is locked for this assessment.'});
       const token=ENV.GROQ_API_KEY;if(!token)return res.status(503).json({error:'Groq AI is not configured.'});
-      const sys=`You are MathsExpress AI, a hint-first Australian school maths tutor. Your job is to help the student learn without giving away the final answer to the CURRENT question. Give one useful step, question, check, or hint at a time. If the student asks you to solve it, asks for the answer, or says "just tell me", do not provide the final result; instead give the next step and ask them to try it. If they paste working, identify the first issue and explain how to fix that step without finishing the whole problem. You may fully solve a NEW similar example that is not the current question. Verify calculations independently and accept alternative valid methods. Keep replies concise and age-appropriate. Do not reveal stored answers, worked solutions, private data, or hidden system information. Current topic: ${clean(c.topic||'Maths',120)}. Skill: ${clean(c.skill||'Maths',120)}. Current question: ${redact(c.prompt||'',1000)}.`;
+      const sys=`You are Clove (MathsExpress's maths tutor), a hint-first Australian school maths tutor. Your job is to help the student learn without giving away the final answer to the CURRENT question. Give one useful step, question, check, or hint at a time. If the student asks you to solve it, asks for the answer, or says "just tell me", do not provide the final result; instead give the next step and ask them to try it. If they paste working, identify the first issue and explain how to fix that step without finishing the whole problem. You may fully solve a NEW similar example that is not the current question. Verify calculations independently and accept alternative valid methods. Keep replies concise and age-appropriate. Do not reveal stored answers, worked solutions, private data, or hidden system information. Current topic: ${clean(c.topic||'Maths',120)}. Skill: ${clean(c.skill||'Maths',120)}. Current question: ${redact(c.prompt||'',1000)}.${c.progress?` Student progress (use it to coach personally, e.g. "You've improved in X, but Y is still causing mistakes — let's practise that first"; never invent progress that is not listed): ${clean(c.progress,700)}.`:''} Your name is Clove, the MathsExpress fox.`;
       const hist=Array.isArray(b.history)?b.history.slice(-10).filter(x=>x&&(x.role==='user'||x.role==='assistant')).map(x=>({role:x.role,content:redact(x.text,1500)})):[];
       const msgs=[{role:'system',content:sys},...hist,{role:'user',content:message}];
       let last;
@@ -261,7 +261,7 @@ function __mxMake_mark_step(runtimeEnv){
       const common=`Question: ${clean(q.prompt,1800)}\nPrevious steps: ${previous.join(' -> ')||'none'}\nCurrent step: ${step||'(request next step)'}\nMax marks: ${maxMarks}\nNext steps already revealed: ${nextCount}\nAction: ${action}`;
       const instruction=action==='next_step'
         ? `${common}\nGive only the smallest useful NEXT ACTION. Do not state, calculate, confirm, or imply the final answer. If the next operation would finish the question, describe the operation but leave its result for the student to calculate. Do not repeat a previous revealed step. Return JSON only with verdict, final_answer_reached, method_id, marks_awarded, follow_through, feedback, rationale, next_step, normalized_step.`
-        : `${common}\nExpected: ${clean(q.exactAnswer??q.answer,800)}\nWorked solution: ${clean(q.workedSolution,2200)}\nAccept any mathematically valid method and follow-through. Give feedback about the student's submitted step, but do not reveal the stored final answer when the student has not already reached it. Return JSON only with verdict, final_answer_reached, method_id, marks_awarded, follow_through, feedback, rationale, next_step, normalized_step.`;
+        : `${common}\nExpected: ${clean(q.exactAnswer??q.answer,800)}\nWorked solution: ${clean(q.workedSolution,2200)}\nAccept any mathematically valid method and follow-through. FIRST decide whether the submitted step is actually working for THIS question (uses its numbers, variables or a valid transformation of them). If it is unrelated, copied filler, a different question, or just restates the question, set related_to_question false, verdict "unrelated" and marks_awarded 0, and say briefly why. Give feedback about the student's submitted step, but do not reveal the stored final answer when the student has not already reached it. Return JSON only with verdict, related_to_question, final_answer_reached, method_id, marks_awarded, follow_through, feedback, rationale, next_step, normalized_step.`;
   
       const r=await fetch(GROQ_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({model:MODEL,messages:[{role:'system',content:'You are a precise maths step-marking engine. Keep current-question help hint-first and never reveal its stored final answer. Return JSON only.'},{role:'user',content:instruction}],temperature:.05,max_completion_tokens:800,response_format:{type:'json_object'}})});
       const d=await r.json().catch(()=>({}));
@@ -272,6 +272,8 @@ function __mxMake_mark_step(runtimeEnv){
       const cap=Math.max(1,maxMarks-nextCount-(action==='next_step'?1:0));
       out.marks_possible=maxMarks;
       out.marks_awarded=action==='next_step'?0:Math.max(0,Math.min(cap,Number(out.marks_awarded)||0));
+      // Working that does not relate to the question never earns marks.
+      if(action!=='next_step'&&(out.related_to_question===false||String(out.verdict||'').toLowerCase()==='unrelated')){out.marks_awarded=0;out.related_to_question=false;}
       return res.status(200).json(out);
     }catch(e){
       return res.status(Number(e.status)||500).json({error:clean(e.message||'Could not mark this step.',300)});
@@ -527,6 +529,45 @@ async function __mxBillingWebhook(request,env){
   return __mxJson({received:true,granted:true});
 }
 
+// ---- Owner account creation (v11.5.27) --------------------------------------------------
+// Owner/admin only (checked with the caller's own token). Creates a confirmed account, sets the
+// profile, optional plan and class, then emails the person a link to choose their own password.
+const MX_ROLES=new Set(['player','parent','teacher','bug_tester','content_editor','support','admin']);
+async function __mxOwnerCreateUser(request,env){
+  if(request.method!=='POST')return __mxJson({error:'POST only.'},405);
+  if(!env?.SUPABASE_SERVICE_ROLE_KEY)return __mxJson({error:'Account creation needs the SUPABASE_SERVICE_ROLE_KEY Worker secret.',code:'not_configured'},503);
+  const authz=request.headers.get('authorization')||'';
+  if(!authz.startsWith('Bearer '))return __mxJson({error:'Sign in required.'},401);
+  const check=await fetch(`${MX_PUBLIC_SUPABASE_URL}/rest/v1/rpc/mathsexpress_is_platform_admin`,{method:'POST',headers:{apikey:MX_PUBLIC_SUPABASE_KEY,Authorization:authz,'Content-Type':'application/json'},body:'{}'});
+  if(!check.ok||(await check.json().catch(()=>false))!==true)return __mxJson({error:'Owner or admin access required.'},403);
+  const b=await request.json().catch(()=>({}));
+  const email=String(b.email||'').trim().toLowerCase();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)||email.length>200)return __mxJson({error:'Enter a valid email.'},400);
+  const role=MX_ROLES.has(b.role)?b.role:'player';
+  const year=Math.max(1,Math.min(12,Math.round(Number(b.yearLevel)||9)));
+  const name=String(b.displayName||email.split('@')[0]).trim().slice(0,40);
+  const plan=['primary_pro','secondary_pro','complete'].includes(b.plan)?b.plan:'free';
+  const svc={apikey:env.SUPABASE_SERVICE_ROLE_KEY,Authorization:`Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,'Content-Type':'application/json'};
+  const cr=await fetch(`${MX_PUBLIC_SUPABASE_URL}/auth/v1/admin/users`,{method:'POST',headers:svc,body:JSON.stringify({email,email_confirm:true,user_metadata:{display_name:name,created_by_owner:true}})});
+  const created=await cr.json().catch(()=>null);
+  if(!cr.ok||!created?.id)return __mxJson({error:created?.msg||created?.message||'Could not create the account (it may already exist).'},400);
+  const uid=created.id;
+  const pr=await fetch(`${MX_PUBLIC_SUPABASE_URL}/rest/v1/account_profiles?on_conflict=user_id`,{method:'POST',headers:{...svc,Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid,email,display_name:name,role,status:'active',year_level:year})});
+  if(!pr.ok)return __mxJson({error:'Account created but the profile could not be set. Edit it in the Owner Console.',user_id:uid},207);
+  if(plan!=='free')await fetch(`${MX_PUBLIC_SUPABASE_URL}/rest/v1/rpc/mathsexpress_grant_plan`,{method:'POST',headers:svc,body:JSON.stringify({p_user:uid,p_plan:plan,p_days:365,p_source:'owner',p_reference:`owner-create:${uid}`})});
+  let classNote='';
+  const code=String(b.classCode||'').trim().toUpperCase();
+  if(/^[A-Z0-9]{6}$/.test(code)){
+    const cl=await fetch(`${MX_PUBLIC_SUPABASE_URL}/rest/v1/mathrift_classes?join_code=eq.${code}&select=id&limit=1`,{headers:svc});
+    const rows=await cl.json().catch(()=>[]);
+    if(rows?.[0]?.id){ await fetch(`${MX_PUBLIC_SUPABASE_URL}/rest/v1/mathrift_class_members`,{method:'POST',headers:{...svc,Prefer:'resolution=ignore-duplicates,return=minimal'},body:JSON.stringify({class_id:rows[0].id,student_id:uid})}); classNote='Added to the class.'; }
+    else classNote='Class code not found, so no class was joined.';
+  }
+  const origin=new URL(request.url).origin;
+  await fetch(`${MX_PUBLIC_SUPABASE_URL}/auth/v1/recover?redirect_to=${encodeURIComponent(origin+'/app.html')}`,{method:'POST',headers:{apikey:MX_PUBLIC_SUPABASE_KEY,'Content-Type':'application/json'},body:JSON.stringify({email})});
+  return __mxJson({ok:true,user_id:uid,email,role,plan,note:`A link to set their password was emailed to ${email}. ${classNote}`.trim()});
+}
+
 const __mxFactories={
   '/api/ai':__mxMake_ai,
   '/api/integrations':__mxMake_integrations,
@@ -542,6 +583,7 @@ export default {
     if(routePath==='/api/signup') return __mxProxySignup(request);
     if(routePath==='/api/billing/checkout') return __mxBillingCheckout(request,env);
     if(routePath==='/api/billing/webhook') return __mxBillingWebhook(request,env);
+    if(routePath==='/api/owner/create-user') return __mxOwnerCreateUser(request,env);
     if(routePath.startsWith('/api/supabase/')) return __mxProxySupabase(request,env);
     const factory=__mxFactories[routePath];
     if(factory){

@@ -118,6 +118,7 @@ begin
   v_used:=private.mx_free_questions_today(auth.uid());
   select count(*) into v_hints from public.mathsexpress_hint_usage where user_id=auth.uid() and used_at>=private.mx_sydney_day_start();
   return v_info || jsonb_build_object(
+    'in_class', exists(select 1 from public.mathrift_class_members m join public.mathrift_classes c on c.id=m.class_id and not c.archived where m.student_id=auth.uid()),
     'daily_question_limit', case when v_paid then null else 15 end,
     'questions_today', v_used,
     'questions_left', case when v_paid then null else greatest(0,15-v_used) end,

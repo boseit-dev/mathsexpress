@@ -177,6 +177,7 @@ function routeFromHash() {
 
 function go(route, param = '') {
   if (!ROUTES.includes(route)) route = 'home';
+  if (route==='student-hub' && typeof isSelfDirected==='function' && isSelfDirected()) route='learn';
   const target = `#${route}${param ? `/${param}` : ''}`;
   if (globalThis.location.hash === target) render();
   else globalThis.location.hash = target;
@@ -270,7 +271,7 @@ const CLOUD_APP_STATE_KEYS = Object.freeze([
   'accessibilityPrefs','drivingSettings','drivingQuestionHistory','ownedDrivingTracks','drivingHighScore','updateNotesSeen',
   'textbookBookmarks','textbookProgress','textbookLastSection','textbookNotes','diagnosticHistory','skillCheckInHistory','skillCheckInSchedule',
   'personalLearningPath','confidenceAttempts','notebookPages','flashcards','focusMode','dashboardLayout','preferredLanguage','spacedReviews',
-  'plannerTasks','weeklyGoalQuestions','weeklyQuestionsCompleted','mistakeBook','goals','favoriteQuestionIds','customWorksheets','parentSettings',
+  'plannerTasks','skillLastPractised','skillAttemptCounts','placementResult','weeklyGoalQuestions','weeklyQuestionsCompleted','mistakeBook','goals','favoriteQuestionIds','customWorksheets','parentSettings',
   'calendarItems','gameSchedule','gameStats','challengeHistory','learningPathYear','workbookMultiplier','workbookQuestionStreak',
   'v7BestWork','v7DiagnosticHistory','v7PuzzleStreak','v7SeasonProgress','v7Teams','onboardingComplete',
   'themePrefs','recommendationPrefs','characterAppearance'
@@ -542,8 +543,11 @@ function recordGeneratedTaskMastery(run,task,accuracy) {
   const secretFlags={...(state.secretFlags||{})};
   if(hour>=22)secretFlags.nightOwl=true;
   if(hour<=6)secretFlags.earlyBird=true;
+  const skillKey=skillStateKey(resolvedSkillId,task.yearLevel);
   const next={...state,
-    skillMasteryMap:{...(state.skillMasteryMap||{}),[skillStateKey(resolvedSkillId,task.yearLevel)]:blended},
+    skillLastPractised:{...(state.skillLastPractised||{}),[skillKey]:Date.now()},
+    skillAttemptCounts:{...(state.skillAttemptCounts||{}),[skillKey]:(Number(state.skillAttemptCounts?.[skillKey])||0)+1},
+    skillMasteryMap:{...(state.skillMasteryMap||{}),[skillKey]:blended},
     spacedReviews:scheduleSkillReviews(task,accuracy),
     weeklyQuestionsCompleted:(Number(state.weeklyQuestionsCompleted)||0)+Number(run.questions?.length||0),
     secretFlags,
@@ -903,8 +907,8 @@ function updateChrome() {
   const model = buildDashboardModel(state);
   const setText = (id, text) => { const el = document.getElementById(id); if (el) el.textContent = text; };
   setText('top-level', model.level);
-  setText('top-xp', `${model.xp} XP`);
-  setText('top-coins', model.coins);
+  setText('top-xp', `${Number(model.xp||0).toLocaleString()} XP`);
+  setText('top-coins', Number(model.coins||0).toLocaleString());
   setText('top-points', Math.max(0,Number(account.profile?.weeklyPoints)||0).toLocaleString());
   setText('top-streak', model.streak);
   setText('top-game-time', formatGameTime(state.gameTimeSeconds));
@@ -939,7 +943,7 @@ function updateAccountChrome() {
   chip.classList.toggle('owner', canUseOwnerConsole(account));
   name.textContent = signed ? (account.profile.role === 'player' ? displayNameFromEmail(account.profile.email) : account.profile.displayName) : 'Sign in';
   role.textContent = signed ? (getEquippedCosmetic(state,'title')?.name || platformRoleLabel(account.profile.role).toUpperCase()) : 'ACCOUNT REQUIRED';
-  document.querySelectorAll('#header-sign-out,#menu-sign-out').forEach(button=>{button.hidden=!signed;});
+  document.querySelectorAll('#menu-sign-out').forEach(button=>{button.hidden=!signed;});
   const ownerButton = document.getElementById('owner-console-button');
   if (ownerButton) ownerButton.hidden = !canUseOwnerConsole(account);
   const ownerTopButton = document.getElementById('owner-console-top-button');
@@ -1098,10 +1102,10 @@ function showAuthGate(message = '') {
           <form id="auth-signup-form" class="auth-form v10-signup-form" ${signupMode?'':'hidden'}>
             <div class="auth-form-head"><span class="eyebrow">New account</span><h2>Create your MathsExpress account</h2><p>Choose your role and enter your email.</p></div>
             <fieldset class="account-type-picker"><legend>Account type</legend>
-              <label><input type="radio" name="accountType" value="student" checked><span><b>Student</b><small>Join classes and complete work</small></span></label>
+              <label><input type="radio" name="accountType" value="student" checked><span><b>Student</b><small>Practise on your own or join a school class</small></span></label>
               <label><input type="radio" name="accountType" value="teacher"><span><b>Teacher</b><small>Create classes, assign work and view reports</small></span></label>
             </fieldset>
-            <label class="signup-class-code">Class code<input id="auth-signup-class-code" name="classCode" maxlength="6" minlength="6" autocomplete="off" autocapitalize="characters" placeholder="ABC123" pattern="[A-Za-z0-9]{6}" required><small class="field-help">The 6-character code from your teacher. You join the class as soon as your account is created.</small></label>
+            <label class="signup-class-code">School class code <span class="optional-tag">optional</span><input id="auth-signup-class-code" name="classCode" maxlength="6" minlength="6" autocomplete="off" autocapitalize="characters" placeholder="Leave blank to learn on your own" pattern="[A-Za-z0-9]{6}"><small class="field-help">Only if your school gave you a code. Without one you get your own self-paced MathsExpress.</small></label>
             <label>Email<input id="auth-signup-email" type="email" autocomplete="email" placeholder="name@example.com" required><small class="field-help">You may need to confirm your email before logging in.</small></label>
             <label>Password<input id="auth-signup-password" type="password" minlength="10" autocomplete="new-password" placeholder="At least 10 characters" required></label>
             <label>Confirm password<input id="auth-signup-password-confirm" type="password" minlength="10" autocomplete="new-password" placeholder="Type it again" required><small class="field-help">If verification is required, check your inbox first.</small></label>
@@ -1114,6 +1118,7 @@ function showAuthGate(message = '') {
 }
 
 async function finishAuthentication(snapshot) {
+  if(!(await requireMfaIfEnrolled())){ try{ await accountClient.signOut?.(); }catch{} showAuthGate('Login cancelled. A security code is required for this account.'); return; }
   syncAccountSession(snapshot);
   pendingSignup=null;
   try {
@@ -1168,7 +1173,7 @@ async function handleAuthSubmit(event) {
       const password=document.getElementById('auth-signup-password').value;
       if(password!==document.getElementById('auth-signup-password-confirm').value) throw new Error('The two passwords do not match.');
       const classCode=String(document.getElementById('auth-signup-class-code')?.value||'').trim().toUpperCase();
-      if(accountType==='student' && !/^[A-Z0-9]{6}$/.test(classCode)) throw new Error('Enter the 6-character class code from your teacher.');
+      if(accountType==='student' && classCode && !/^[A-Z0-9]{6}$/.test(classCode)) throw new Error('A school class code has 6 letters or numbers. Leave it blank to learn on your own.');
       const result = await accountClient.signUp(signupEmail, password, displayNameFromEmail(signupEmail), accountType);
       if(result.needsConfirmation){
         // Stay logged out until the user verifies the email. The class code is never
@@ -1181,11 +1186,11 @@ async function handleAuthSubmit(event) {
       await finishAuthentication(result);
       // Codes are checked by the rate-limited mathrift_join_class after sign-in rather than by an anonymous
       // lookup, which would let anyone enumerate class codes. A bad code leaves the student on Join your class.
-      if(accountType==='student' && account.authenticated){
-        try { await getSchoolClient().joinClass(classCode); showToast('Class joined','Your class tasks will appear in the Class tab.','success'); }
+      if(accountType==='student' && account.authenticated && classCode){
+        try { await getSchoolClient().joinClass(classCode); void refreshPlanState(); showToast('Class joined','Your class tasks will appear in the Class tab.','success'); }
         catch(joinError){ showToast('Account created — class not joined',joinError.message||'Check the class code and try again.'); }
         if(typeof go==='function') go('student-hub');
-      }
+      } else if(accountType==='student' && account.authenticated && typeof go==='function') go('home');
     } catch (error) { message.textContent = error.message || 'Could not create account.'; }
   }
 }
@@ -1195,7 +1200,7 @@ function syncSignupClassCodeField() {
   const student=(document.querySelector('input[name="accountType"]:checked')?.value||'student')==='student';
   const wrap=document.querySelector('.signup-class-code'); const input=document.getElementById('auth-signup-class-code');
   if(wrap) wrap.hidden=!student;
-  if(input) input.required=student;
+  if(input) input.required=false;
 }
 
 function startAccountRoleSync() {
@@ -1393,6 +1398,7 @@ function openOwnerConsole() {
         ${ownerActionButton('school-manager','🏫','Owner School Manager','Review schools and admin tools')}
         ${ownerActionButton('feature-controls','⚑','Feature flags','Turn major platform features on/off')}
         ${ownerActionButton('maintenance-mode','🛠','Maintenance mode','Toggle a local maintenance banner')}
+        ${ownerActionButton('owner-create-account','👤','Create account','Set up an account for someone: role, year, plan and class')}
         ${ownerActionButton('owner-broadcast','📣','Owner broadcast','Create a platform notice')}
         ${ownerActionButton('owner-analytics','▥','Owner analytics','Users, schools, questions, games and feedback')}
         ${ownerActionButton('open-activity-center','◉','Activity Center','See every user and recent platform activity')}
@@ -2183,7 +2189,11 @@ async function refreshPlanState(){
   try{ planState=await getSchoolClient().myPlan(); updatePlanChrome(); }catch{}
   return planState;
 }
+// Self-directed accounts: students who aren't in any class see no class/school features.
+function isSelfDirected(){ return account.authenticated && account.profile?.role==='player' && planState && planState.in_class===false; }
+function applySelfDirectedChrome(){ document.body?.classList.toggle('mx-self-directed',Boolean(isSelfDirected())); }
 function updatePlanChrome(){
+  applySelfDirectedChrome();
   let el=document.getElementById('plan-question-meter');
   if(!el&&!planIsPaid()&&document.body){ el=document.createElement('button'); el.id='plan-question-meter'; el.className='plan-question-meter'; el.dataset.action='open-upgrade'; document.body.appendChild(el); }
   const card=document.getElementById('profile-plan'); if(card)card.outerHTML=profilePlanHtml();
@@ -2206,7 +2216,7 @@ function upgradeRecommendation(){
 function showUpgradeModal(reason='This is part of MathsExpress Pro.'){
   const rec=upgradeRecommendation();
   const card=(id,label,years)=>`<article class="upgrade-plan ${id===rec?'recommended':''}">${id===rec?'<span class="upgrade-badge">Recommended</span>':''}<h3>${label}</h3><b>$${PLAN_PRICES[id]}</b><small>per student / year · ${years}</small><button class="btn ${id===rec?'primary':'secondary'}" data-action="choose-plan" data-plan="${id}">Choose plan</button></article>`;
-  openSimpleModal('Upgrade MathsExpress',`<div class="upgrade-modal"><p class="upgrade-reason">${escapeHtml(reason)}</p>
+  openSimpleModal('Upgrade MathsExpress',`<div class="upgrade-modal">${cloveHtml('idea')}<p class="upgrade-reason">${escapeHtml(reason)}</p>
     <p class="muted">You’re on <b>${escapeHtml(freePlanName())}</b>: 15 questions a day, basic lessons, limited topics and 3 hints a day.</p>
     <div class="upgrade-grid">${card('primary_pro','Primary Pro','Years K–6')}${card('secondary_pro','Secondary Pro','Years 7–12')}${card('complete','Complete','Years K–12')}</div>
     <p class="muted">Paid plans unlock unlimited questions, every topic for your years, the Clove AI tutor, step-by-step solutions, quizzes and tests, personalised revision, daily challenges, all games and full progress tracking. Schools can get every student access with a school plan.</p>
@@ -2273,6 +2283,7 @@ function planGateClick(event){
   const el=event.target?.closest?.('[data-action]'); if(!el)return;
   const action=el.dataset.action;
   if(action==='choose-plan'){ event.preventDefault(); event.stopImmediatePropagation(); void choosePlan(el.dataset.plan); return; }
+  if(action==='open-join-class'){ event.preventDefault(); event.stopImmediatePropagation(); openJoinClassModal(); return; }
   if(action==='open-upgrade'){ event.preventDefault(); event.stopImmediatePropagation(); showUpgradeModal('Unlock everything in MathsExpress.'); return; }
   if(planIsPaid())return;
   const block=(msg)=>{ event.preventDefault(); event.stopImmediatePropagation(); showUpgradeModal(msg); };
@@ -2292,6 +2303,221 @@ function planGateClick(event){
   }
 }
 document.addEventListener('click',planGateClick,true);
+// ---- Learn hub (v11.5.27): topic progress bars with 10-question check-ins, skill map,
+// confidence, wrong-question review and a placement test --------------------------------
+let learnBrowseOpen=false;
+function skillConfidence(skill){
+  const key=skillStateKey(skill.id,skill.yearLevel);
+  const mastery=Math.min(100,skillMasteryValue(skill.id,skill.yearLevel));
+  const attempts=Number(state.skillAttemptCounts?.[key])||0;
+  const last=Number(state.skillLastPractised?.[key])||0;
+  const days=last?(Date.now()-last)/86400000:Infinity;
+  const recency=days<=7?1:days>=60?0:1-(days-7)/53;
+  const difficulty=Math.min(1,(Number(skill.yearLevel)||0)/12);
+  // accuracy-based mastery, weighted up for harder skills, more evidence and recent practice
+  const score=Math.round(mastery*0.55+Math.min(attempts,5)/5*20+recency*15+difficulty*10*(mastery/100));
+  return {score:Math.max(0,Math.min(100,score)),label:score>=75?'High':score>=45?'Medium':'Low',attempts,days};
+}
+function topicRows(year){
+  const skills=getCurriculumSkills({yearLevel:year});
+  const map=new Map();
+  for(const sk of skills){ const k=sk.topic||sk.strand||'Maths'; if(!map.has(k))map.set(k,[]); map.get(k).push(sk); }
+  return [...map.entries()].map(([topic,list])=>{
+    const masteries=list.map(sk=>Math.min(100,skillMasteryValue(sk.id,sk.yearLevel)));
+    const mastered=masteries.filter(m=>m>=80).length;
+    const frontier=list.find((sk,i)=>masteries[i]<80)||null;
+    const conf=list.map(skillConfidence); const avgConf=Math.round(conf.reduce((a,c)=>a+c.score,0)/Math.max(1,conf.length));
+    return {topic,skills:list,mastered,total:list.length,pct:Math.round(mastered/Math.max(1,list.length)*100),frontier,confidence:avgConf};
+  });
+}
+function dueMistakes(){ return (state.mistakeBook||[]).filter(m=>m&&m.question&&!m.reviewed&&Number(m.dueAt||0)<=Date.now()); }
+function learnHubHtml(year){
+  const rows=topicRows(year);
+  const due=dueMistakes();
+  const placement=state.placementResult;
+  const showPlacement=!placement&&account.profile?.role==='player';
+  return `<section class="learn-hub">
+    ${showPlacement?`<article class="learn-hub-card placement-card">${cloveHtml('thinking')}<div><span class="eyebrow">New here?</span><h2>Find your level</h2><p>A short 12-question check finds your real level in each strand and sets your starting path.</p></div><button class="btn primary" data-action="start-placement">Start placement test</button></article>`:''}
+    ${due.length?`<article class="learn-hub-card review-card">${cloveHtml('encourage')}<div><span class="eyebrow">Due for review</span><h2>${due.length} question${due.length===1?'':'s'} from your mistakes</h2><p>Questions you got wrong come back after a couple of days, with the worked solution.</p></div><div class="simple-actions"><button class="btn primary" data-action="start-mistake-review">Review now</button><button class="btn ghost" data-action="open-mistake-explanations">See explanations</button></div></article>`:''}
+    <div class="learn-hub-head"><div><span class="eyebrow">${escapeHtml(yearLabel(year))}</span><h2>Your topics</h2></div><button class="btn secondary small" data-action="open-skill-map" data-year="${year}">Skill map</button></div>
+    <div class="topic-progress-list">${rows.map(r=>`<article class="topic-progress"><div class="topic-progress-top"><strong>${escapeHtml(r.topic)}</strong><span>${r.mastered}/${r.total} skills · confidence ${r.confidence>=75?'high':r.confidence>=45?'medium':'low'}</span></div><div class="topic-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${r.pct}" aria-label="${escapeHtml(r.topic)} progress"><i style="width:${r.pct}%"></i></div><div class="topic-progress-actions">${r.frontier?`<small>Next: ${escapeHtml(r.frontier.title)}</small><button class="btn primary small" data-action="start-topic-checkin" data-skill-id="${escapeHtml(r.frontier.id)}" data-skill-year="${r.frontier.yearLevel}">10-question check-in</button>`:'<small>Topic mastered</small><span class="tag green">✓</span>'}</div></article>`).join('')}</div>
+  </section>`;
+}
+function skillMapHtml(year){
+  const skills=getCurriculumSkills({yearLevel:year});
+  const strands=[...new Set(skills.map(s=>s.strand))];
+  const status=sk=>{ const m=Math.min(100,skillMasteryValue(sk.id,sk.yearLevel)); const a=Number(state.skillAttemptCounts?.[skillStateKey(sk.id,sk.yearLevel)])||0;
+    return m>=80?'mastered':m>=40?'learning':(a>0||m>0)?'needs-work':'not-started'; };
+  return `<div class="skill-map"><div class="skill-map-legend"><span class="mastered">Mastered</span><span class="learning">Learning</span><span class="needs-work">Needs work</span><span class="not-started">Not started</span></div>
+    ${strands.map(st=>{ const list=skills.filter(s=>s.strand===st); return `<section class="skill-map-strand"><h3>${escapeHtml(st)}</h3><div class="skill-map-row">${list.map((sk,i)=>{ const next=list[i+1]; const stt=status(sk); return `<button class="skill-node ${stt}" data-action="skill-map-node" data-skill-id="${escapeHtml(sk.id)}" data-skill-year="${sk.yearLevel}" title="${escapeHtml(sk.title)}${next?` → unlocks ${escapeHtml(next.title)}`:''}"><b>${escapeHtml(sk.title)}</b><small>${Math.round(Math.min(100,skillMasteryValue(sk.id,sk.yearLevel)))}%${next?` · unlocks ${escapeHtml(next.title)}`:''}</small></button>${next?'<span class="skill-arrow" aria-hidden="true">→</span>':''}`; }).join('')}</div></section>`; }).join('')}</div>`;
+}
+function openSkillMap(year){ openSimpleModal(`Skill map · ${yearLabel(year)}`,skillMapHtml(year)); }
+function startCustomRun({id,title,questions,extra={}}){
+  if(!questions.length)return showToast('Nothing to start','No questions are ready yet.');
+  const task={id,title,skill:title,learningGoal:title,yearLevel:normaliseYearLevel(account.profile?.yearLevel),pathway:'Personal',difficulty:'mixed',type:'review',typeLabel:title,questionCount:questions.length,estimatedMinutes:Math.max(1,Math.round(questions.length*1.2)),masteryTarget:70,strand:'Mixed',topic:title,skillId:id};
+  currentLesson=null; activeSchoolAssignment=null;
+  currentGeneratedTask={task,runSeed:Date.now(),questions,index:0,current:questions[0],answered:0,correct:0,attempts:0,hintCount:0,selectedChoice:'',feedback:null,attemptHistory:[],questionResults:[],complete:false,startedAt:Date.now(),customRun:true,...extra};
+  go('generated-task',id);
+}
+function startMistakeReview(){
+  if(planBlocksPractice())return;
+  const due=dueMistakes().slice(0,10);
+  const ids=new Set(due.map(m=>m.question?.id));
+  const reviewOf={}; due.forEach(m=>{ reviewOf[m.question.id]=(Number(m.reviewCount)||0)+1; });
+  persist({...state,mistakeBook:(state.mistakeBook||[]).map(m=>m&&ids.has(m.question?.id)&&!m.reviewed?{...m,reviewed:true,reviewedAt:Date.now()}:m)},{quiet:true});
+  startCustomRun({id:`review-${Date.now()}`,title:'Mistake review',questions:due.map(m=>m.question),extra:{reviewOf}});
+}
+function openMistakeExplanations(){
+  const items=(state.mistakeBook||[]).filter(m=>m&&m.question&&!m.reviewed).slice(-15).reverse();
+  openSimpleModal('Why these were wrong',`${cloveHtml('reading','Let’s look at what went wrong — then try them again.')}<div class="mistake-explain-list">${items.map(m=>`<article><strong>${mathHtml?mathHtml(m.prompt||''):escapeHtml(m.prompt||'')}</strong><p><span>Your answer:</span> ${escapeHtml(m.yourAnswer||'—')}</p><p><span>How to solve it:</span> ${mathHtml?mathHtml(m.explanation||'Use the hints and worked example for this skill.'):escapeHtml(m.explanation||'')}</p><small>Comes back ${Number(m.dueAt)<=Date.now()?'now':new Date(m.dueAt).toLocaleDateString()}</small></article>`).join('')||'<p>No saved mistakes yet.</p>'}</div>`);
+}
+function startPlacementTest(){
+  const year=normaliseYearLevel(account.profile?.yearLevel);
+  const years=[...new Set([Math.max(0,year-1),year,Math.min(12,year+1)])];
+  const strands=[...new Set(getCurriculumSkills({yearLevel:year}).map(s=>s.strand))].slice(0,4);
+  const questions=[]; const meta=[];
+  for(const st of strands){
+    for(const y of years){
+      const skill=getCurriculumSkills({yearLevel:y}).find(s=>s.strand===st);
+      const task=skill&&taskForLearningSkill(skill,'adaptive',3);
+      if(!task)continue;
+      try{ const q=createGeneratedTaskRun(task,{runSeed:Date.now()+questions.length*7919}).questions[0]; if(q){ questions.push(q); meta.push({strand:st,year:y,skillId:skill.id}); } }catch{}
+    }
+  }
+  startCustomRun({id:`placement-${Date.now()}`,title:'Placement test',questions,extra:{placement:meta}});
+}
+function finishPlacement(run){
+  const results=Array.isArray(run.questionResults)?run.questionResults:[];
+  const byStrand={};
+  run.placement.forEach((m,i)=>{ const r=results[i]; const ok=Boolean(r?.correct) && (Number(r?.attempts)||1)<=1; /* first-try correct only */ byStrand[m.strand]=byStrand[m.strand]||{level:null,tried:[]}; byStrand[m.strand].tried.push({year:m.year,ok}); if(ok) byStrand[m.strand].level=Math.max(byStrand[m.strand].level??-1,m.year); });
+  const ownYear=normaliseYearLevel(account.profile?.yearLevel);
+  const map={...(state.skillMasteryMap||{})};
+  const summary=[];
+  for(const [strand,info] of Object.entries(byStrand)){
+    const level=info.level==null?Math.max(0,ownYear-2):info.level;
+    summary.push({strand,level});
+    // Skills below the level found are treated as already secure so the path starts at the right place.
+    for(let y=Math.max(0,level-2);y<level;y++) for(const sk of getCurriculumSkills({yearLevel:y}).filter(s=>s.strand===strand)){ const k=skillStateKey(sk.id,sk.yearLevel); map[k]=Math.max(Number(map[k])||0,80); }
+  }
+  persist({...state,skillMasteryMap:map,placementResult:{date:new Date().toISOString(),strands:summary}},{quiet:true});
+  const view=document.getElementById('app-view');
+  view.innerHTML=`<div class="page"><div class="card finish-card pop">${cloveHtml('done')}<span class="eyebrow">Placement complete</span><h2>Your starting levels</h2><div class="simple-list">${summary.map(x=>`<div><strong>${escapeHtml(x.strand)}</strong><span>Working at ${escapeHtml(yearLabel(x.level))} level</span></div>`).join('')}</div><p class="muted">Your Learn page now starts each topic at the right place.</p><div class="hero-actions" style="justify-content:center"><button class="btn primary" data-route="learn">See my path</button></div></div></div>`;
+}
+// ---- Login security code (v11.5.27): optional authenticator-app code (Supabase TOTP MFA) ----
+function mfaApi(){ return accountClient.ensureClient()?.auth?.mfa; }
+let mfaResolve=null;
+async function requireMfaIfEnrolled(){
+  try{
+    const mfa=mfaApi(); if(!mfa)return true;
+    const {data}=await mfa.getAuthenticatorAssuranceLevel();
+    if(!(data?.nextLevel==='aal2'&&data?.currentLevel!=='aal2'))return true;
+    return await new Promise(resolve=>{
+      mfaResolve=resolve;
+      openSimpleModal('Security code',`<form id="mfa-login-form" class="school-form">${cloveHtml('thinking')}<p>Enter the 6-digit code from your authenticator app.</p><label>Security code<input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required autofocus></label><p id="mfa-login-error" class="auth-message"></p><div class="simple-modal-actions"><button class="btn ghost" type="button" data-action="mfa-cancel">Cancel and sign out</button><button class="btn primary" type="submit">Verify</button></div></form>`);
+    });
+  }catch{ return true; }
+}
+async function submitMfaLogin(form){
+  const code=String(new FormData(form).get('code')||'').trim();
+  const err=document.getElementById('mfa-login-error');
+  try{
+    const mfa=mfaApi(); const {data:f}=await mfa.listFactors(); const factor=(f?.totp||[]).find(x=>x.status==='verified');
+    if(!factor)throw new Error('No security code is set up on this account.');
+    const {error}=await mfa.challengeAndVerify({factorId:factor.id,code}); if(error)throw error;
+    document.getElementById('modal-root').innerHTML=''; const r=mfaResolve; mfaResolve=null; r?.(true);
+  }catch(e){ if(err)err.textContent=e?.message||'That code did not work. Try again.'; }
+}
+async function openSecurityCodeSettings(){
+  const mfa=mfaApi(); if(!mfa)return showToast('Security code','Not available right now.');
+  const {data:f}=await mfa.listFactors(); const factor=(f?.totp||[]).find(x=>x.status==='verified');
+  if(factor){ openSimpleModal('Security code',`<p>A security code from your authenticator app is required each time you log in.</p><div class="simple-modal-actions"><button class="btn danger" data-action="mfa-disable" data-factor-id="${escapeHtml(factor.id)}">Turn off security code</button></div>`); return; }
+  for(const old of (f?.totp||[]).filter(x=>x.status!=='verified')){ try{ await mfa.unenroll({factorId:old.id}); }catch{} }
+  const {data,error}=await mfa.enroll({factorType:'totp',friendlyName:`MathsExpress ${Date.now()}`});
+  if(error)return showToast('Security code',error.message||'Could not start set-up.');
+  openSimpleModal('Turn on a security code',`<form id="mfa-enroll-form" class="school-form" data-factor-id="${escapeHtml(data.id)}"><p>1. Scan this with an authenticator app (Google Authenticator, Microsoft Authenticator, Authy…).</p><img class="mfa-qr" src="${escapeHtml(data.totp.qr_code)}" alt="Security code QR"><p class="muted">Can’t scan? Enter this key: <code>${escapeHtml(data.totp.secret)}</code></p><label>2. Enter the 6-digit code it shows<input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required></label><p id="mfa-enroll-error" class="auth-message"></p><button class="btn primary" type="submit">Turn on</button></form>`);
+}
+async function submitMfaEnroll(form){
+  const code=String(new FormData(form).get('code')||'').trim(); const err=document.getElementById('mfa-enroll-error');
+  try{ const {error}=await mfaApi().challengeAndVerify({factorId:form.dataset.factorId,code}); if(error)throw error;
+    document.getElementById('modal-root').innerHTML=''; showToast('Security code on','You’ll be asked for a code each time you log in.','success'); }
+  catch(e){ if(err)err.textContent=e?.message||'That code did not work.'; }
+}
+document.addEventListener('submit',(event)=>{
+  if(event.target?.id==='owner-create-account-form'){ event.preventDefault(); const f=event.target; const data=Object.fromEntries(new FormData(f).entries()); const btn=f.querySelector('button[type=submit]'); if(btn)btn.disabled=true;
+    const token=account.session?.access_token||accountClient.session?.access_token||'';
+    fetch('/api/owner/create-user',{method:'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:JSON.stringify(data)}).then(r=>r.json().then(d=>({ok:r.ok,d}))).then(({ok,d})=>{ if(!ok)throw new Error(d.error||'Could not create the account.'); document.getElementById('modal-root').innerHTML=''; showToast('Account created',d.note||d.email,'success'); }).catch(e=>{ showToast('Account not created',e.message); if(btn)btn.disabled=false; });
+  }
+  if(event.target?.id==='mfa-login-form'){ event.preventDefault(); void submitMfaLogin(event.target); }
+  if(event.target?.id==='mfa-enroll-form'){ event.preventDefault(); void submitMfaEnroll(event.target); }
+},true);
+document.addEventListener('click',(event)=>{
+  const el=event.target?.closest?.('[data-action]'); if(!el)return;
+  if(el.dataset.action==='mfa-cancel'){ event.preventDefault(); event.stopImmediatePropagation(); const r=mfaResolve; mfaResolve=null; document.getElementById('modal-root').innerHTML=''; r?.(false); }
+  if(el.dataset.action==='open-security-code'){ event.preventDefault(); event.stopImmediatePropagation(); void openSecurityCodeSettings(); }
+  if(el.dataset.action==='mfa-disable'){ event.preventDefault(); event.stopImmediatePropagation(); mfaApi().unenroll({factorId:el.dataset.factorId}).then(({error})=>{ if(error)throw error; document.getElementById('modal-root').innerHTML=''; showToast('Security code off','Only your password is needed to log in now.'); }).catch(e=>showToast('Security code',e?.message||'Could not turn it off. Log out and in with your code first.')); }
+},true);
+// Teacher "Start here": the four everyday jobs as big buttons, plus a search box over every teacher tool.
+const TEACHER_COMMANDS=[
+  ['Set work for a class','data-action="open-custom-assignment"','assign task homework worksheet test create'],
+  ['Watch my class live (who is stuck)','data-action="open-live-pulse"','live monitor stuck inactive struggling focus'],
+  ['See class results and reports','data-action="school-tab" data-tab="reports"','results report gradebook mastery marks'],
+  ['Start a class game','data-action="teacher-more-action" data-tool="games"','game play compete teams'],
+  ['Task Library','data-action="teacher-tab" data-tab="library"','library browse tasks ready made'],
+  ['Make a worksheet','data-action="open-custom-worksheet-builder"','worksheet custom questions print'],
+  ['Post an announcement to students','data-action="open-announcement"','post announcement message notice'],
+  ['Give coins or Game Time','data-action="open-teacher-rewards"','reward coins game time'],
+  ['Students','data-action="school-tab" data-tab="students"','students roster add'],
+  ['Classes','data-action="school-tab" data-tab="classes"','classes create class code'],
+  ['Planner','data-action="teacher-more-action" data-tool="planner"','planner calendar plan'],
+  ['Reviewed Question Studio','data-action="open-authored-question-studio"','question author write studio'],
+  ['Template folders','data-action="open-template-folders"','template folders reuse'],
+  ['Integrations & SSO (Canvas)','data-action="open-integration-center"','canvas sso integration clever'],
+  ['Tutorial videos','data-action="open-tutorial-video-manager"','video tutorial'],
+  ['All tools','data-route="tools"','tools calculator poll timer exit ticket'],
+];
+function teacherStartHereHtml(){
+  const cls=selectedTeacherClassId?`data-class-id="${escapeHtml(String(selectedTeacherClassId))}"`:'';
+  const tile=(icon,label,attrs)=>`<button class="start-here-tile" ${attrs}><span aria-hidden="true">${icon}</span><b>${label}</b></button>`;
+  return `<section class="teacher-start-here" aria-label="Start here"><div class="start-here-tiles">${tile('＋','Set work','data-action="open-custom-assignment"')}${tile('◉','Live class',`data-action="open-live-pulse" ${cls}`)}${tile('▥','Results','data-action="school-tab" data-tab="reports"')}${tile('⚑','Class game','data-action="teacher-more-action" data-tool="games"')}</div><div class="teacher-command"><input id="teacher-command-input" type="search" placeholder="What do you want to do? e.g. worksheet, announcement, results" aria-label="Find a teacher tool" autocomplete="off"><div id="teacher-command-results" class="teacher-command-results" hidden></div></div></section>`;
+}
+function renderTeacherCommandResults(q){
+  const box=document.getElementById('teacher-command-results'); if(!box)return;
+  const query=String(q||'').trim().toLowerCase();
+  if(!query){ box.hidden=true; box.innerHTML=''; return; }
+  const cls=selectedTeacherClassId?` data-class-id="${escapeHtml(String(selectedTeacherClassId))}"`:'';
+  const hits=TEACHER_COMMANDS.filter(([label,,kw])=>`${label} ${kw}`.toLowerCase().includes(query)).slice(0,8);
+  box.hidden=false;
+  box.innerHTML=hits.map(([label,attrs])=>`<button ${attrs}${attrs.includes('open-live-pulse')?cls:''}>${escapeHtml(label)}</button>`).join('')||'<p>No matching tool. Try “results”, “worksheet” or “game”.</p>';
+}
+document.addEventListener('input',(event)=>{ if(event.target?.id==='teacher-command-input') renderTeacherCommandResults(event.target.value); });
+// Real adaptivity for self-paced adaptive practice: two first-try correct answers in a row step the
+// next question up a difficulty level; two answers that needed retries step it down.
+const ADAPTIVE_LEVELS=['easy','medium','hard'];
+function adaptiveNextLevel(run){
+  if(!run||run.customRun||!/:adaptive:/.test(String(run.task?.id||'')))return null;
+  if(activeSchoolAssignment&&!activeSchoolAssignment.localOnly)return null;
+  const results=(run.questionResults||[]).slice();
+  if(run.current&&(run.feedback?.correct||run.feedback?.needsReview)) results[run.index]={correct:Boolean(run.feedback?.correct),attempts:run.attempts};
+  const recent=results.filter(Boolean).slice(-2);
+  if(recent.length<2)return null;
+  const level=run.adaptiveLevel||String(run.task.id.split(':')[4]||'medium');
+  const i=Math.max(0,ADAPTIVE_LEVELS.indexOf(level)===-1?1:ADAPTIVE_LEVELS.indexOf(level));
+  const firstTry=r=>r.correct&&(Number(r.attempts)||1)<=1;
+  if(recent.every(firstTry)&&i<2)return {level:ADAPTIVE_LEVELS[i+1],dir:'up'};
+  if(recent.every(r=>!firstTry(r))&&i>0)return {level:ADAPTIVE_LEVELS[i-1],dir:'down'};
+  return null;
+}
+function applyAdaptiveLevel(run,{level,dir}){
+  if(!run||run.complete||!run.current)return;
+  try{
+    const parts=String(run.task.id).split(':'); parts[4]=level;
+    const t2=getTaskById(parts.join(':')); if(!t2)return;
+    const avoid=(run.questions||[]).map(q=>questionFingerprint(q)).filter(Boolean);
+    const q=createGeneratedTaskRun(t2,{runSeed:Date.now()+run.index*101,avoidFingerprints:avoid}).questions[0]; if(!q)return;
+    run.questions[run.index]=q; run.current=q; run.adaptiveLevel=level;
+    showToast(dir==='up'?'Stepping up':'Let’s steady it',dir==='up'?'Two in a row first try — the next question is harder.':'The next question is a little easier. You’ve got this.','success');
+  }catch{}
+}
 let toolSearchQuery='';
 function applyToolSearchFilter(){
   const view=document.getElementById('app-view'); if(!view)return;
@@ -3145,12 +3371,12 @@ function renderAiChatMessages() {
     const isUser=m.role==='user';
     const isError=Boolean(m.error);
     const body=isUser ? `<p>${mathHtml(m.text).replace(/\n/g,'<br>')}</p>` : `<div class="ai-response-body">${renderAiFormattedText(m.text)}</div>`;
-    return `<div class="ai-chat-message ${isUser?'user':'assistant'}${isError?' ai-chat-error':''}"><div class="ai-chat-avatar" aria-hidden="true">${isUser?'You':'🦊'}</div><div class="ai-chat-bubble"><small>${isUser?'You':(isError?'Connection error':'Clove')}</small>${body}</div></div>`;
+    return `<div class="ai-chat-message ${isUser?'user':'assistant'}${isError?' ai-chat-error':''}"><div class="ai-chat-avatar" aria-hidden="true">${isUser?'You':'<img class="clove-avatar-img" src="./assets/clove-happy.png?v=11.1.0" alt="">'}</div><div class="ai-chat-bubble"><small>${isUser?'You':(isError?'Connection error':'Clove')}</small>${body}</div></div>`;
   }).join('');
 }
 
 function renderAiThinking() {
-  return `<div class="ai-chat-message assistant ai-thinking-message"><div class="ai-chat-avatar" aria-hidden="true">🦊</div><div class="ai-chat-bubble"><small>Clove</small><div class="ai-thinking" aria-label="Clove is thinking"><span></span><span></span><span></span><b>Thinking through your question…</b></div></div></div>`;
+  return `<div class="ai-chat-message assistant ai-thinking-message"><div class="ai-chat-avatar" aria-hidden="true"><img class="clove-avatar-img clove-think-anim" src="./assets/clove-thinking.png?v=11.1.0" alt=""></div><div class="ai-chat-bubble"><small>Clove</small><div class="ai-thinking" aria-label="Clove is thinking"><span></span><span></span><span></span><b>Thinking through your question…</b></div></div></div>`;
 }
 
 function aiContextForRequest(context) {
@@ -3168,7 +3394,20 @@ function aiContextForRequest(context) {
     testMode: Boolean(context.testMode),
     assignmentId: activeSchoolAssignment?.id && !activeSchoolAssignment?.localOnly ? String(activeSchoolAssignment.id) : null,
     mistakes: Array.isArray(context.mistakes) ? context.mistakes.slice(0, 5) : [],
+    progress: activeSchoolAssignment?.testMode ? '' : cloveProgressSummary(),
   };
+}
+// A short, factual summary of the student's own progress so Clove can coach from it.
+function cloveProgressSummary(){
+  try{
+    const year=normaliseYearLevel(account.profile?.yearLevel);
+    const rows=getCurriculumSkills({yearLevel:year}).map(sk=>({t:sk.title,m:Math.round(Math.min(100,skillMasteryValue(sk.id,sk.yearLevel))),c:skillConfidence(sk)})).filter(r=>r.c.attempts>0||r.m>0);
+    if(!rows.length)return 'No practice recorded yet.';
+    const strong=[...rows].sort((a,b)=>b.m-a.m).slice(0,2).map(r=>`${r.t} ${r.m}%`);
+    const weak=[...rows].filter(r=>r.m<70).sort((a,b)=>a.m-b.m).slice(0,2).map(r=>`${r.t} ${r.m}%`);
+    const recentMistakes=[...new Set((state.mistakeBook||[]).slice(-20).map(m=>m.skill).filter(Boolean))].slice(-3);
+    return `Year ${year}. Strongest: ${strong.join(', ')||'none yet'}. Needs work: ${weak.join(', ')||'none'}. Recent mistakes in: ${recentMistakes.join(', ')||'none'}.`.slice(0,700);
+  }catch{ return ''; }
 }
 
 function aiApiEndpoints() {
@@ -3646,6 +3885,8 @@ function renderLearn() {
         <div><span class="eyebrow">K–12 Mathematics</span><h1>Learn</h1>${cloveHtml('pencil')}<p>Start with your recommendation, use a quick check, or browse the full curriculum.</p></div>
         <div class="curriculum-count"><strong>${CURRICULUM.length}</strong><span>K–12 skills</span></div>
       </div>
+      ${learnHubHtml(learnYearLevel)}
+      <details class="learn-browse" ${learnBrowseOpen?'open':''}><summary data-action="toggle-learn-browse">Browse all skills, recommendations and more</summary>
       ${skillFocusHtml()}
       <section class="recommendation-control-bar"><div><strong>Recommendations</strong><span>Choose a skill from your year level.</span></div><div class="recommendation-chip-row">${[['smart','Smart'],['ready','Ready to learn'],['almost','Almost mastered'],['recent','Worked recently']].map(([id,label])=>`<button class="${recommendationCategory===id?'active':''}" data-action="recommendation-category" data-category="${id}">${label}</button>`).join('')}<button data-action="shuffle-recommendations" ${recPool.length<2?'disabled title="More matching skills are needed to shuffle"':''}>Shuffle ↻</button></div></section>
       <section class="learn-recommended-panel">
@@ -3674,6 +3915,7 @@ function renderLearn() {
       ${strands.map((strand) => { const strandSkills=skills.filter((skill)=>skill.strand===strand); const key=String(strand); const expanded=learnExpandedStrands.has(key); return `<section class="curriculum-strand learn-collapsible ${expanded?'expanded':'collapsed'}"><button class="learn-strand-toggle" data-action="learn-toggle-strand" data-strand="${escapeHtml(key)}" aria-expanded="${expanded?'true':'false'}"><span class="chapter-chevron">${expanded?'⌄':'›'}</span><span><small>${escapeHtml(yearLabel(learnYearLevel))}</small><strong>${escapeHtml(strand)}</strong></span><b>${strandSkills.length} skills</b></button><div class="curriculum-skill-grid" ${expanded?'':'hidden'}>${strandSkills.map((skill)=>{ const task=searchTaskLibrary({yearLevel:skill.yearLevel,skillId:skill.id,type:'practice',difficulty:'medium',questionCount:10,limit:1})[0]; const mastery=skillMasteryValue(skill.id,skill.yearLevel); return `<article class="curriculum-skill-card"><div class="skill-card-meta"><span>${Math.round(mastery)}% mastery</span>${skill.pathway!=='Core'?`<span>${escapeHtml(skill.pathway)}</span>`:''}</div><h3>${escapeHtml(skill.title)}</h3><p>${escapeHtml(skill.topic)}</p><button class="btn secondary small" data-action="start-library-task" data-task-id="${escapeHtml(task?.id||'')}">Practise</button></article>`; }).join('')}</div></section>`; }).join('')}
       </div>
       ${learnYearLevel===9 ? `<section class="curriculum-strand legacy-algebra"><div class="section-heading"><div><span class="eyebrow">Core Algebra</span><h2>Original Algebra lessons</h2></div></div><div class="grid two">${lessonCards()}</div></section>` : ''}
+      </details>
     </div>`;
   const focusClass=selectedStudentClassId||null;
   if(focusClass && String(focusClass)!==activeClassSkillFocusClassId) void loadClassSkillFocus(focusClass,{render:true});
@@ -4414,7 +4656,20 @@ function updateTextbookScrollDepth(){if(!textbookReadTracker.sectionId)return;co
 async function flushTextbookReadTracking({completed=false}={}){if(!textbookReadTracker.sectionId||!account.authenticated)return;const now=Date.now();const sec=Math.max(0,Math.round((now-textbookReadTracker.lastAt)/1000));if(sec<2&&!completed)return;textbookReadTracker.lastAt=now;try{await accountClient.ensureClient().rpc('mathsexpress_record_textbook_reading',{p_section_id:textbookReadTracker.sectionId,p_seconds:sec,p_scroll:textbookReadTracker.maxScroll,p_completed:Boolean(completed)});}catch{}}
 function scorecardModal(assignmentId){openSimpleModal('Assessment Scorecard','<div class="school-loading"><span class="spinner"></span><strong>Building scorecard…</strong></div>');accountClient.ensureClient().rpc('mathsexpress_assignment_scorecard',{p_assignment_id:String(assignmentId)}).then(({data,error})=>{if(error)throw error;const rows=data?.students||[];openSimpleModal(`Scorecard · ${escapeHtml(data?.assignment?.title||'Assessment')}`,`<div class="v82-scorecard"><div class="v82-scorecard-head"><b>Student</b><b>Result</b><b>Step marks</b><b>Fixes</b><b>Integrity</b><b>Actions</b></div>${rows.map(r=>`<div><span>${escapeHtml(r.display_name||r.email||'Student')}</span><strong>${Math.round(Number(r.score_percent)||0)}%</strong><span>${Number(r.step_marks)||0}/${Number(r.step_possible)||0}</span><span>${Number(r.fixed_count)||0}</span><span>${Number(r.integrity_events)||0}</span><div class="scorecard-actions"><button class="btn ghost small" data-action="open-assessment-review" data-assignment-id="${escapeHtml(assignmentId)}" data-student-id="${escapeHtml(r.user_id)}" data-student-name="${escapeHtml(r.display_name||'Student')}">Review work</button><button class="btn ghost small" data-action="open-mark-override" data-assignment-id="${escapeHtml(assignmentId)}" data-student-id="${escapeHtml(r.user_id)}" data-student-name="${escapeHtml(r.display_name||'Student')}">Override mark</button></div></div>`).join('')||'<p>No student attempts yet.</p>'}</div><div class="simple-modal-actions"><button class="btn primary" data-action="open-custom-assignment">Create follow-up task</button><button class="btn secondary" data-action="open-bulk-assign">Bulk adaptive task</button></div>`);}).catch(e=>showToast('Scorecard unavailable',e.message));}
 function openMarkOverrideModal(assignmentId,studentId,studentName){openSimpleModal('Override AI mark',`<form id="mark-override-form" class="school-form"><input type="hidden" name="assignmentId" value="${escapeHtml(assignmentId)}"><input type="hidden" name="studentId" value="${escapeHtml(studentId)}"><h3>${escapeHtml(studentName||'Student')}</h3><label>Question ID<input name="questionId" required placeholder="question id"></label><div class="form-two"><label>Mark awarded<input name="score" type="number" step="0.5" min="0" required></label><label>Out of<input name="possible" type="number" step="0.5" min="0.5" value="3" required></label></div><label>Teacher rationale<textarea name="comment" rows="4" placeholder="Why you changed the mark"></textarea></label><button class="btn primary" type="submit">Save override</button></form>`);}
-function printableWorksheetHtml(task,count=12){const run=createUniqueGeneratedTaskRun({...task,questionCount:Math.max(1,Math.min(30,count))});const qs=run.questions||[];return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(task.title||'MathsExpress Worksheet')}</title><style>body{font:15px Arial,sans-serif;color:#111;margin:32px}h1{margin-bottom:4px}.q{margin:22px 0;page-break-inside:avoid}.space{height:70px;border-bottom:1px solid #ddd}.answers{page-break-before:always}.solution{margin:12px 0 22px;padding:12px;border:1px solid #ccc} @media print{button{display:none}}</style></head><body><h1>${escapeHtml(task.title||'MathsExpress Worksheet')}</h1><p>Year ${task.yearLevel||''} · ${escapeHtml(task.topic||'Mathematics')}</p>${qs.map((q,i)=>`<div class="q"><b>${i+1}.</b> ${escapeHtml(q.prompt)}<div class="space"></div></div>`).join('')}<section class="answers"><h1>Answer key & worked solutions</h1>${qs.map((q,i)=>`<div class="solution"><b>${i+1}. ${escapeHtml(String(q.answer??''))}</b><p>${escapeHtml(q.workedSolution||'Work through the method shown in the digital task.')}</p></div>`).join('')}</section></body></html>`;}
+// Printed pages carry MathsExpress branding (logo, name, footer) and open in a normal window
+// (noopener makes window.open return null, which looked like a blocked pop-up).
+function printBrandHtml(){
+  const logo=`${location.origin}/assets/mx-logo.png`;
+  return `<style>.mx-print-brand{display:flex;align-items:center;gap:10px;border-bottom:3px solid #3b7c5a;padding-bottom:10px;margin-bottom:16px;font-family:Inter,Arial,sans-serif}.mx-print-brand img{width:34px;height:34px}.mx-print-brand b{font-size:20px;color:#24342a}.mx-print-brand span{margin-left:auto;font-size:12px;color:#666}.mx-print-foot{position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:10px;color:#888;font-family:Inter,Arial,sans-serif}@media print{.mx-print-foot{position:fixed}}</style><header class="mx-print-brand"><img src="${logo}" alt=""><b>MathsExpress</b><span>${new Date().toLocaleDateString()}</span></header><div class="mx-print-foot">Printed from MathsExpress · mathsexpress</div>`;
+}
+function openPrintWindow(html){
+  const win=window.open('','_blank');
+  if(!win){ showToast('Pop-up blocked','Allow pop-ups for MathsExpress, then try again.'); return null; }
+  try{ win.opener=null; }catch{}
+  win.document.write(html); win.document.close();
+  return win;
+}
+function printableWorksheetHtml(task,count=12){const run=createUniqueGeneratedTaskRun({...task,questionCount:Math.max(1,Math.min(30,count))});const qs=run.questions||[];return `<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(task.title||'MathsExpress Worksheet')}</title><style>body{font:15px Arial,sans-serif;color:#111;margin:32px}h1{margin-bottom:4px}.q{margin:22px 0;page-break-inside:avoid}.space{height:70px;border-bottom:1px solid #ddd}.answers{page-break-before:always}.solution{margin:12px 0 22px;padding:12px;border:1px solid #ccc} @media print{button{display:none}}</style></head><body>${printBrandHtml()}<h1>${escapeHtml(task.title||'MathsExpress Worksheet')}</h1><p>Year ${task.yearLevel||''} · ${escapeHtml(task.topic||'Mathematics')}</p>${qs.map((q,i)=>`<div class="q"><b>${i+1}.</b> ${escapeHtml(q.prompt)}<div class="space"></div></div>`).join('')}<section class="answers"><h1>Answer key & worked solutions</h1>${qs.map((q,i)=>`<div class="solution"><b>${i+1}. ${escapeHtml(String(q.answer??''))}</b><p>${escapeHtml(q.workedSolution||'Work through the method shown in the digital task.')}</p></div>`).join('')}</section></body></html>`;}
 function openPrintableWorksheet(taskId){const task=getTaskById(taskId)||TASK_LIBRARY[0];if(!task)return;const w=window.open('','_blank');if(!w)return showToast('Popup blocked','Allow popups to create the printable worksheet.');w.document.write(printableWorksheetHtml(task,12));w.document.close();setTimeout(()=>w.print(),300);}
 
 
@@ -4587,8 +4842,8 @@ function printTaskReport(assignmentId){
   const questions=activeTaskReport?.questionData?.questions||[];
   const attempts=(lastTeacherReport?.attempts||[]).filter(x=>String(x.assignment_id)===String(a.id));
   const avg=attempts.length?Math.round(attempts.reduce((n,x)=>n+Number(x.score_percent||0),0)/attempts.length):0;
-  const html=`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(a.title||'Task')} report</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#222}h1{margin:0 0 8px}.meta{color:#666;margin-bottom:24px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f5f5f5}</style></head><body><h1>${escapeHtml(a.title||'Task')}</h1><div class="meta">${escapeHtml(a.assignment_type||'practice')} · ${avg}% average · Due ${escapeHtml(formatSchoolDate(a.due_at))}</div><table><thead><tr><th>Question</th><th>Correct</th><th>Partial</th><th>Incorrect</th><th>Average score</th></tr></thead><tbody>${questions.map((q,i)=>`<tr><td>Q${i+1} · ${escapeHtml(q.question_id||'')}</td><td>${Number(q.correct)||0}</td><td>${Number(q.partial)||0}</td><td>${Number(q.incorrect)||0}</td><td>${Math.round(Number(q.average_score_percent)||0)}%</td></tr>`).join('')}</tbody></table></body></html>`;
-  const win=window.open('','_blank','noopener,noreferrer');if(!win)return showToast('Print blocked','Allow pop-ups for MathsExpress, then try again.');win.document.write(html);win.document.close();setTimeout(()=>win.print(),120);
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(a.title||'Task')} report</title><style>body{font-family:Arial,sans-serif;padding:32px;color:#222}h1{margin:0 0 8px}.meta{color:#666;margin-bottom:24px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f5f5f5}</style></head><body>${printBrandHtml()}<h1>${escapeHtml(a.title||'Task')}</h1><div class="meta">${escapeHtml(a.assignment_type||'practice')} · ${avg}% average · Due ${escapeHtml(formatSchoolDate(a.due_at))}</div><table><thead><tr><th>Question</th><th>Correct</th><th>Partial</th><th>Incorrect</th><th>Average score</th></tr></thead><tbody>${questions.map((q,i)=>`<tr><td>Q${i+1} · ${escapeHtml(q.question_id||'')}</td><td>${Number(q.correct)||0}</td><td>${Number(q.partial)||0}</td><td>${Number(q.incorrect)||0}</td><td>${Math.round(Number(q.average_score_percent)||0)}%</td></tr>`).join('')}</tbody></table></body></html>`;
+  const win=openPrintWindow(html);if(win)setTimeout(()=>win.print(),120);
 }
 async function saveTaskAsTemplate(assignmentId){
   const a=assignmentByIdForTeacher(assignmentId)||activeTaskReport?.assignment;if(!a)return;
@@ -4949,17 +5204,18 @@ function openSolvedQuestionReview(index=null){
 function renderGeneratedTask() {
   const view = document.getElementById('app-view');
   const { param: taskId } = routeFromHash();
-  const task = getTaskById(taskId);
+  const task = getTaskById(taskId) || (currentGeneratedTask?.task && String(currentGeneratedTask.task.id)===String(taskId) ? currentGeneratedTask.task : null);
   if (!task) { view.innerHTML = `<div class="page"><div class="card empty-state"><div class="big">?</div><h2>Task not found</h2><button class="btn primary" data-route="learn">Back to Learn</button></div></div>`; return; }
   if (!currentGeneratedTask || currentGeneratedTask.task.id !== task.id) currentGeneratedTask = createUniqueGeneratedTaskRun(task);
   const run = currentGeneratedTask;
-  if(!canUseTeacherHub(account)&&Number(task.yearLevel)!==normaliseYearLevel(account.profile?.yearLevel)&&(!activeSchoolAssignment||activeSchoolAssignment.localOnly))return go('learn');
+  if(!canUseTeacherHub(account)&&!run.customRun&&Number(task.yearLevel)!==normaliseYearLevel(account.profile?.yearLevel)&&(!activeSchoolAssignment||activeSchoolAssignment.localOnly))return go('learn');
   requestAnimationFrame(restoreQuestionDraft);
   if (run.complete) {
     if(!activeSchoolAssignment) document.body?.classList.remove('assignment-focus-mode','assignment-test-lock');
     if(activeSchoolAssignment){ activeSchoolAssignment.completed=true; activeSchoolAssignment.gamesLocked=false; syncStudentFocusStatus('idle',{force:true}); }
     const accuracy = run.answered ? Math.round((run.correct / run.answered) * 100) : 0;
-    recordGeneratedTaskMastery(run,task,accuracy);
+    if(run.placement){ finishPlacement(run); return; }
+    if(!run.customRun) recordGeneratedTaskMastery(run,task,accuracy);
     recordRecurringCheckInCompletion(task,run,accuracy);
     if (activeSchoolAssignment && !activeSchoolAssignment.localOnly && !activeSchoolAssignment.synced && activeSchoolAssignment.taskId === task.id) {
       activeSchoolAssignment.synced = true;
@@ -5038,7 +5294,7 @@ async function submitGeneratedTaskAnswer() {
   if (!needsReview) {
     nextState = applyQuestionResult(state, { eventId:`${rewardKey}:attempt:${attemptNumber}`, firstAttempt:attemptsBefore===0, correct, difficulty:q.complexity, xp:q.xp, topic:'curriculum', lessonId:null });
     if (correct) nextState = awardQuestionGameTime(nextState, rewardKey);
-    else nextState = { ...nextState, mistakeBook: [...(nextState.mistakeBook || []), { questionId:q.id, prompt:q.prompt, skill:currentGeneratedTask.task.skill || currentGeneratedTask.task.topic || 'Maths', correct:false, createdAt:new Date().toISOString() }].slice(-500) };
+    else nextState = { ...nextState, mistakeBook: [...(nextState.mistakeBook || []), { questionId:q.id, prompt:q.prompt, skill:currentGeneratedTask.task.skill || currentGeneratedTask.task.topic || 'Maths', correct:false, question:q, yourAnswer:String(raw??'').slice(0,120), explanation:String(q.workedSolution||q.explanation||(Array.isArray(q.hints)?q.hints.join(' '):'')).slice(0,600), dueAt:Date.now()+2*86400000, reviewCount:Number(currentGeneratedTask.reviewOf?.[q.id]||0), createdAt:new Date().toISOString() }].slice(-500) };
     persist(nextState, { quiet:true });
   }
 
@@ -6193,7 +6449,7 @@ function profilePlanHtml(){
   const label=planState.plan==='free'?freePlanName():(PLAN_LABELS[planState.plan]||'Plan');
   const until=planState.expires_at?` · until ${new Date(planState.expires_at).toLocaleDateString()}`:'';
   const outOfYears=!planState.paid&&planState.plan!=='free'?' · does not cover your year level':'';
-  return `<div class="profile-plan" id="profile-plan"><span>Plan</span><strong>${escapeHtml(label)}${escapeHtml(until)}${escapeHtml(outOfYears)}</strong>${planState.paid?'':`<small>${Math.max(0,Number(planState.questions_left)||0)} of 15 free questions left today</small><button class="btn primary small" data-action="open-upgrade">Upgrade</button>`}</div>`;
+  return `<div class="profile-plan" id="profile-plan"><span>Plan</span><strong>${escapeHtml(label)}${escapeHtml(until)}${escapeHtml(outOfYears)}</strong>${planState.paid?'':`<small>${Math.max(0,Number(planState.questions_left)||0)} of 15 free questions left today</small><button class="btn primary small" data-action="open-upgrade">Upgrade</button>`}${planState.in_class===false&&account.profile?.role==='player'?'<button class="btn ghost small" data-action="open-join-class">Have a school class code?</button>':''}<button class="btn ghost small" data-action="open-security-code">Login security code</button></div>`;
 }
 function renderProfile() {
   const view = document.getElementById('app-view');
@@ -6357,11 +6613,29 @@ async function getLicensedPdf(key){
 function openLicensedPdfLoadModal(key,page=1,label='CambridgeMATHS NSW Year 9'){
   return openLicensedPdfPage(key,page,label);
 }
+// Draw-on-textbook layer: a transparent canvas over the preview (pen + clear), kept per page in this session.
+const pdfDrawings=new Map();
+function setupPdfDrawLayer(pageKey){
+  const canvas=document.getElementById('pdf-draw-layer'); if(!canvas)return;
+  const host=canvas.parentElement; const ctx=canvas.getContext('2d');
+  const size=()=>{ const r=host.querySelector('.licensed-pdf-viewer')?.getBoundingClientRect(); const hr=host.getBoundingClientRect(); if(!r)return;
+    canvas.style.left=`${r.left-hr.left}px`; canvas.style.top=`${r.top-hr.top}px`; canvas.style.width=`${r.width}px`; canvas.style.height=`${r.height}px`;
+    const img=canvas.width?canvas.toDataURL():null; canvas.width=r.width*devicePixelRatio; canvas.height=r.height*devicePixelRatio; ctx.scale(devicePixelRatio,devicePixelRatio);
+    const saved=img||pdfDrawings.get(pageKey); if(saved){ const im=new Image(); im.onload=()=>ctx.drawImage(im,0,0,r.width,r.height); im.src=saved; } };
+  requestAnimationFrame(size);
+  let drawing=false,last=null;
+  const pt=e=>{ const r=canvas.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; };
+  canvas.onpointerdown=e=>{ drawing=true; last=pt(e); canvas.setPointerCapture(e.pointerId); };
+  canvas.onpointermove=e=>{ if(!drawing)return; const p=pt(e); ctx.strokeStyle=document.getElementById('pdf-draw-colour')?.value||'#d93636'; ctx.lineWidth=3; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; };
+  canvas.onpointerup=()=>{ drawing=false; try{ pdfDrawings.set(pageKey,canvas.toDataURL()); }catch{} };
+  canvas.dataset.pageKey=pageKey;
+}
 async function openLicensedPdfPage(key,page=1,label='CambridgeMATHS NSW Year 9'){
   const pdfUrl=CAMBRIDGE_YEAR9_PUBLIC_PDF_URL;
   const root=document.getElementById('modal-root');if(!root)return;
   const pageNumber=Math.max(1,Number(page)||1);
-  root.innerHTML=`<div class="modal-backdrop licensed-pdf-backdrop"><div class="modal licensed-pdf-modal pop"><div class="simple-modal-head"><div><span class="eyebrow">Cambridge textbook PDF</span><h2>${escapeHtml(label)}</h2></div><button class="modal-x" data-action="close-school-modal" aria-label="Close">×</button></div><object class="licensed-pdf-viewer" data="${pdfUrl}#page=${pageNumber}&zoom=page-width" type="application/pdf" aria-label="${escapeHtml(label)}"><div class="licensed-pdf-fallback"><strong>PDF preview could not load here.</strong><p>Open the textbook in a new tab to use your browser's PDF viewer.</p><a class="btn primary" href="${pdfUrl}#page=${pageNumber}" target="_blank" rel="noopener">Open textbook PDF</a></div></object><div class="licensed-pdf-footer"><span>Page ${pageNumber} · available directly in MathsExpress.</span><a class="btn ghost small" href="${pdfUrl}#page=${pageNumber}" target="_blank" rel="noopener">Open in new tab</a></div></div></div>`;
+  root.innerHTML=`<div class="modal-backdrop licensed-pdf-backdrop"><div class="modal licensed-pdf-modal pop"><div class="simple-modal-head"><div><span class="eyebrow">Cambridge textbook PDF</span><h2>${escapeHtml(label)}</h2></div><button class="modal-x" data-action="close-school-modal" aria-label="Close">×</button></div><object class="licensed-pdf-viewer" data="${pdfUrl}#page=${pageNumber}&zoom=page-width" type="application/pdf" aria-label="${escapeHtml(label)}"><div class="licensed-pdf-fallback"><strong>PDF preview could not load here.</strong><p>Open the textbook in a new tab to use your browser's PDF viewer.</p><a class="btn primary" href="${pdfUrl}#page=${pageNumber}" target="_blank" rel="noopener">Open textbook PDF</a></div></object><canvas class="pdf-draw-layer" id="pdf-draw-layer" aria-hidden="true"></canvas><div class="licensed-pdf-footer"><span>Page ${pageNumber} · available directly in MathsExpress.</span><span class="pdf-draw-tools"><button class="btn secondary small" data-action="pdf-draw-toggle" aria-pressed="false">✏️ Draw</button><input type="color" id="pdf-draw-colour" value="#d93636" aria-label="Pen colour"><button class="btn ghost small" data-action="pdf-draw-clear">Clear</button></span><a class="btn ghost small" href="${pdfUrl}#page=${pageNumber}" target="_blank" rel="noopener">Open in new tab</a></div></div></div>`;
+  setupPdfDrawLayer(`${key}:${pageNumber}`);
 }
 
 
@@ -7248,8 +7522,8 @@ function printActualTask(assignmentId){
   const a=(activeTaskReport?.assignment&&String(activeTaskReport.assignment.id)===String(assignmentId)?activeTaskReport.assignment:null) || (lastTeacherReport?.assignments||[]).find(x=>String(x.id)===String(assignmentId));
   if(!a)return showToast('Task unavailable','Open the class report again.');
   const questions=actualTaskQuestions(a);if(!questions.length)return showToast('Exact task unavailable','This older task does not contain enough saved question data to reconstruct the task exactly.');
-  const html=`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(a.title||'MathsExpress task')}</title><style>body{font-family:Arial,sans-serif;color:#111;padding:36px;max-width:900px;margin:auto}h1{margin:0}.meta{color:#555;margin:8px 0 28px}.q{break-inside:avoid;margin:0 0 24px;padding:0 0 18px;border-bottom:1px solid #ddd}.q h3{font-size:16px;margin:0 0 12px}.options{display:grid;grid-template-columns:1fr 1fr;gap:8px}.option{padding:8px;border:1px solid #ccc;border-radius:6px}.working{height:70px;border-bottom:1px solid #bbb;margin-top:14px}@media print{button{display:none}}</style></head><body><h1>${escapeHtml(a.title||'MathsExpress task')}</h1><div class="meta">${escapeHtml(a.assignment_type||'practice')} · ${questions.length} questions · Name: ____________________</div>${questions.map((q,i)=>`<section class="q"><h3>${i+1}. ${escapeHtml(String(q.prompt||q.question||'Question'))}</h3>${Array.isArray(q.options)&&q.options.length?`<div class="options">${q.options.map((o,j)=>`<div class="option">${String.fromCharCode(65+j)}. ${escapeHtml(String(o.label??o.text??o.value??o))}</div>`).join('')}</div>`:''}<div class="working"></div></section>`).join('')}<script>window.onload=()=>window.print()<\/script></body></html>`;
-  const win=window.open('','_blank','noopener,noreferrer');if(!win)return showToast('Pop-up blocked','Allow pop-ups to print this task.');win.document.write(html);win.document.close();
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>${escapeHtml(a.title||'MathsExpress task')}</title><style>body{font-family:Arial,sans-serif;color:#111;padding:36px;max-width:900px;margin:auto}h1{margin:0}.meta{color:#555;margin:8px 0 28px}.q{break-inside:avoid;margin:0 0 24px;padding:0 0 18px;border-bottom:1px solid #ddd}.q h3{font-size:16px;margin:0 0 12px}.options{display:grid;grid-template-columns:1fr 1fr;gap:8px}.option{padding:8px;border:1px solid #ccc;border-radius:6px}.working{height:70px;border-bottom:1px solid #bbb;margin-top:14px}@media print{button{display:none}}</style></head><body>${printBrandHtml()}<h1>${escapeHtml(a.title||'MathsExpress task')}</h1><div class="meta">${escapeHtml(a.assignment_type||'practice')} · ${questions.length} questions · Name: ____________________</div>${questions.map((q,i)=>`<section class="q"><h3>${i+1}. ${escapeHtml(String(q.prompt||q.question||'Question'))}</h3>${Array.isArray(q.options)&&q.options.length?`<div class="options">${q.options.map((o,j)=>`<div class="option">${String.fromCharCode(65+j)}. ${escapeHtml(String(o.label??o.text??o.value??o))}</div>`).join('')}</div>`:''}<div class="working"></div></section>`).join('')}<script>window.onload=()=>window.print()<\/script></body></html>`;
+  openPrintWindow(html);
 }
 
 async function openAuthoredQuestionStudio(){
@@ -7462,6 +7736,7 @@ async function renderTeacherHub() {
     const yearOptions = YEAR_LEVEL_OPTIONS.map(o=>o.value);
     root.innerHTML = `<section class="page school-page teacher-dashboard school-hierarchy-dashboard school-tab-${escapeHtml(schoolHubTab)}">
       <div class="school-hub-head"><div><span class="eyebrow">School Dashboard</span><h1>${escapeHtml(selectedSchool.display_name || selectedSchool.name)}</h1><p>School ID ${escapeHtml(selectedSchool.code)} · ${escapeHtml(selectedSchool.curriculum || 'NSW')} · <strong>${escapeHtml(schoolRoleLabel(staffRole))}</strong></p></div><div class="school-switcher school-head-actions">${schools.length>1?`<select data-action="switch-school" aria-label="Choose school">${schools.map((item)=>`<option value="${item.id}" ${String(item.id)===String(selectedSchool.id)?'selected':''}>${escapeHtml(item.name)}</option>`).join('')}</select>`:''}<button class="btn primary" data-action="open-custom-assignment">＋ Create task</button><div class="teacher-more-wrap compact-teacher-tools"><button class="btn secondary teacher-more-button" data-action="toggle-teacher-more" aria-expanded="false">Tools <span>⌄</span></button><div class="teacher-more-menu" hidden><button data-action="teacher-tab" data-tab="library">Task Library</button><button data-action="teacher-more-action" data-tool="planner">Planner</button><button data-action="school-tab" data-tab="students">Students</button><button data-action="open-template-folders">Template folders</button><button data-action="open-authored-question-studio">Reviewed Question Studio</button><button data-action="open-integration-center">Integrations & SSO</button><button data-action="open-tutorial-video-manager">Tutorial videos</button><button data-action="teacher-more-action" data-tool="games">Classroom games</button><button data-action="open-announcement">Class announcement</button><button data-action="open-teacher-rewards">Give coins / Game Time</button></div></div></div></div>
+      ${teacherStartHereHtml()}
       <nav class="school-section-tabs" aria-label="School sections">${SCHOOL_HUB_TABS.map((tab)=>`<button class="${schoolHubTab===tab.id?'active':''}" data-action="school-tab" data-tab="${tab.id}">${tab.label}</button>`).join('')}</nav>
 
       ${schoolHubTab==='overview' && teacherHubTab!=='library' ? `<section class="school-overview-grid"><article class="school-overview-main"><span class="eyebrow">Your school</span><h2>Everything starts here.</h2><p>Staff and students belong to the school. Classes are created inside it, and assignments live inside those classes.</p><div class="school-count-grid"><button data-action="school-tab" data-tab="staff"><strong>${counts.staff ?? 0}</strong><span>Staff</span></button><button data-action="school-tab" data-tab="students"><strong>${counts.students ?? 0}</strong><span>Students</span></button><button data-action="school-tab" data-tab="classes"><strong>${counts.classes ?? classes.length}</strong><span>Classes</span></button><button data-action="school-tab" data-tab="assignments"><strong>${counts.assignments ?? allAssignments.length}</strong><span>Assignments</span></button></div></article><aside class="school-role-card"><span class="eyebrow">Your role</span><h3>${escapeHtml(schoolRoleLabel(staffRole))}</h3><p>${capabilities.manageStaff?'You can manage staff and school teaching.':'You can teach and manage your assigned classes.'}</p><div class="role-ladder"><span>Principal</span><span>Deputy Principal</span><span>Head Teacher</span><span>Year Coordinator</span><span>Teacher</span></div></aside></section>` : ''}
@@ -7754,6 +8029,7 @@ async function handleSchoolSubmit(event) {
       if(!/^[A-Z0-9]{6}$/.test(code)) throw new Error('Enter the 6-character class code from your teacher.');
       try {
         await school.joinClass(code);
+        void refreshPlanState();
       } catch(error) {
         const raw=String(error?.message||'');
         if(/not found|no class|invalid.*code|P0002|22P02/i.test(raw)) throw new Error('That class code was not found. Check the code and try again.');
@@ -8625,7 +8901,16 @@ function handleClick(event) {
   }
   if (action === 'assignment-textbook') {
     if(activeSchoolAssignment?.testMode)return showToast('Textbook locked','Textbook support is disabled in Test Mode.');
-    openSimpleModal('Task Textbook',taskTextbookPanelHtml(currentTaskSupportContext(),{compact:false}));
+    openSimpleModal('Task Textbook',`<div class="task-textbook-toolbar"><button class="btn secondary small" data-action="toggle-textbook-expand" aria-pressed="false">⤢ Expand</button></div>${taskTextbookPanelHtml(currentTaskSupportContext(),{compact:false})}`);
+    document.querySelector('#modal-root .modal')?.classList.add('task-textbook-modal');
+    return;
+  }
+  if (action === 'pdf-draw-toggle') { const c=document.getElementById('pdf-draw-layer'); if(!c)return; const on=c.classList.toggle('active'); actionEl.setAttribute('aria-pressed',String(on)); actionEl.textContent=on?'✋ Stop drawing':'✏️ Draw'; return; }
+  if (action === 'pdf-draw-clear') { const c=document.getElementById('pdf-draw-layer'); if(!c)return; c.getContext('2d').clearRect(0,0,c.width,c.height); pdfDrawings.delete(c.dataset.pageKey); return; }
+  if (action === 'toggle-textbook-expand') {
+    const modal=document.querySelector('#modal-root .modal'); if(!modal)return;
+    const on=modal.classList.toggle('textbook-expanded'); actionEl.setAttribute('aria-pressed',String(on)); actionEl.textContent=on?'⤡ Shrink':'⤢ Expand';
+    modal.querySelectorAll('details').forEach(d=>{ d.open=on||d.open; });
     return;
   }
   if (action === 'assignment-return-fullscreen') { void enterAssignmentFullscreen(); return; }
@@ -9058,7 +9343,7 @@ Alex,alex@example.com,9"></textarea></label><p class="muted">Existing MathsExpre
   if (action === 'review-solved-question') { return openSolvedQuestionReview(Number(actionEl.dataset.questionIndex)||0); }
   if (action === 'jump-task-question') { if(currentGeneratedTask&&!currentGeneratedTask.aiMarking){clearAiChatHistoryForNewQuestion();currentGeneratedTask.draftAnswer=generatedRawAnswer(currentGeneratedTask.current);currentGeneratedTask.uiDraft=captureQuestionDraft();currentGeneratedTask=jumpGeneratedTask(currentGeneratedTask,Number(actionEl.dataset.questionIndex));saveActiveAssignmentSession();renderGeneratedTask();restoreQuestionDraft();} return; }
   if (action === 'count-dot') { const out=document.getElementById('mx-count-output');if(out)out.textContent=actionEl.dataset.number;actionEl.classList.add('counted');return; }
-  if (action === 'generated-next') { clearAiChatHistoryForNewQuestion(); currentGeneratedTask = advanceGeneratedTask(currentGeneratedTask); saveActiveAssignmentSession(); return renderGeneratedTask(); }
+  if (action === 'generated-next') { clearAiChatHistoryForNewQuestion(); const adapt=adaptiveNextLevel(currentGeneratedTask); currentGeneratedTask = advanceGeneratedTask(currentGeneratedTask); if(adapt)applyAdaptiveLevel(currentGeneratedTask,adapt); saveActiveAssignmentSession(); return renderGeneratedTask(); }
   if (action === 'open-lesson' || action === 'restart-lesson') return startLesson(actionEl.dataset.lessonId);
   if (action === 'lesson-choice') { currentLesson.selectedChoice = actionEl.dataset.choice; saveActiveAssignmentSession(); renderLesson(); requestAnimationFrame(()=>document.getElementById('app-view')?.focus()); return; }
   if (action === 'check-lesson-answer') return submitLessonAnswer();
@@ -9092,11 +9377,20 @@ Alex,alex@example.com,9"></textarea></label><p class="muted">Existing MathsExpre
     });
     return;
   }
+  if (action === 'owner-create-account') {
+    return openSimpleModal('Create an account',`<form id="owner-create-account-form" class="school-form"><label>Email<input name="email" type="email" required></label><label>Name<input name="displayName" maxlength="40"></label><div class="form-two"><label>Role<select name="role"><option value="player">Student</option><option value="teacher">Teacher</option><option value="parent">Parent</option><option value="bug_tester">Bug tester</option><option value="content_editor">Content editor</option><option value="support">Support</option><option value="admin">Admin</option></select></label><label>Year<select name="yearLevel">${Array.from({length:12},(_,i)=>`<option value="${i+1}" ${i+1===9?'selected':''}>Year ${i+1}</option>`).join('')}</select></label></div><div class="form-two"><label>Plan<select name="plan"><option value="free">Free</option><option value="primary_pro">Primary Pro</option><option value="secondary_pro">Secondary Pro</option><option value="complete">Complete</option></select></label><label>Class code (optional)<input name="classCode" maxlength="6"></label></div><p class="muted">They’ll get an email to choose their own password — you never see it.</p><button class="btn primary" type="submit">Create account</button></form>`);
+  }
   if (action === 'owner-set-user-plan') {
     const plan=document.getElementById('owner-user-plan')?.value||'free'; const days=Number(document.getElementById('owner-user-plan-days')?.value)||365;
     getSchoolClient().ownerSetUserPlan(actionEl.dataset.userId,plan,days).then(r=>showToast('Plan updated',`${PLAN_LABELS[r?.info?.plan]||plan}${r?.info?.expires_at?` until ${new Date(r.info.expires_at).toLocaleDateString()}`:''}`,'success')).catch(e=>showToast('Plan not changed',e?.message||'Try again.'));
     return;
   }
+  if (action === 'toggle-learn-browse') { learnBrowseOpen=!learnBrowseOpen; return; }
+  if (action === 'open-skill-map') { return openSkillMap(normaliseYearLevel(actionEl.dataset.year,account.profile?.yearLevel)); }
+  if (action === 'skill-map-node' || action === 'start-topic-checkin') { const y=normaliseYearLevel(actionEl.dataset.skillYear,account.profile?.yearLevel); const skill=getCurriculumSkill(y,actionEl.dataset.skillId)||CURRICULUM.find(x=>x.id===actionEl.dataset.skillId); const task=taskForLearningSkill(skill,'adaptive',10); if(!task)return showToast('Check-in unavailable','Try another skill.'); document.getElementById('modal-root').innerHTML=''; activeSchoolAssignment=null; return startGeneratedTask(task.id,{returnRoute:'learn'}); }
+  if (action === 'start-mistake-review') { return startMistakeReview(); }
+  if (action === 'open-mistake-explanations') { return openMistakeExplanations(); }
+  if (action === 'start-placement') { if(planBlocksPractice())return; return startPlacementTest(); }
   if (action === 'claim-season-reward') {
     accountClient.ensureClient().rpc('mathsexpress_claim_season_reward',{}).then(res=>{
       const r=unwrapRpc(res); const owned=new Set(state.ownedCosmetics||[]); if(r.item_id)owned.add(r.item_id);
@@ -9325,6 +9619,10 @@ function handleV950Change(event){
   }
   if(action==='school-usage-range'){schoolUsageRangeDays=Number(el.value)||30;void openSchoolUsageDashboard();return;}
   if(action==='district-range'){districtRangeDays=Number(el.value)||90;void openDistrictDashboard();return;}
+  // These dropdowns were rendered without any change handler, so picking an option did nothing.
+  if(action==='switch-school'){selectedSchoolId=String(el.value||'');selectedTeacherClassId='';return renderTeacherHub();}
+  if(action==='learn-year-select'){if(!canUseTeacherHub(account))return;learnYearLevel=normaliseYearLevel(el.value);return renderLearn();}
+  if(action==='learning-path-year-select'){if(!canUseTeacherHub(account))return;persist({...state,learningPathYear:normaliseYearLevel(el.value)},{quiet:true});return renderLearningPath();}
 }
 
 function handleV950Hotkeys(event){
