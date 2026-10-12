@@ -3307,7 +3307,7 @@ class MathRiftAccountClient {
     return true;
   }
 
-  async signUp(email, password, displayName, accountType = 'student') {
+  async signUp(email, password, displayName, accountType = 'student', yearLevel = null) {
     const client=this.ensureClient();
     const normalizedEmail=String(email??'').trim().toLowerCase();
     const passwordValue=String(password??'');
@@ -3316,7 +3316,9 @@ class MathRiftAccountClient {
     if(!normalizedEmail || !normalizedEmail.includes('@')) throw new Error('Enter a valid email address.');
     if(passwordValue.length<10) throw new Error('Password must be at least 10 characters.');
 
-    const payload={email:normalizedEmail,password:passwordValue,displayName:safeDisplayName,accountType:requestedAccountType};
+    const chosenYear=requestedAccountType==='student' ? Number(yearLevel) : null;
+    if(requestedAccountType==='student'&&(!Number.isInteger(chosenYear)||chosenYear<0||chosenYear>12))throw new Error('Choose your year level.');
+    const payload={email:normalizedEmail,password:passwordValue,displayName:safeDisplayName,accountType:requestedAccountType,yearLevel:chosenYear};
     let response;
     try{
       response=await mathsexpressSupabaseFetch(`${SUPABASE_URL}/functions/v1/mathsexpress-signup`,{
@@ -3872,7 +3874,13 @@ class MathRiftSchoolClient {
   async createAndAssignTask(input = {}) {
     const built = buildAssignmentPayload(input);
     const { targetStudentIds, metadata, ...payload } = built;
+    const originalType=String(payload.assignment_type||'practice');
+    const allowed=new Set(['practice','adaptive','lesson','worksheet','test','readiness','template','revision','recommended','self-directed-adaptive','express']);
+    if(!allowed.has(originalType)){
+      payload.assignment_type=originalType==='topic-test'?'test':originalType==='tutorial'?'lesson':/check|readiness|discovery/.test(originalType)?'readiness':'practice';
+    }
     payload.config = { ...(input.config || {}), ...(metadata || {}) };
+    if(payload.assignment_type!==originalType)payload.config.assignment_workflow_type=originalType;
     // Generated task assignments keep one deterministic seed so students, reports and
     // printable copies all refer to the same question set without storing answer keys.
     if (payload.config.task_library_id && !Number.isFinite(Number(payload.config.question_seed))) {

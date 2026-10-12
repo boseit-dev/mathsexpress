@@ -1,6 +1,6 @@
 'use strict';
 (function(root){
-  const FUNCS = new Set(['sqrt','abs','sin','cos','tan','log','ln']);
+  const FUNCS = new Set(['sqrt','abs','sin','cos','tan','log','ln','asin','acos','atan','sinh','cosh','tanh','cbrt','factorial','ncr','npr']);
   const CONSTS = { pi: Math.PI, e: Math.E };
   const OPS = {
     '+': {p:1,a:'L',n:2,f:(a,b)=>a+b},
@@ -105,7 +105,9 @@
     const rpn=toRpn(input), stack=[];
     const angleMode=String(options.angleMode||'rad').toLowerCase();
     const angle=x=>angleMode==='deg'?x*Math.PI/180:x;
-    const funcs={sqrt:Math.sqrt,abs:Math.abs,sin:x=>Math.sin(angle(x)),cos:x=>Math.cos(angle(x)),tan:x=>Math.tan(angle(x)),log:Math.log10,ln:Math.log};
+    const fact=n=>{if(!Number.isInteger(n)||n<0||n>170)throw new Error('Factorial requires a whole number from 0 to 170.');let v=1;for(let j=2;j<=n;j++)v*=j;return v;};
+    const combo=(n,r,order)=>{if(!Number.isInteger(n)||!Number.isInteger(r)||n<0||r<0||r>n||n>170)throw new Error('Use whole numbers with 0 ≤ r ≤ n ≤ 170.');let result=1;for(let k=1;k<=r;k++)result*=order?(n-k+1):(n-k+1)/k;return result;};
+    const funcs={sqrt:Math.sqrt,cbrt:Math.cbrt,abs:Math.abs,sin:x=>Math.sin(angle(x)),cos:x=>Math.cos(angle(x)),tan:x=>Math.tan(angle(x)),asin:x=>(angleMode==='deg'?180/Math.PI:1)*Math.asin(x),acos:x=>(angleMode==='deg'?180/Math.PI:1)*Math.acos(x),atan:x=>(angleMode==='deg'?180/Math.PI:1)*Math.atan(x),sinh:Math.sinh,cosh:Math.cosh,tanh:Math.tanh,log:Math.log10,ln:Math.log,factorial:fact,ncr:(n,r)=>combo(n,r,false),npr:(n,r)=>combo(n,r,true)};
     for(const tok of rpn){
       if(tok.t==='num'){stack.push(tok.v);continue;}
       if(tok.t==='id'){
@@ -114,7 +116,8 @@
         const n=Number(vars[tok.v]); if(!Number.isFinite(n)) throw new Error(`Invalid value: ${tok.v}`); stack.push(n); continue;
       }
       if(tok.t==='func'){
-        if(stack.length<1) throw new Error('Missing function value.'); const a=stack.pop(); const v=funcs[tok.v](a); if(!Number.isFinite(v)) throw new Error('Calculation is not finite.'); stack.push(v); continue;
+        const count=(tok.v==='ncr'||tok.v==='npr')?2:1;
+        if(stack.length<count) throw new Error('Missing function value.'); const b=stack.pop();const a=count===2?stack.pop():b; const v=count===2?funcs[tok.v](a,b):funcs[tok.v](a); if(!Number.isFinite(v)) throw new Error('Calculation is not finite.'); stack.push(v); continue;
       }
       if(tok.t==='op'){
         const spec=OPS[tok.v]; if(stack.length<spec.n) throw new Error('Incomplete expression.');

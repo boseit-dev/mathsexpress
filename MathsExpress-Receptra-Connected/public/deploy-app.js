@@ -570,6 +570,20 @@ function recordGeneratedTaskMastery(run,task,accuracy) {
   if(account.authenticated) getSchoolClient().saveSkillMastery(resolvedSkillId,blended).catch(()=>{});
 }
 
+function openSkillPracticeDetails(yearLevel,skillId){
+  const year=normaliseYearLevel(yearLevel,account.profile?.yearLevel);
+  const rows=learningPathRows(year);
+  const selected=rows.find(x=>String(x.id)===String(skillId));
+  if(!selected)return showToast('Skill unavailable','Try another skill.');
+  const sameTopic=rows.filter(x=>String(x.topic||'')===String(selected.topic||'') && x.strand===selected.strand);
+  const related=sameTopic.length>1 ? sameTopic : rows.filter(x=>x.strand===selected.strand);
+  const groups=[...new Set(related.map(x=>x.topic||x.strand))];
+  openSimpleModal(selected.title||selected.skill||'Practise skills',`<div class="mx-skill-detail">
+    <div class="mx-skill-detail-lead"><span class="eyebrow">${escapeHtml(yearLabel(year))} · ${escapeHtml(selected.strand||'Mathematics')}</span><h3>${escapeHtml(selected.title||selected.skill||'Skill')}</h3><p>Choose one of these curriculum skills to practise. Your progress is saved after each session.</p><div class="mx-skill-detail-mastered"><span>Current mastery</span><strong>${Math.round(selected.mastery||0)}%</strong><div class="mx-skill-detail-meter"><i style="width:${Math.round(selected.mastery||0)}%"></i></div></div></div>
+    ${groups.map(topic=>`<section class="mx-skill-detail-topic"><h4>${escapeHtml(topic)}</h4><div class="mx-skill-detail-list">${related.filter(x=>(x.topic||x.strand)===topic).map(x=>`<button type="button" data-action="start-skill-detail-practice" data-skill-id="${escapeHtml(x.id)}" data-skill-year="${x.yearLevel}"><span><strong>${escapeHtml(x.title||x.skill)}</strong><small>${Math.round(x.mastery||0)}% mastery</small></span><b>Practise →</b></button>`).join('')}</div></section>`).join('')}
+  </div>`);
+}
+
 function renderLearningPath() {
   const view=document.getElementById('app-view');
   const ownYear=normaliseYearLevel(account.profile?.yearLevel);
@@ -579,13 +593,12 @@ function renderLearningPath() {
   const groups=[...new Set(rows.map(x=>x.strand))];
   const mastered=rows.filter(x=>x.mastery>=80).length;
   const skillSymbol=(skill)=>{const t=`${skill.strand} ${skill.title}`.toLowerCase();if(/fraction|ratio|percent/.test(t))return '½';if(/integer|number/.test(t))return '123';if(/algebra|equation/.test(t))return 'x';if(/graph|linear/.test(t))return '↗';if(/geometry|angle|shape/.test(t))return '△';if(/measure|length|area|volume/.test(t))return '⌗';if(/probab/.test(t))return '◉';if(/stat|data/.test(t))return '▥';if(/finance|money/.test(t))return '$';return '∑';};
-  view.innerHTML=`<div class="page mx-skill-map-page">
-    <header class="mx-skill-map-head"><span class="eyebrow">${escapeHtml(yearLabel(year))} pathway</span><h1>Your skills map</h1><p>Choose a topic, practise skills, and grow the progress rings as your mastery improves.</p><div class="mx-skill-map-tabs"><button class="active">Topics</button><button data-route="learn">All skills</button></div><div class="mx-skill-map-summary"><strong>${mastered}</strong><span>mastered</span><strong>${rows.length}</strong><span>skills</span></div></header>
+  view.innerHTML=`<div class="page mx-skill-map-page mx-practice-list-page">
+    <header class="mx-skill-map-head"><span class="eyebrow">${escapeHtml(yearLabel(year))} · Practice</span><h1>Practise your skills</h1><p>Choose a topic below and start a skill. Your mastery stays saved as you learn.</p><div class="mx-skill-map-summary"><strong>${mastered}</strong><span>mastered</span><strong>${rows.length}</strong><span>skills</span></div></header>
     ${canBrowseAllYears?`<div class="mx-year-dropdown mx-skill-year-switcher"><label for="learning-path-year-select"><span>Year level</span><select id="learning-path-year-select" data-action="learning-path-year-select" aria-label="Choose year level">${YEAR_LEVEL_OPTIONS.map(({value,label})=>`<option value="${value}" ${year===value?'selected':''}>${escapeHtml(label)}</option>`).join('')}</select></label></div>`:''}
-    <div class="mx-skill-map-groups">${groups.map((strand,strandIndex)=>`<section class="mx-skill-topic-panel" style="--stagger:${strandIndex}"><h2>${escapeHtml(strand)}</h2><div class="mx-skill-badge-grid">${rows.filter(x=>x.strand===strand).map((skill,skillIndex)=>{const m=Math.round(skill.mastery||0);const tier=Math.floor(m/100);return `<button class="mx-skill-badge ${m>=80?'mastered':skill.unlocked?'ready':'locked'}" style="--stagger:${skillIndex}" data-action="start-path-skill" data-skill-id="${escapeHtml(skill.id)}" data-skill-year="${skill.yearLevel}" ${skill.unlocked?'':'disabled'}><span class="mx-skill-ring" style="--skill-progress:${masteryTierProgress(m)}">${tier>0?`<em class="mx-skill-tier">×${tier+1}</em>`:''}<i>${escapeHtml(skillSymbol(skill))}</i></span><strong>${escapeHtml(skill.title||skill.skill)}</strong><small>${m}% mastery</small></button>`;}).join('')}</div></section>`).join('')}</div>
+    <div class="mx-practice-topics">${groups.map((strand,index)=>`<details class="mx-practice-topic" ${index===0?'open':''}><summary><span class="mx-practice-chevron">⌄</span><strong>${escapeHtml(strand)}</strong><span>${rows.filter(x=>x.strand===strand).length} skills</span></summary><div class="mx-practice-skill-list">${rows.filter(x=>x.strand===strand).map(skill=>{const m=Math.round(skill.mastery||0);return `<button class="mx-practice-skill" data-action="open-skill-practice" data-skill-id="${escapeHtml(skill.id)}" data-skill-year="${skill.yearLevel}"><span class="mx-practice-skill-icon" aria-hidden="true">${escapeHtml(skillSymbol(skill))}</span><span class="mx-practice-skill-copy"><strong>${escapeHtml(skill.title||skill.skill)}</strong><small>${escapeHtml(skill.topic||'Practice questions')}</small></span><span class="mx-practice-progress" title="${m}% mastery"><i style="width:${m}%"></i></span><span class="mx-practice-percent">${m}%</span><span class="mx-practice-arrow">→</span></button>`;}).join('')}</div></details>`).join('')}</div>
   </div>`;
 }
-
 function drivingHistoryForYear(year=normaliseYearLevel(account.profile?.yearLevel)){return Array.isArray(state?.drivingQuestionHistory?.[String(year)])?state.drivingQuestionHistory[String(year)]:[];}
 function rememberPersistentDrivingPrompt(prompt,year=normaliseYearLevel(account.profile?.yearLevel)){
   if(!prompt||!state)return;
@@ -1120,6 +1133,7 @@ function showAuthGate(message = '') {
               <label><input type="radio" name="accountType" value="student" checked><span><b>Student</b><small>Practise on your own or join a school class</small></span></label>
               <label><input type="radio" name="accountType" value="teacher"><span><b>Teacher</b><small>Create classes, assign work and view reports</small></span></label>
             </fieldset>
+            <label class="signup-year-level">Your year level<select id="auth-signup-year-level" name="yearLevel" required><option value="" disabled selected>Select your year</option>${YEAR_LEVEL_OPTIONS.map(x=>`<option value="${x.value}">${escapeHtml(x.label)}</option>`).join('')}</select><small class="field-help">We use this to show maths for your school year. Teachers can change their settings later.</small></label>
             <label class="signup-class-code">School class code <span class="optional-tag">optional</span><input id="auth-signup-class-code" name="classCode" maxlength="6" minlength="6" autocomplete="off" autocapitalize="characters" placeholder="Leave blank to learn on your own" pattern="[A-Za-z0-9]{6}"><small class="field-help">Only if your school gave you a code. Without one you get your own self-paced MathsExpress.</small></label>
             <label>Email<input id="auth-signup-email" type="email" autocomplete="email" placeholder="name@example.com" required><small class="field-help">You may need to confirm your email before logging in.</small></label>
             <label>Password<input id="auth-signup-password" type="password" minlength="10" autocomplete="new-password" placeholder="At least 10 characters" required></label>
@@ -1136,6 +1150,21 @@ async function finishAuthentication(snapshot) {
   if(!(await requireMfaIfEnrolled())){ try{ await accountClient.signOut?.(); }catch{} showAuthGate('Login cancelled. A security code is required for this account.'); return; }
   syncAccountSession(snapshot);
   pendingSignup=null;
+  // The signup service is backwards-compatible; on the same device we can
+  // finish saving a year choice once the user's email has been verified.
+  try {
+    const pending=JSON.parse(safeStorageGet('mx-pending-signup-year-v1')||'null');
+    const signedEmail=String(account.session?.user?.email||'').trim().toLowerCase();
+    const chosenYear=Number(pending?.yearLevel);
+    if(account.profile?.role==='player' && signedEmail && signedEmail===String(pending?.email||'').toLowerCase() && Number.isInteger(chosenYear) && chosenYear>=0 && chosenYear<=12){
+      void accountClient.updateProfileSettings({yearLevel:chosenYear}).then(profile=>{
+        if(String(account.session?.user?.email||'').toLowerCase()!==signedEmail)return;
+        account.profile=profile;
+        globalThis.localStorage?.removeItem('mx-pending-signup-year-v1');
+        render();
+      }).catch(()=>{});
+    }
+  }catch{}
   try {
     const url=new URL(globalThis.location.href);
     if(url.searchParams.has('auth')) { url.searchParams.delete('auth'); globalThis.history.replaceState(null,'',`${url.pathname}${url.search}${globalThis.location.hash||'#home'}`); }
@@ -1189,7 +1218,11 @@ async function handleAuthSubmit(event) {
       if(password!==document.getElementById('auth-signup-password-confirm').value) throw new Error('The two passwords do not match.');
       const classCode=String(document.getElementById('auth-signup-class-code')?.value||'').trim().toUpperCase();
       if(accountType==='student' && classCode && !/^[A-Z0-9]{6}$/.test(classCode)) throw new Error('A school class code has 6 letters or numbers. Leave it blank to learn on your own.');
-      const result = await accountClient.signUp(signupEmail, password, displayNameFromEmail(signupEmail), accountType);
+      const yearValue=String(document.getElementById('auth-signup-year-level')?.value??'');
+      const yearLevel=accountType==='student'&&yearValue!==''?Number(yearValue):null;
+      if(accountType==='student'&&(!Number.isInteger(yearLevel)||yearLevel<0||yearLevel>12))throw new Error('Choose your year level.');
+      const result = await accountClient.signUp(signupEmail, password, displayNameFromEmail(signupEmail), accountType, yearLevel);
+      if(accountType==='student')try{localStorage.setItem('mx-pending-signup-year-v1',JSON.stringify({email:String(signupEmail).trim().toLowerCase(),yearLevel}));}catch{}
       if(result.needsConfirmation){
         // Stay logged out until the user verifies the email. The class code is never
         // checked anonymously, so the student must join after their first verified login.
@@ -1470,6 +1503,14 @@ async function applyOwnerEconomyAction(action) {
   return true;
 }
 
+// Shared entry point for both the Owner Control Room and regular action dispatcher.
+// These were previously wired to different click attributes: data-owner-action
+// was swallowed by the testing handler before the regular data-action handler ran.
+function openOwnerCreateAccountModal() {
+  if (!canUseOwnerConsole(account)) return showToast('Owner only', 'Only an Owner can create accounts from this screen.');
+  return openSimpleModal('Create an account',`<form id="owner-create-account-form" class="school-form"><label>Email<input name="email" type="email" required></label><label>Name<input name="displayName" maxlength="40"></label><div class="form-two"><label>Role<select name="role"><option value="player">Student</option><option value="teacher">Teacher</option><option value="parent">Parent</option><option value="bug_tester">Bug tester</option><option value="content_editor">Content editor</option><option value="support">Support</option><option value="admin">Admin</option></select></label><label>Year<select name="yearLevel">${Array.from({length:12},(_,i)=>`<option value="${i+1}" ${i+1===9?'selected':''}>Year ${i+1}</option>`).join('')}</select></label></div><div class="form-two"><label>Plan<select name="plan"><option value="free">Free</option><option value="primary_pro">Primary Pro</option><option value="secondary_pro">Secondary Pro</option><option value="complete">Complete</option></select></label><label>Class code (optional)<input name="classCode" maxlength="6"></label></div><p class="muted">They’ll get an email to choose their own password — you never see it.</p><button class="btn primary" type="submit">Create account</button></form>`);
+}
+
 function applyOwnerAction(action) {
   if (!canUseOwnerConsole(account)) return;
   trackActivityEvent('owner-action','admin',action,{owner:true});
@@ -1504,6 +1545,7 @@ function applyOwnerAction(action) {
   else if (action === 'school-manager') { closeOwnerConsole(); schoolHubTab='overview'; return go('teacher-hub'); }
   else if (action === 'feature-controls') { closeOwnerConsole(); activeToolTab='school'; go('tools'); setTimeout(()=>document.querySelector('[data-action="open-feature-flags"]')?.click(),0); return; }
   else if (action === 'maintenance-mode') { const mode=!Boolean(state.ownerSettings?.maintenanceMode); next = { ...state, ownerSettings:{...(state.ownerSettings||{}),maintenanceMode:mode} }; updatePlatformSettingsRemote({maintenanceMode:mode,maintenanceMessage:state.ownerSettings?.maintenanceMessage,broadcastTitle:state.ownerSettings?.broadcastTitle,broadcastBody:state.ownerSettings?.broadcastBody}).catch((e)=>showToast('Server setting failed',e.message)); }
+  else if (action === 'owner-create-account') { closeOwnerConsole(); return openOwnerCreateAccountModal(); }
   else if (action === 'owner-broadcast') { closeOwnerConsole(); return openSimpleModal('Owner Broadcast',`<form id="owner-broadcast-form" class="school-form"><label>Title<input name="title" maxlength="120" required value="MathsExpress update"></label><label>Message<textarea name="body" rows="6" maxlength="1000" required></textarea></label><button class="btn primary" type="submit">Publish broadcast</button></form>`); }
   else if (action === 'open-activity-center') { closeOwnerConsole(); return go('owner-activity'); }
   else if (action === 'owner-analytics') { closeOwnerConsole(); accountClient.ensureClient().rpc('mathsexpress_owner_analytics',{}).then(({data,error})=>{ if(error) throw error; ownerPlatformStats=ownerAnalytics(data||{}); openSimpleModal('Owner Analytics',`<div class="owner-analytics-strip large">${Object.entries(ownerPlatformStats).map(([k,v])=>`<div><b>${v}</b><small>${escapeHtml(k)}</small></div>`).join('')}</div><p class="muted">Live totals from the MathsExpress database.</p>`); }).catch(e=>showToast('Analytics unavailable',e.message)); return; }
@@ -2507,6 +2549,7 @@ function renderTeacherCommandResults(q){
   box.innerHTML=hits.map(([label,attrs])=>`<button ${attrs}${attrs.includes('open-live-pulse')?cls:''}>${escapeHtml(label)}</button>`).join('')||'<p>No matching tool. Try “results”, “worksheet” or “game”.</p>';
 }
 document.addEventListener('input',(event)=>{ if(event.target?.id==='teacher-command-input') renderTeacherCommandResults(event.target.value); });
+document.addEventListener('change',(event)=>{if(event.target?.name==='accountType'){const year=document.getElementById('auth-signup-year-level');if(year)year.required=event.target.value==='student';}},true);
 // Real adaptivity for self-paced adaptive practice: two first-try correct answers in a row step the
 // next question up a difficulty level; two answers that needed retries step it down.
 const ADAPTIVE_LEVELS=['easy','medium','hard'];
@@ -2557,17 +2600,38 @@ function setupTextbookDrawLayer(key){
 // task question by question through the normal submit path. On teacher assignments every use
 // is logged as a 'bot-autocomplete' integrity event so the teacher can see it was automated.
 let botAccess=false, botRunning=false;
+function botTaskIsAllowed(){
+  return Boolean(account.authenticated && botAccess && activeSchoolAssignment?.id &&
+    !activeSchoolAssignment.localOnly && !activeSchoolAssignment.testMode &&
+    activeSchoolAssignment.tutorAllowed!==false &&
+    routeFromHash().route==='generated-task' && currentGeneratedTask?.current &&
+    !currentGeneratedTask.complete);
+}
 async function refreshBotAccess(){
-  if(!account.authenticated){ botAccess=false; return; }
-  try{ const {data,error}=await accountClient.ensureClient().rpc('mathsexpress_my_bot_access',{}); botAccess=!error&&data===true; }catch{ botAccess=false; }
+  if(!account.authenticated){ botAccess=false; botRunning=false; updateBotButton(); return; }
+  try {const {data,error}=await accountClient.ensureClient().rpc('mathsexpress_my_bot_access',{});
+    botAccess=!error&&data===true;
+  }catch{ botAccess=false; }
+  if(!botAccess)botRunning=false;
   updateBotButton();
 }
 function updateBotButton(){
-  let btn=document.getElementById('autocomplete-bot-button');
-  const onTask=['generated-task','assignment'].includes(routeFromHash().route)&&Boolean(currentGeneratedTask&&!currentGeneratedTask.complete);
-  if(!botAccess||!onTask){ if(btn)btn.hidden=true; return; }
-  if(!btn&&document.body){ btn=document.createElement('button'); btn.id='autocomplete-bot-button'; btn.className='autocomplete-bot-button'; btn.dataset.action='run-autocomplete-bot'; document.body.appendChild(btn); }
-  btn.hidden=false; btn.textContent=botRunning?'🤖 Stop auto-complete':'🤖 Auto-complete';
+  // Remove the old global bubble left by earlier cached MathsExpress releases.
+  const old=document.querySelector('body > #autocomplete-bot-button');
+  if(old)old.remove();
+  const rail=document.querySelector('.assignment-side-rail');
+  if(!rail)return;
+  const canUse=botTaskIsAllowed();
+  let btn=rail.querySelector('#autocomplete-bot-button');
+  if(!canUse){ if(btn)btn.remove();return; }
+  if(!btn){
+    btn=document.createElement('button');
+    btn.type='button';btn.id='autocomplete-bot-button';btn.dataset.action='run-autocomplete-bot';
+    btn.className='mx-assignment-bot-button';
+    rail.appendChild(btn);
+  }
+  btn.innerHTML=`<span aria-hidden="true">BOT</span><small>${botRunning?'Stop bot':'Auto-complete'}</small>`;
+  btn.setAttribute('aria-label',botRunning?'Stop auto-complete bot':'Run auto-complete bot on this assignment');
 }
 function botFillAnswer(q){
   const ans=q.answer;
@@ -2579,13 +2643,18 @@ function botFillAnswer(q){
   input.value=String(ans); input.dispatchEvent(new Event('input',{bubbles:true})); return true;
 }
 async function runAutoCompleteBot(){
-  if(!botAccess)return showToast('Auto-complete','You don’t have access to the auto-complete bot.');
   if(botRunning){ botRunning=false; updateBotButton(); return; }
+  // Permission is verified server-side, not trusted from an old local UI flag.
+  await refreshBotAccess();
+  if(!botTaskIsAllowed())return showToast('Auto-complete unavailable','This tool is available only to people the owner approves, inside a permitted assignment.');
+  const assignmentId=String(activeSchoolAssignment.id);
   botRunning=true; updateBotButton();
-  if(activeSchoolAssignment?.id&&!activeSchoolAssignment.localOnly) void recordAssessmentIntegrity('bot-autocomplete',{started:true});
+  void recordAssessmentIntegrity('bot-autocomplete',{started:true});
   let done=0;
   try{
     for(let guard=0;guard<200&&botRunning;guard++){
+      if(!botTaskIsAllowed() || String(activeSchoolAssignment?.id)!==assignmentId)break;
+      if(guard>0&&guard%5===0){await refreshBotAccess();if(!botTaskIsAllowed())break;}
       const run=currentGeneratedTask; if(!run||run.complete||!run.current)break;
       const q=run.current;
       if(!(run.feedback?.correct||run.feedback?.needsReview)){
@@ -3033,17 +3102,22 @@ function lessonSupportHtml() {
   </div>`;
 }
 
+let calculatorMemory=0;
 function scientificCalculatorHtml() {
   const keys=[
     ['AC','clear','utility'],['DEL','delete','utility'],['(', '(','utility'],[')',')','utility'],
     ['sin','sin(','function'],['cos','cos(','function'],['tan','tan(','function'],['√','sqrt(','function'],
+    ['sin⁻¹','asin(','function'],['cos⁻¹','acos(','function'],['tan⁻¹','atan(','function'],['n!','factorial(','function'],
+    ['sinh','sinh(','function'],['cosh','cosh(','function'],['tanh','tanh(','function'],['∛','cbrt(','function'],
     ['abs','abs(','function'],['x³','^3','function'],['1/x','1/(','function'],['×10ⁿ','*10^','function'],
+    ['nPr','npr(','function'],['nCr','ncr(','function'],['10ˣ','10^','function'],['EXP','*10^','function'],
     ['7','7','number'],['8','8','number'],['9','9','number'],['÷','/','operator'],
     ['4','4','number'],['5','5','number'],['6','6','number'],['×','*','operator'],
     ['1','1','number'],['2','2','number'],['3','3','number'],['−','-','operator'],
     ['0','0','number'],['.','.','number'],['pi','π','function'],['+','+','operator'],
     ['x²','square','function'],['xʸ','^','function'],['log','log(','function'],['ln','ln(','function'],
     ['e','e','function'],['Ans','ans','function'],['%','/100','function'],['=','equals','equals'],
+    ['x⁻¹','^(-1)','function'],['xʸ','^','function'],['S⇔D','fraction','utility'],['M+','memoryplus','utility'],
   ];
   return `<div class="scientific-calculator">
     <div class="calculator-display-wrap">
@@ -3062,8 +3136,7 @@ function evaluateScientificCalculator(raw) {
   if(expression.length>180) throw new Error('Expression is too long.');
   expression=expression.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-').replace(/π/g,'pi').replace(/\^/g,'**').toLowerCase();
   if(!/^[0-9+\-*/().,%*\s_a-z]+$/.test(expression)) throw new Error('Unsupported character.');
-  const allowed=['sqrt','sin','cos','tan','log','ln','abs','pi','e','ans'];
-  const probe=expression.replace(/\b(sqrt|sin|cos|tan|log|ln|abs|pi|e|ans)\b/g,'');
+  const probe=expression.replace(/\b(sqrt|sin|cos|tan|asin|acos|atan|sinh|cosh|tanh|cbrt|factorial|ncr|npr|log|ln|abs|pi|e|ans)\b/g,'');
   if(/[a-z_$\[\]{};'"`]/i.test(probe)) throw new Error('Unsupported expression.');
   const value=globalThis.MXSafeMath?.evaluate?.(expression,{ans:Number(calculatorAns)||0},{angleMode:calculatorAngleMode});
   if(!Number.isFinite(value)) throw new Error('That calculation does not have a finite result.');
@@ -3997,7 +4070,7 @@ function renderLearn() {
       ${canBrowseAllYears?`<div class="mx-year-dropdown"><label for="learn-year-select"><span>Year level</span><select id="learn-year-select" data-action="learn-year-select" aria-label="Choose year level">${YEAR_LEVEL_OPTIONS.map(({value,label})=>`<option value="${value}" ${learnYearLevel===value?'selected':''}>${escapeHtml(label)}</option>`).join('')}</select></label></div>`:''}
       <section class="learn-mode-bar compact-learn-modes" hidden><button data-route="learning-path"><span>◎</span><div><strong>Learning Path</strong><small>Personalised roadmap</small></div></button><button data-action="start-adaptive-practice"><span>↗</span><div><strong>Adaptive</strong><small>Difficulty adjusts automatically</small></div></button><button data-action="open-discovery-checkin"><span>◉</span><div><strong>Discovery</strong><small>Find strengths and gaps</small></div></button><button data-route="textbook"><span>▤</span><div><strong>Textbook</strong><small>Read the matching lesson</small></div></button></section>
       <div class="learn-strand-list">
-      ${strands.map((strand) => { const strandSkills=skills.filter((skill)=>skill.strand===strand); const key=String(strand); const expanded=learnExpandedStrands.has(key); return `<section class="curriculum-strand learn-collapsible ${expanded?'expanded':'collapsed'}"><button class="learn-strand-toggle" data-action="learn-toggle-strand" data-strand="${escapeHtml(key)}" aria-expanded="${expanded?'true':'false'}"><span class="chapter-chevron">${expanded?'⌄':'›'}</span><span><small>${escapeHtml(yearLabel(learnYearLevel))}</small><strong>${escapeHtml(strand)}</strong></span><b>${strandSkills.length} skills</b></button><div class="curriculum-skill-grid" ${expanded?'':'hidden'}>${strandSkills.map((skill)=>{ const task=searchTaskLibrary({yearLevel:skill.yearLevel,skillId:skill.id,type:'practice',difficulty:'medium',questionCount:10,limit:1})[0]; const mastery=skillMasteryValue(skill.id,skill.yearLevel); return `<article class="curriculum-skill-card"><div class="skill-card-meta"><span>${Math.round(mastery)}% mastery</span>${skill.pathway!=='Core'?`<span>${escapeHtml(skill.pathway)}</span>`:''}</div><h3>${escapeHtml(skill.title)}</h3><p>${escapeHtml(skill.topic)} ${nswOutcomeChips(skill)}</p><button class="btn secondary small" data-action="start-library-task" data-task-id="${escapeHtml(task?.id||'')}">Practise</button></article>`; }).join('')}</div></section>`; }).join('')}
+      ${strands.map((strand) => { const strandSkills=skills.filter((skill)=>skill.strand===strand); return `<section class="curriculum-strand mx-classic-learn-strand"><header><small>${escapeHtml(yearLabel(learnYearLevel))} · ${strandSkills.length} skills</small><h2>${escapeHtml(strand)}</h2></header><div class="curriculum-skill-grid">${strandSkills.map((skill)=>{ const task=searchTaskLibrary({yearLevel:skill.yearLevel,skillId:skill.id,type:'practice',difficulty:'medium',questionCount:10,limit:1})[0]; const mastery=skillMasteryValue(skill.id,skill.yearLevel); return `<article class="curriculum-skill-card"><div class="skill-card-meta"><span>${Math.round(mastery)}% mastery</span>${skill.pathway!=='Core'?`<span>${escapeHtml(skill.pathway)}</span>`:''}</div><h3>${escapeHtml(skill.title)}</h3><p>${escapeHtml(skill.topic)} ${nswOutcomeChips(skill)}</p><button class="btn secondary small" data-action="start-library-task" data-task-id="${escapeHtml(task?.id||'')}">Practise</button></article>`; }).join('')}</div></section>`; }).join('')}
       </div>
       ${learnYearLevel===9 ? `<section class="curriculum-strand legacy-algebra"><div class="section-heading"><div><span class="eyebrow">Core Algebra</span><h2>Original Algebra lessons</h2></div></div><div class="grid two">${lessonCards()}</div></section>` : ''}
       </details>
@@ -4242,6 +4315,7 @@ function assignmentSideRailHtml({tutorAllowed=true,testMode=false,calculatorAllo
     <button ${videosAllowed&&!hardLocked?'data-action="assignment-video"':'data-action="assignment-video-locked"'} class="${videosAllowed&&!hardLocked?'':'locked'}"><span>VID</span><small>${hardLocked?'Locked':'Video'}</small></button>
     <button ${calculatorAllowed&&!hardLocked?'data-action="open-scientific-calculator"':'data-action="assignment-calculator-locked"'} class="${calculatorAllowed&&!hardLocked?'':'locked'}"><span>CALC</span><small>${hardLocked?'Locked':'Calculator'}</small></button>
     <button data-action="${hardLocked?'assignment-toolbox-locked':'assignment-toolbox'}" class="${hardLocked?'locked':''}"><span>TOOLS</span><small>${hardLocked?'Locked':'More tools'}</small></button>
+    ${botTaskIsAllowed()?`<button type="button" id="autocomplete-bot-button" data-action="run-autocomplete-bot" class="mx-assignment-bot-button" aria-label="${botRunning?'Stop auto-complete bot':'Run auto-complete bot on this assignment'}"><span>BOT</span><small>${botRunning?'Stop bot':'Auto-complete'}</small></button>`:''}
   </aside>`;
 }
 
@@ -4479,6 +4553,7 @@ function restoreActiveAssignmentSession(){
   return activeSchoolAssignment;
 }
 function clearActiveAssignment({returnToAssigned=true}={}){
+  botRunning=false;
   const returnRoute=activeSchoolAssignment?.returnRoute || 'student-hub';
   clearAiChatHistoryForNewQuestion();
   if(activeSchoolAssignment?.id) syncStudentFocusStatus('idle',{force:true});
@@ -7319,6 +7394,17 @@ async function openQuickAssign(taskId, context=null) {
   </div></div>`;
 }
 
+
+const MX_DATABASE_ASSIGNMENT_TYPES = new Set(['practice','adaptive','lesson','worksheet','test','readiness','template','revision','recommended','self-directed-adaptive','express']);
+function mxDatabaseAssignmentType(type) {
+  const value=String(type||'practice').toLowerCase();
+  if(MX_DATABASE_ASSIGNMENT_TYPES.has(value)) return value;
+  if(value==='topic-test') return 'test';
+  if(value==='discovery-checkin'||value==='skills-checkin'||value==='skill-check') return 'readiness';
+  if(value==='tutorial') return 'lesson';
+  return 'practice';
+}
+
 function openCustomAssignment() {
   if (!canUseTeacherHub(account)) return showToast('Teacher tools only', 'Task creation is only available to teacher and school accounts.');
   const classes = teacherHubClasses.filter((c) => !c.archived);
@@ -8068,15 +8154,16 @@ async function handleSchoolSubmit(event) {
       const assignmentTitle=String(data.get('assignmentTitle')||task.title).trim().slice(0,160);
       const textbookRef=String(data.get('textbookRef')||'').trim().slice(0,300);
       const createdAssignment = await school.createAndAssignTask({
-        classId: data.get('classId'), title: assignmentTitle, type: task.type, topic: task.topic.toLowerCase(), lessonId: task.lessonId,
+        classId: data.get('classId'), title: assignmentTitle, type: mxDatabaseAssignmentType(task.type), topic: task.topic.toLowerCase(), lessonId: task.lessonId,
         difficulty: task.difficulty, questionCount: task.questionCount, requiredMastery: task.masteryTarget, taskLibraryId: task.id,
         dueAt: data.get('dueAt') ? new Date(data.get('dueAt')).toISOString() : null, hintsAllowed: task.type !== 'test', testMode: task.type === 'test',
-        config:textbookRef?{textbook_reference:textbookRef,textbook_linked:true}:undefined,
+        config:{assignment_workflow_type:task.type,...(textbookRef?{textbook_reference:textbookRef,textbook_linked:true}:{})},
       });
       if(createdAssignment?.id) void fireAndForgetRpc('mathsexpress_queue_parent_due_notifications',{p_assignment_id:String(createdAssignment.id)});
       document.getElementById('modal-root').innerHTML = '';
       showToast('Assignment sent', `${assignmentTitle} is now on the class dashboard.`, 'success');
-      teacherHubTab = 'assignments'; schoolHubTab = 'assignments';
+      teacherHubTab = 'classes'; schoolHubTab = 'classes';
+      if(typeof go==='function') return go('teacher-hub');
       return renderTeacherHub();
     }
     if (form.id === 'canvas-grade-passback-form') {
@@ -8155,10 +8242,10 @@ async function handleSchoolSubmit(event) {
       const title=String(data.get('title')||task.title||assignmentTypeLabel(type)).trim().slice(0,160);
       const startAt=data.get('startAt')?new Date(String(data.get('startAt'))).toISOString():null;
       const dueAt=data.get('dueAt')?new Date(String(data.get('dueAt'))).toISOString():null;
-      await school.createAndAssignTask({classId,title,type,difficulty,questionCount:count,startAt,dueAt,topic:skill.topic,lessonId:type==='lesson'?skill.id:null,taskLibraryId:task.id,hintsAllowed:strict?false:data.get('hintsAllowed')==='on',tutorAllowed:!strict,videosAllowed:!strict,testMode:strict,calculatorEnabled:!strict,config:{assignment_workflow_type:type,skill_id:skill.id,year_level:skill.yearLevel,strict_test_mode:strict}});
+      await school.createAndAssignTask({classId,title,type:mxDatabaseAssignmentType(type),difficulty,questionCount:count,startAt,dueAt,topic:skill.topic,lessonId:type==='lesson'?skill.id:null,taskLibraryId:task.id,hintsAllowed:strict?false:data.get('hintsAllowed')==='on',tutorAllowed:!strict,videosAllowed:!strict,testMode:strict,calculatorEnabled:!strict,config:{assignment_workflow_type:type,skill_id:skill.id,year_level:skill.yearLevel,strict_test_mode:strict}});
       document.getElementById('modal-root').innerHTML='';
       showToast('Assignment created',`${assignmentTypeLabel(type)} · ${count} questions · ${skill.title}`,'success');
-      teacherHubTab='assignments'; schoolHubTab='assignments'; return renderTeacherHub();
+      teacherHubTab='classes'; schoolHubTab='classes'; if(typeof go==='function')return go('teacher-hub'); return renderTeacherHub();
     }
     if (form.id === 'student-settings-form') {
       event.preventDefault(); const profile = await accountClient.updateProfileSettings({ username:null, yearLevel:data.get('yearLevel'), textbookFocus:null, accessibilityMode:data.get('accessibilityMode')==='on' }); account={...account,profile}; updateAccountChrome(); showToast('Settings saved', 'Your student settings have been updated.', 'success'); return renderStudentHub();
@@ -8999,7 +9086,7 @@ function handleClick(event) {
   if (action === 'pdf-draw-toggle') { const c=document.getElementById('pdf-draw-layer'); if(!c)return; const on=c.classList.toggle('active'); actionEl.setAttribute('aria-pressed',String(on)); actionEl.textContent=on?'✋ Stop drawing':'✏️ Draw'; return; }
   if (action === 'pdf-draw-clear') { const c=document.getElementById('pdf-draw-layer'); if(!c)return; c.getContext('2d').clearRect(0,0,c.width,c.height); pdfDrawings.delete(c.dataset.pageKey); return; }
   if (action === 'toggle-textbook-expand') {
-    const modal=document.querySelector('#modal-root .modal'); if(!modal)return;
+    const modal=document.querySelector('#modal-root .ultimate-modal, #modal-root .modal'); if(!modal)return;
     const on=modal.classList.toggle('textbook-expanded'); actionEl.setAttribute('aria-pressed',String(on)); actionEl.textContent=on?'⤡ Shrink':'⤢ Expand';
     modal.querySelectorAll('details').forEach(d=>{ d.open=on||d.open; });
     return;
@@ -9055,6 +9142,15 @@ function handleClick(event) {
   if (action === 'mark-notice-read') { const id=actionEl.dataset.noticeId||''; persist({...state,notifications:(state.notifications||[]).map(n=>n.id===id?{...n,read:true}:n)},{quiet:true}); return renderHome(); }
   if (action === 'learning-path-year') { if(!canUseTeacherHub(account)) return; persist({...state,learningPathYear:normaliseYearLevel(actionEl.dataset.year)},{quiet:true}); return renderLearningPath(); }
   if (action === 'start-recommended-path' || action === 'start-adaptive-practice') { const skill=recommendedLearningPathSkill(); const task=taskForLearningSkill(skill,'adaptive',10); if(!task)return showToast('No practice found','Choose a skill from Learn.'); activeSchoolAssignment=null; return startGeneratedTask(task.id,{returnRoute:routeFromHash().route}); }
+  if (action === 'start-skill-detail-practice') {
+    const skillYear=normaliseYearLevel(actionEl.dataset.skillYear,account.profile?.yearLevel);
+    const skill=getCurriculumSkill(skillYear,actionEl.dataset.skillId)||CURRICULUM.find(x=>x.id===actionEl.dataset.skillId);
+    const task=taskForLearningSkill(skill,'adaptive',10);
+    if(!task)return showToast('No practice found','Try another related skill.');
+    document.getElementById('modal-root').innerHTML='';
+    activeSchoolAssignment=null;
+    return startGeneratedTask(task.id,{returnRoute:'learning-path'});
+  }
   if (action === 'start-path-skill') { const skillYear=normaliseYearLevel(actionEl.dataset.skillYear,account.profile?.yearLevel); const skill=getCurriculumSkill(skillYear,actionEl.dataset.skillId)||CURRICULUM.find(x=>x.id===actionEl.dataset.skillId); const task=taskForLearningSkill(skill,'adaptive',10); if(!task)return showToast('No task found','Try another skill.'); activeSchoolAssignment=null; return startGeneratedTask(task.id,{returnRoute:routeFromHash().route}); }
   if (action === 'start-mixed-revision') { const year=normaliseYearLevel(account.profile?.yearLevel); const weak=learningPathRows(year).filter(x=>x.unlocked).sort((a,b)=>a.mastery-b.mastery)[0]; const task=taskForLearningSkill(weak,'revision',15); if(!task)return showToast('Revision unavailable','Complete more practice first.'); activeSchoolAssignment=null; return startGeneratedTask(task.id,{returnRoute:routeFromHash().route}); }
   if (action === 'start-exam-practice') { void enterAssignmentFullscreen({quiet:true}); const year=normaliseYearLevel(account.profile?.yearLevel); const skill=recommendedLearningPathSkill()||getCurriculumSkills({yearLevel:year})[0]; const task=taskForLearningSkill(skill,'test',20); if(!task)return showToast('Exam practice unavailable','Try another skill.'); activeSchoolAssignment={id:'local-exam',classId:null,lessonId:'',taskId:task.id,testMode:true,tutorAllowed:false,hintsAllowed:false,calculatorAllowed:false,videosAllowed:false,gamesLocked:true,focusRequired:true,answered:0,correct:0,startedAt:Date.now(),synced:true,localOnly:true}; saveActiveAssignmentSession(); return startAssignedGeneratedTask(task.id); }
@@ -9164,6 +9260,8 @@ function handleClick(event) {
     const value=actionEl.dataset.value||'';
     if(value==='clear'){input.value=''; calculatorAns=0; const out=document.getElementById('complete-calc-output'); if(out)out.textContent='0'; input.focus(); return;}
     if(value==='delete'){const start=input.selectionStart??input.value.length,end=input.selectionEnd??start; input.value=start!==end?input.value.slice(0,start)+input.value.slice(end):input.value.slice(0,Math.max(0,start-1))+input.value.slice(end); input.focus(); const pos=start!==end?start:Math.max(0,start-1); try{input.setSelectionRange(pos,pos);}catch{} return;}
+    if(value==='fraction'){const out=document.getElementById('complete-calc-output'); if(out){ const n=Number(out.textContent); if(Number.isFinite(n)){ if(out.dataset.fraction==='1'){out.textContent=String(n);out.dataset.fraction='0';}else{let best='',err=1;for(let d=1;d<=10000;d++){let nn=Math.round(n*d);let e=Math.abs(nn/d-n);if(e<err){best=`${nn}/${d}`;err=e;}if(err<1e-9)break;}out.textContent=best||String(n);out.dataset.fraction='1';}}}return;}
+    if(value==='memoryplus'){calculatorMemory=(Number(calculatorMemory)||0)+(Number(document.getElementById('complete-calc-output')?.textContent)||0);showToast('Calculator memory',`M = ${calculatorMemory}`,'success');return;}
     if(value==='equals'){const raw=String(input.value||''); const out=document.getElementById('complete-calc-output'); try{const result=evaluateScientificCalculator(raw); if(out)out.textContent=String(result);}catch(error){if(out)out.textContent=error.message||'Invalid expression';} input.focus(); return;}
     let insert=value==='square'?'^2':value==='ans'?'ans':value;
     const start=input.selectionStart??input.value.length,end=input.selectionEnd??start;
@@ -9468,9 +9566,7 @@ Alex,alex@example.com,9"></textarea></label><p class="muted">Existing MathsExpre
     });
     return;
   }
-  if (action === 'owner-create-account') {
-    return openSimpleModal('Create an account',`<form id="owner-create-account-form" class="school-form"><label>Email<input name="email" type="email" required></label><label>Name<input name="displayName" maxlength="40"></label><div class="form-two"><label>Role<select name="role"><option value="player">Student</option><option value="teacher">Teacher</option><option value="parent">Parent</option><option value="bug_tester">Bug tester</option><option value="content_editor">Content editor</option><option value="support">Support</option><option value="admin">Admin</option></select></label><label>Year<select name="yearLevel">${Array.from({length:12},(_,i)=>`<option value="${i+1}" ${i+1===9?'selected':''}>Year ${i+1}</option>`).join('')}</select></label></div><div class="form-two"><label>Plan<select name="plan"><option value="free">Free</option><option value="primary_pro">Primary Pro</option><option value="secondary_pro">Secondary Pro</option><option value="complete">Complete</option></select></label><label>Class code (optional)<input name="classCode" maxlength="6"></label></div><p class="muted">They’ll get an email to choose their own password — you never see it.</p><button class="btn primary" type="submit">Create account</button></form>`);
-  }
+  if (action === 'owner-create-account') return openOwnerCreateAccountModal();
   if (action === 'owner-set-bot-access') {
     const allowed=actionEl.dataset.allowed==='true';
     accountClient.ensureClient().rpc('mathsexpress_owner_set_bot_access',{p_user:actionEl.dataset.userId,p_allowed:allowed}).then(({error})=>{ if(error)throw error; showToast('Auto-complete bot',allowed?'Access given.':'Access removed.','success'); }).catch(e=>showToast('Auto-complete bot',e?.message||'Not changed.'));
@@ -9483,7 +9579,8 @@ Alex,alex@example.com,9"></textarea></label><p class="muted">Existing MathsExpre
   }
   if (action === 'toggle-learn-browse') { learnBrowseOpen=!learnBrowseOpen; return; }
   if (action === 'open-skill-map') { return openSkillMap(normaliseYearLevel(actionEl.dataset.year,account.profile?.yearLevel)); }
-  if (action === 'skill-map-node' || action === 'start-topic-checkin') { const y=normaliseYearLevel(actionEl.dataset.skillYear,account.profile?.yearLevel); const skill=getCurriculumSkill(y,actionEl.dataset.skillId)||CURRICULUM.find(x=>x.id===actionEl.dataset.skillId); const task=taskForLearningSkill(skill,'adaptive',10); if(!task)return showToast('Check-in unavailable','Try another skill.'); document.getElementById('modal-root').innerHTML=''; activeSchoolAssignment=null; return startGeneratedTask(task.id,{returnRoute:'learn'}); }
+  if (action === 'skill-map-node' || action === 'open-skill-practice') { return openSkillPracticeDetails(actionEl.dataset.skillYear,actionEl.dataset.skillId); }
+  if (action === 'start-topic-checkin') { const y=normaliseYearLevel(actionEl.dataset.skillYear,account.profile?.yearLevel); const skill=getCurriculumSkill(y,actionEl.dataset.skillId)||CURRICULUM.find(x=>x.id===actionEl.dataset.skillId); const task=taskForLearningSkill(skill,'adaptive',10); if(!task)return showToast('Check-in unavailable','Try another skill.'); document.getElementById('modal-root').innerHTML=''; activeSchoolAssignment=null; return startGeneratedTask(task.id,{returnRoute:'learn'}); }
   if (action === 'start-mistake-review') { return startMistakeReview(); }
   if (action === 'open-mistake-explanations') { return openMistakeExplanations(); }
   if (action === 'start-placement') { if(planBlocksPractice())return; return startPlacementTest(); }
