@@ -29,14 +29,30 @@ body::before{content:'';position:fixed;top:0;left:0;width:var(--page-progress,0%
 .visit-controls{display:flex;justify-content:center;align-items:center;gap:14px;padding:0 0 20px}
 .visit-controls button{width:38px;height:38px;border-radius:50%;border:1px solid rgba(0,0,0,.15);background:transparent;font-size:22px;cursor:pointer;color:inherit}
 .visit-dots{display:flex;gap:8px}.visit-dots i{width:9px;height:9px;border-radius:50%;background:rgba(127,127,127,.35);cursor:pointer}.visit-dots i.on{background:#3b7c5a}
-.plan-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;max-width:1080px;margin:0 auto}
-.plan-card{position:relative;display:grid;align-content:start;gap:10px;padding:28px;border-radius:22px;background:#fffdf8;border:1px solid rgba(0,0,0,.08)}
-.plan-card.featured{border:2px solid #3b7c5a;box-shadow:0 18px 50px rgba(59,124,90,.15)}
-.plan-card h3{margin:0;font-size:24px}.plan-for{margin:0;opacity:.7}
-.plan-card ul{margin:6px 0 14px;padding-left:20px;display:grid;gap:6px}
-.plan-badge{position:absolute;top:-12px;left:24px;padding:4px 12px;border-radius:99px;background:#3b7c5a;color:#fff;font-size:12px;font-weight:700}
 @media (max-width:600px){.visit-slide{padding:30px 22px}}
 .site-login{white-space:nowrap;padding:11px 10px}
 @media(max-width:1240px){.site-nav-wrap{gap:20px}.site-nav{gap:18px;margin-left:8px}}
 .portal-links{margin:14px 0 0;font-size:14px;color:#5c5d6b}.portal-links a{font-weight:800;color:var(--purple)!important;text-decoration:underline!important}
-.plan-card .site-cta,.plan-card .site-secondary{justify-self:start;margin-top:auto}
+/* v11.5.26 — pricing */
+.price-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;max-width:1240px;margin:0 auto}
+.price-card{display:flex;flex-direction:column;gap:6px;padding:24px 20px;border-radius:22px;background:#fffdf8;border:1px solid rgba(0,0,0,.08)}
+.price-card.featured{border:2px solid var(--purple);box-shadow:0 18px 50px rgba(86,69,242,.15)}
+.price-eyebrow{font-size:12px;font-weight:850;letter-spacing:.08em;color:var(--purple)}
+.price-amount{font-size:44px;font-weight:900;line-height:1.05;margin-top:4px}.price-amount.small{font-size:30px}
+.price-per{margin:0;font-weight:700;color:#5c5d6b}.price-years{margin:0;font-weight:800}
+.price-desc{margin:4px 0 14px;color:#4f5060;line-height:1.45}
+.price-card .site-cta,.price-card .site-secondary{margin-top:auto}
+.school-price-card{max-width:1240px;margin:18px auto 0;display:flex;gap:24px;align-items:center;justify-content:space-between;padding:28px;border-radius:22px;background:linear-gradient(135deg,#f4f1ff,#eef7f2);border:1px solid rgba(0,0,0,.06)}
+.school-price-card h3{margin:6px 0;font-size:24px}.school-price-card p{margin:6px 0 0;max-width:720px;color:#4f5060}
+.compare-wrap{max-width:1240px;margin:26px auto 0;overflow-x:auto;border-radius:18px;border:1px solid rgba(0,0,0,.08);background:#fff}
+.compare-table{width:100%;border-collapse:collapse;font-size:14px;min-width:720px}
+.compare-table caption{text-align:left;padding:16px 18px;font-weight:850;font-size:18px}
+.compare-table th,.compare-table td{padding:11px 14px;border-top:1px solid rgba(0,0,0,.06);text-align:center}
+.compare-table th[scope=row],.compare-table thead th:first-child{text-align:left}
+.compare-table thead th{background:#f7f6fb;font-weight:850}
+.compare-table td.yes{color:#2f8a57;font-weight:900}.compare-table td.no{color:#a3a3ad}
+.price-note{max-width:1240px;margin:14px auto 0;color:#5c5d6b;font-size:14px}
+@media(max-width:1180px){.price-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:760px){.price-grid{grid-template-columns:1fr 1fr}.school-price-card{flex-direction:column;align-items:flex-start}}
+@media(max-width:520px){.price-grid{grid-template-columns:1fr}}
+.school-price-card .site-cta{white-space:nowrap;flex-shrink:0}

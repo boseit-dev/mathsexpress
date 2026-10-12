@@ -455,6 +455,78 @@ async function __mxProxySignup(request){
   }
 }
 
+// ---- Billing (v11.5.26): Stripe Checkout for yearly student plans -------------------------
+// Needs Worker secrets STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET and SUPABASE_SERVICE_ROLE_KEY.
+// Without them, checkout answers 503 "not set up" and no plan is ever granted.
+const MX_PLANS={
+  primary_pro:{name:'MathsExpress Primary Pro (Years K–6, 1 year)',cents:1000},
+  secondary_pro:{name:'MathsExpress Secondary Pro (Years 7–12, 1 year)',cents:1500},
+  complete:{name:'MathsExpress Complete (Years K–12, 1 year)',cents:2000}
+};
+const __mxJson=(v,status=200)=>new Response(JSON.stringify(v),{status,headers:{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
+function __mxBillingConfigured(env){return Boolean(env?.STRIPE_SECRET_KEY&&env?.STRIPE_WEBHOOK_SECRET&&env?.SUPABASE_SERVICE_ROLE_KEY);}
+async function __mxBillingCheckout(request,env){
+  if(request.method==='GET')return __mxJson({configured:__mxBillingConfigured(env),plans:Object.fromEntries(Object.entries(MX_PLANS).map(([k,v])=>[k,{aud:v.cents/100}]))});
+  if(request.method!=='POST')return __mxJson({error:'POST only.'},405);
+  if(!__mxBillingConfigured(env))return __mxJson({error:'Online payments are not set up yet. Please contact MathsExpress to upgrade.',code:'billing_not_configured'},503);
+  const authz=request.headers.get('authorization')||'';
+  if(!authz.startsWith('Bearer '))return __mxJson({error:'Log in first, then choose a plan.'},401);
+  const ur=await fetch(`${MX_PUBLIC_SUPABASE_URL}/auth/v1/user`,{headers:{apikey:MX_PUBLIC_SUPABASE_KEY,Authorization:authz}});
+  const user=await ur.json().catch(()=>null);
+  if(!ur.ok||!user?.id)return __mxJson({error:'Your session has expired. Log in again.'},401);
+  const body=await request.json().catch(()=>({}));
+  const planId=String(body?.plan||'');const plan=MX_PLANS[planId];
+  if(!plan)return __mxJson({error:'Choose a valid plan.'},400);
+  const origin=new URL(request.url).origin;
+  const form=new URLSearchParams({
+    mode:'payment',
+    success_url:`${origin}/app.html?upgrade=success#profile`,
+    cancel_url:`${origin}/index.html#plans`,
+    client_reference_id:user.id,
+    'metadata[plan]':planId,'metadata[user_id]':user.id,
+    'payment_intent_data[metadata][plan]':planId,'payment_intent_data[metadata][user_id]':user.id,
+    'line_items[0][quantity]':'1',
+    'line_items[0][price_data][currency]':'aud',
+    'line_items[0][price_data][unit_amount]':String(plan.cents),
+    'line_items[0][price_data][product_data][name]':plan.name
+  });
+  if(user.email)form.set('customer_email',user.email);
+  const sr=await fetch('https://api.stripe.com/v1/checkout/sessions',{method:'POST',headers:{Authorization:`Bearer ${env.STRIPE_SECRET_KEY}`,'Content-Type':'application/x-www-form-urlencoded'},body:form});
+  const session=await sr.json().catch(()=>null);
+  if(!sr.ok||!session?.url)return __mxJson({error:'The payment page could not be opened. Please try again.'},502);
+  return __mxJson({url:session.url});
+}
+async function __mxHmacHex(secret,message){
+  const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+  const sig=await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(message));
+  return [...new Uint8Array(sig)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+function __mxSafeEqual(a,b){if(a.length!==b.length)return false;let d=0;for(let i=0;i<a.length;i++)d|=a.charCodeAt(i)^b.charCodeAt(i);return d===0;}
+async function __mxVerifyStripe(payload,header,secret,nowSec=Math.floor(Date.now()/1000)){
+  const parts=Object.create(null);const v1=[];
+  for(const piece of String(header||'').split(',')){const [k,v]=piece.split('=');if(k==='v1')v1.push(v||'');else if(k)parts[k.trim()]=v;}
+  const t=Number(parts.t);
+  if(!Number.isFinite(t)||Math.abs(nowSec-t)>300||!v1.length)return false;
+  const expected=await __mxHmacHex(secret,`${t}.${payload}`);
+  return v1.some(sig=>__mxSafeEqual(sig,expected));
+}
+async function __mxBillingWebhook(request,env){
+  if(request.method!=='POST')return __mxJson({error:'POST only.'},405);
+  if(!__mxBillingConfigured(env))return __mxJson({error:'Billing not configured.'},503);
+  const payload=await request.text();
+  if(!(await __mxVerifyStripe(payload,request.headers.get('stripe-signature'),env.STRIPE_WEBHOOK_SECRET)))return __mxJson({error:'Invalid signature.'},400);
+  const event=JSON.parse(payload);
+  if(event?.type!=='checkout.session.completed')return __mxJson({received:true,ignored:event?.type||'unknown'});
+  const s=event.data?.object||{};
+  const planId=String(s.metadata?.plan||'');const plan=MX_PLANS[planId];const userId=String(s.client_reference_id||s.metadata?.user_id||'');
+  if(s.payment_status!=='paid'||!plan||!userId)return __mxJson({received:true,granted:false,reason:'not paid or missing plan'});
+  if(Number(s.amount_total)!==plan.cents||String(s.currency).toLowerCase()!=='aud')return __mxJson({received:true,granted:false,reason:'amount mismatch'});
+  const r=await fetch(`${MX_PUBLIC_SUPABASE_URL}/rest/v1/rpc/mathsexpress_grant_plan`,{method:'POST',headers:{apikey:env.SUPABASE_SERVICE_ROLE_KEY,Authorization:`Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,'Content-Type':'application/json'},
+    body:JSON.stringify({p_user:userId,p_plan:planId,p_days:365,p_source:'stripe',p_reference:String(s.id),p_amount_cents:Number(s.amount_total),p_currency:'aud'})});
+  if(!r.ok)return __mxJson({error:'Could not record the plan.'},500); // Stripe retries on non-2xx
+  return __mxJson({received:true,granted:true});
+}
+
 const __mxFactories={
   '/api/ai':__mxMake_ai,
   '/api/integrations':__mxMake_integrations,
@@ -468,6 +540,8 @@ export default {
     const url=new URL(request.url);
     const routePath=url.pathname.replace(/\/$/,'');
     if(routePath==='/api/signup') return __mxProxySignup(request);
+    if(routePath==='/api/billing/checkout') return __mxBillingCheckout(request,env);
+    if(routePath==='/api/billing/webhook') return __mxBillingWebhook(request,env);
     if(routePath.startsWith('/api/supabase/')) return __mxProxySupabase(request,env);
     const factory=__mxFactories[routePath];
     if(factory){

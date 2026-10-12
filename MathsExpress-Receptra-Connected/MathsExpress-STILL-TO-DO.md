@@ -1,11 +1,12 @@
-# MathsExpress — still to do after v11.5.25 (12 October 2026)
+# MathsExpress — still to do after v11.5.26 (12 October 2026)
 
 This tracks `CHECKLIST.md` (79 items) and `MathsExpress.pdf`. **Done** means done in the source and tested. None of it is live until it is deployed.
 
 ## Needs you
-1. **Go live.** Approve applying the 4 migrations in order (20261011_01, 20261011_02, 20261012_01, 20261013_01) and deploying v11.5.25. Each one was tested on the live database inside a transaction that was cancelled afterwards.
+1. **Go live.** Approve applying the 5 migrations in order (20261011_01, 20261011_02, 20261012_01, 20261013_01, 20261014_01) and deploying v11.5.26. Each one was tested on the live database inside a transaction that was cancelled afterwards.
 2. **GitHub.** The Mac's saved GitHub login was removed. Run `cd ~/Claude/mathsexpress-src/gh-push && git push origin main` and sign in as **boseit-dev** (username, then a token as the password). Then delete the token that was pasted in chat.
-3. **Plan prices.** The home page Plans section has no prices until you tell me them.
+3. **Taking payments.** Create a Stripe account, then add the Worker secrets `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` and `SUPABASE_SERVICE_ROLE_KEY`, plus a Stripe webhook for `checkout.session.completed`. Until then, "Choose Plan" says online payment isn't set up, and plans can only be given in the owner console.
+3b. **Test accounts.** Run `~/Claude/mathsexpress-src/create-test-accounts.sql` in the Supabase SQL Editor after the migrations.
 4. **Verification email from MathsExpress.** In Supabase Auth, turn on "Confirm email" and set custom SMTP (for example Resend) with a MathsExpress sender address. This needs your Resend account and DNS access.
 5. **Security code at login.** Supabase supports authenticator-app codes (TOTP MFA). Say which you want: optional for everyone, or required for staff. Emailed codes need the SMTP setup above.
 6. **Signed-in test accounts** (student, teacher, parent, admin, owner) for testing the logged-in screens in a browser.

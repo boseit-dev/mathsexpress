@@ -4296,6 +4296,9 @@ class MathRiftSchoolClient {
     return unwrap(await this.client.rpc('mathsexpress_award_question_reward',{p_event_key:payload.p_event_key,p_correct:payload.p_correct,p_xp:payload.p_xp,p_game_time_seconds:payload.p_game_time_seconds})) || {};
   }
   async claimPracticeCompletion(runKey) { return unwrap(await this.client.rpc('mathsexpress_claim_practice_completion',{p_run_key:String(runKey||'').slice(0,80)})) || {}; }
+  async myPlan() { return unwrap(await this.client.rpc('mathsexpress_my_plan',{})) || {}; }
+  async useHint(hintKey) { return unwrap(await this.client.rpc('mathsexpress_use_hint',{p_hint_key:String(hintKey||'').slice(0,200)})) || {}; }
+  async ownerSetUserPlan(userId,plan,days=365) { return unwrap(await this.client.rpc('mathsexpress_owner_set_user_plan',{p_user:String(userId),p_plan:String(plan),p_days:Math.max(1,Math.min(800,Number(days)||365))})) || {}; }
   async claimDailyMission(missionId) { return unwrap(await this.client.rpc('mathsexpress_claim_daily_mission',{p_mission_id:String(missionId||'')})) || {}; }
   async spendGameTime(seconds) { return unwrap(await this.client.rpc('mathsexpress_spend_game_time',{p_seconds:Math.max(0,Math.min(300,Math.floor(Number(seconds)||0)))})) || {}; }
   async purchaseCosmeticServer(itemId) { return unwrap(await this.client.rpc('mathsexpress_purchase_cosmetic',{p_item_id:String(itemId||'')})) || {}; }

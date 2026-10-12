@@ -1317,7 +1317,7 @@ async function openOwnerUserDetail(userId) {
     const root=document.querySelector('#modal-root .ultimate-modal-body'); if(!root) return;
     root.innerHTML=`<div class="owner-user-detail"><div class="owner-user-detail-head"><div><span class="eyebrow">${escapeHtml(p.role||'player')} · ${escapeHtml(p.status||'active')}</span><h2>${escapeHtml(p.display_name||'User')}</h2><p>${escapeHtml(p.email||'')}</p></div><div class="owner-user-big-stat"><b>${events.length}</b><span>recent events</span></div></div>
       <div class="owner-analytics-strip"><div><b>${Number(stats.started)||0}</b><small>assignments started</small></div><div><b>${Number(stats.completed)||0}</b><small>completed</small></div><div><b>${Number(stats.question_attempts)||0}</b><small>question attempts</small></div><div><b>${Number(stats.correct_questions)||0}</b><small>correct</small></div></div>
-      <section class="calm-card owner-account-controls"><span class="eyebrow">Account controls</span><div class="owner-account-grid"><label>Display name<input id="owner-user-display-name" value="${escapeHtml(p.display_name||'')}"></label><label>Username<input id="owner-user-username" value="${escapeHtml(p.username||'')}"></label><label>Year level<select id="owner-user-year-level">${YEAR_LEVEL_OPTIONS.map(o=>`<option value="${o.value}" ${Number(p.year_level)===o.value?'selected':''}>${escapeHtml(o.label)}</option>`).join('')}</select></label><label>Role<select id="owner-user-role-select">${['player','parent','teacher','bug_tester','content_editor','support','admin','owner'].map(role=>`<option value="${role}" ${p.role===role?'selected':''}>${escapeHtml(platformRoleLabel(role))}</option>`).join('')}</select></label></div><div class="simple-modal-actions"><button class="btn primary small" data-action="owner-save-user-profile" data-user-id="${escapeHtml(String(p.user_id||userId))}">Save account changes</button><button class="btn ghost small" data-action="owner-send-password-reset" data-email="${escapeHtml(String(p.email||''))}">Send password reset</button>${p.role!=='owner'?`<button class="btn danger small" data-action="owner-delete-user-open" data-user-id="${escapeHtml(String(p.user_id||userId))}" data-user-email="${escapeHtml(String(p.email||''))}" data-user-name="${escapeHtml(String(p.display_name||'User'))}">Delete account permanently</button>`:''}</div><div class="owner-reward-controls"><label>Coins +/-<input id="owner-user-coins-delta" type="number" value="0"></label><label>XP +/-<input id="owner-user-xp-delta" type="number" value="0"></label><label>Game Time +/- seconds<input id="owner-user-game-delta" type="number" min="-300" max="300" value="0"></label><button class="btn secondary small" data-action="owner-adjust-user-rewards" data-user-id="${escapeHtml(String(p.user_id||userId))}">Apply rewards</button></div><div class="simple-modal-actions"><button class="btn secondary small" data-action="owner-set-user-status" data-user-id="${escapeHtml(String(p.user_id||userId))}" data-status="active">Activate</button><button class="btn ghost small" data-action="owner-set-user-status" data-user-id="${escapeHtml(String(p.user_id||userId))}" data-status="suspended">Suspend</button><button class="btn danger small" data-action="owner-set-user-status" data-user-id="${escapeHtml(String(p.user_id||userId))}" data-status="banned">Ban</button></div><p class="muted">Passwords are never shown to the owner. Password changes use a secure reset link sent to the user.</p></section><section class="calm-card"><span class="eyebrow">Memberships</span><p>${schools.map(x=>`${escapeHtml(x.name)} (${escapeHtml(x.membership)})`).join(' · ')||'No school memberships'}</p><p>${classes.map(x=>`${escapeHtml(x.name)} — Year ${Number(x.year_level)||''} (${escapeHtml(x.membership)})`).join(' · ')||'No classes'}</p></section>
+      <section class="calm-card owner-account-controls"><span class="eyebrow">Account controls</span><div class="owner-account-grid"><label>Display name<input id="owner-user-display-name" value="${escapeHtml(p.display_name||'')}"></label><label>Username<input id="owner-user-username" value="${escapeHtml(p.username||'')}"></label><label>Year level<select id="owner-user-year-level">${YEAR_LEVEL_OPTIONS.map(o=>`<option value="${o.value}" ${Number(p.year_level)===o.value?'selected':''}>${escapeHtml(o.label)}</option>`).join('')}</select></label><label>Role<select id="owner-user-role-select">${['player','parent','teacher','bug_tester','content_editor','support','admin','owner'].map(role=>`<option value="${role}" ${p.role===role?'selected':''}>${escapeHtml(platformRoleLabel(role))}</option>`).join('')}</select></label></div><div class="simple-modal-actions"><button class="btn primary small" data-action="owner-save-user-profile" data-user-id="${escapeHtml(String(p.user_id||userId))}">Save account changes</button><button class="btn ghost small" data-action="owner-send-password-reset" data-email="${escapeHtml(String(p.email||''))}">Send password reset</button>${p.role!=='owner'?`<button class="btn danger small" data-action="owner-delete-user-open" data-user-id="${escapeHtml(String(p.user_id||userId))}" data-user-email="${escapeHtml(String(p.email||''))}" data-user-name="${escapeHtml(String(p.display_name||'User'))}">Delete account permanently</button>`:''}</div><div class="owner-reward-controls"><label>Coins +/-<input id="owner-user-coins-delta" type="number" value="0"></label><label>XP +/-<input id="owner-user-xp-delta" type="number" value="0"></label><label>Game Time +/- seconds<input id="owner-user-game-delta" type="number" min="-300" max="300" value="0"></label><button class="btn secondary small" data-action="owner-adjust-user-rewards" data-user-id="${escapeHtml(String(p.user_id||userId))}">Apply rewards</button></div><div class="owner-reward-controls owner-plan-controls"><label>Plan<select id="owner-user-plan"><option value="free">Free</option><option value="primary_pro">Primary Pro</option><option value="secondary_pro">Secondary Pro</option><option value="complete">Complete</option></select></label><label>Days<input id="owner-user-plan-days" type="number" min="1" max="800" value="365"></label><button class="btn secondary small" data-action="owner-set-user-plan" data-user-id="${escapeHtml(String(p.user_id||userId))}">Set plan</button></div><div class="simple-modal-actions"><button class="btn secondary small" data-action="owner-set-user-status" data-user-id="${escapeHtml(String(p.user_id||userId))}" data-status="active">Activate</button><button class="btn ghost small" data-action="owner-set-user-status" data-user-id="${escapeHtml(String(p.user_id||userId))}" data-status="suspended">Suspend</button><button class="btn danger small" data-action="owner-set-user-status" data-user-id="${escapeHtml(String(p.user_id||userId))}" data-status="banned">Ban</button></div><p class="muted">Passwords are never shown to the owner. Password changes use a secure reset link sent to the user.</p></section><section class="calm-card"><span class="eyebrow">Memberships</span><p>${schools.map(x=>`${escapeHtml(x.name)} (${escapeHtml(x.membership)})`).join(' · ')||'No school memberships'}</p><p>${classes.map(x=>`${escapeHtml(x.name)} — Year ${Number(x.year_level)||''} (${escapeHtml(x.membership)})`).join(' · ')||'No classes'}</p></section>
       <section class="calm-card"><span class="eyebrow">Recent history</span><div class="owner-activity-feed compact">${events.slice(0,100).map(e=>`<article class="owner-activity-event"><div class="owner-activity-main"><div class="owner-activity-line"><strong>${escapeHtml(activityLabel(e))}</strong><span>${escapeHtml(e.page||'app')}</span></div><div class="owner-activity-meta"><span>${escapeHtml(e.category||'system')}</span><time>${escapeHtml(e.created_at?new Date(e.created_at).toLocaleString():'')}</time></div>${ownerActivityDetailsHtml(e.details)}</div></article>`).join('')||'<div class="school-empty">No events recorded yet.</div>'}</div></section></div>`;
   } catch(error) {
     const root=document.querySelector('#modal-root .ultimate-modal-body');
@@ -1874,6 +1874,7 @@ async function applyRemotePlayerState(data,{quiet=false,preserveGameTime=false}=
 }
 async function syncRemotePlayerState(){
   if(!account.authenticated||!state)return;
+  void refreshPlanState();
   try{const data=await getSchoolClient().playerState();await applyRemotePlayerState(data,{quiet:true});}catch(error){console.warn('Could not sync player state',error);}
 }
 async function claimPendingTeacherRewards() {
@@ -2154,6 +2155,143 @@ function renderCompleteSuite() {
   return `<section class="ultimate-section complete-suite"><div class="complete-suite-intro calm-card"><div><span class="eyebrow">MathsExpress Complete</span><h2>Advanced learning, teaching and school platform tools</h2><p>These tools stay out of Home so the main experience remains simple. External provider integrations are clearly labelled until a real provider is connected.</p></div><span class="complete-count">${completeGroups.reduce((n,g)=>n+g.items.length,0)} tools</span></div>${completeGroups.map(group=>`<section class="complete-group"><div class="section-heading"><div><span class="eyebrow">${group.icon} Complete suite</span><h2>${escapeHtml(group.title)}</h2></div></div><div class="complete-grid">${group.items.map(([title,desc,action])=>`<article class="complete-card"><h3>${escapeHtml(title)}</h3><p>${escapeHtml(desc)}</p><button class="btn secondary small" data-action="${escapeHtml(action)}">Open</button></article>`).join('')}</div></section>`).join('')}</section>`;
 }
 
+// ---- Plans (v11.5.26) -------------------------------------------------------------------
+// The server decides the plan (mathsexpress_my_plan) and enforces the limits that matter:
+// 15 recorded questions/day, AI tutor/marking, 3 hints/day and reward caps. The app mirrors
+// those rules so free students see a clear upgrade prompt instead of an error.
+let planState=null;
+const PLAN_LABELS={free:'Free',primary_pro:'Primary Pro',secondary_pro:'Secondary Pro',complete:'Complete',school:'School plan',staff:'Staff access'};
+const PLAN_PRICES={primary_pro:10,secondary_pro:15,complete:20};
+const FREE_GAME_MODES=new Set(['quick-maths']);
+function planIsPaid(){ return !account.authenticated || !planState || planState.paid!==false; }
+function planFeature(name){ return planIsPaid() || Boolean(planState?.features?.[name]); }
+function planInTeacherWork(){ return Boolean(activeSchoolAssignment?.id && !activeSchoolAssignment.localOnly); }
+function freePlanName(){ const y=Number(planState?.year_level ?? account.profile?.yearLevel ?? 9); return y<=6?'Primary Free':'Secondary Free'; }
+function handleUpgradeReturn(){
+  try{ const u=new URL(location.href); const wanted=u.searchParams.get('plan');
+    if(wanted&&account.authenticated){ u.searchParams.delete('plan'); history.replaceState(null,'',`${u.pathname}${u.search}${location.hash}`); if(PLAN_PRICES[wanted]) setTimeout(()=>void choosePlan(wanted),300); }
+  }catch{}
+  try{ const url=new URL(location.href); if(url.searchParams.get('upgrade')!=='success')return;
+    url.searchParams.delete('upgrade'); history.replaceState(null,'',`${url.pathname}${url.search}${location.hash}`);
+    showToast('Payment received','Your plan turns on as soon as the payment is confirmed (usually within a minute).','success');
+    setTimeout(()=>void refreshPlanState(),4000); setTimeout(()=>void refreshPlanState(),15000);
+  }catch{}
+}
+async function refreshPlanState(){
+  handleUpgradeReturn();
+  if(!account.authenticated)return null;
+  try{ planState=await getSchoolClient().myPlan(); updatePlanChrome(); }catch{}
+  return planState;
+}
+function updatePlanChrome(){
+  let el=document.getElementById('plan-question-meter');
+  if(!el&&!planIsPaid()&&document.body){ el=document.createElement('button'); el.id='plan-question-meter'; el.className='plan-question-meter'; el.dataset.action='open-upgrade'; document.body.appendChild(el); }
+  const card=document.getElementById('profile-plan'); if(card)card.outerHTML=profilePlanHtml();
+  if(!el)return;
+  if(planIsPaid()){ el.hidden=true; return; }
+  el.hidden=false; el.textContent=`${Math.max(0,Number(planState.questions_left)||0)} of 15 free questions left today`;
+}
+function isFreeSkill(skillId,yearLevel){
+  try{
+    const skills=getCurriculumSkills({yearLevel:normaliseYearLevel(yearLevel,account.profile?.yearLevel)});
+    const seen={};
+    for(const s of skills){ const k=s.strand||'x'; seen[k]=(seen[k]||0)+1; if(s.id===skillId) return seen[k]<=2; }
+    return false;
+  }catch{ return true; }
+}
+function upgradeRecommendation(){
+  const y=Number(planState?.year_level ?? account.profile?.yearLevel ?? 9);
+  return y<=6?'primary_pro':'secondary_pro';
+}
+function showUpgradeModal(reason='This is part of MathsExpress Pro.'){
+  const rec=upgradeRecommendation();
+  const card=(id,label,years)=>`<article class="upgrade-plan ${id===rec?'recommended':''}">${id===rec?'<span class="upgrade-badge">Recommended</span>':''}<h3>${label}</h3><b>$${PLAN_PRICES[id]}</b><small>per student / year · ${years}</small><button class="btn ${id===rec?'primary':'secondary'}" data-action="choose-plan" data-plan="${id}">Choose plan</button></article>`;
+  openSimpleModal('Upgrade MathsExpress',`<div class="upgrade-modal"><p class="upgrade-reason">${escapeHtml(reason)}</p>
+    <p class="muted">You’re on <b>${escapeHtml(freePlanName())}</b>: 15 questions a day, basic lessons, limited topics and 3 hints a day.</p>
+    <div class="upgrade-grid">${card('primary_pro','Primary Pro','Years K–6')}${card('secondary_pro','Secondary Pro','Years 7–12')}${card('complete','Complete','Years K–12')}</div>
+    <p class="muted">Paid plans unlock unlimited questions, every topic for your years, the Clove AI tutor, step-by-step solutions, quizzes and tests, personalised revision, daily challenges, all games and full progress tracking. Schools can get every student access with a school plan.</p>
+    <p class="muted">Free questions reset every day.</p></div>`);
+}
+async function choosePlan(plan){
+  if(!PLAN_PRICES[plan])return;
+  if(!account.authenticated){ location.href=`./app.html?auth=signup&plan=${encodeURIComponent(plan)}`; return; }
+  try{
+    const token=account.session?.access_token||accountClient.session?.access_token||'';
+    const response=await fetch('/api/billing/checkout',{method:'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:JSON.stringify({plan})});
+    const data=await response.json().catch(()=>({}));
+    if(response.ok&&data.url){ location.href=data.url; return; }
+    showToast('Upgrade',data.error||'The payment page could not be opened.');
+  }catch{ showToast('Upgrade','The payment page could not be opened. Check your connection.'); }
+}
+function planErrorMessage(error){
+  const m=String(error?.message||'');
+  if(m.startsWith('FREE_LIMIT:')||m.startsWith('PLAN_REQUIRED:'))return m.replace(/^[A-Z_]+:\s*/,'');
+  return '';
+}
+// Daily question limit: checked before a free student starts or continues self-paced practice.
+function planBlocksPractice(){
+  if(planIsPaid()||planInTeacherWork())return false;
+  if(Number(planState.questions_left)>0)return false;
+  showUpgradeModal('You’ve used your 15 free questions today. Upgrade for unlimited practice, or come back tomorrow.');
+  return true;
+}
+function planDailyKey(key){ return planInTeacherWork()?`asg:${activeSchoolAssignment.id}:${key}`.slice(0,180):key; }
+function recordPlanAttempt(key,correct){
+  if(!account.authenticated)return;
+  getSchoolClient().recordDailyQuestionAttempt(planDailyKey(key),correct).then(r=>{
+    if(planState&&r&&r.questions_left!==undefined){ planState={...planState,questions_today:r.questions_today,questions_left:r.questions_left}; updatePlanChrome(); }
+  }).catch(error=>{
+    const msg=planErrorMessage(error);
+    if(msg){ if(planState)planState={...planState,questions_left:0}; updatePlanChrome(); showUpgradeModal(msg); }
+  });
+}
+// Feature locks run in the capture phase, before any other click handler.
+const PLAN_LOCKED_ACTIONS={
+  'open-ai-helper':['ai_tutor','The Clove AI tutor is part of Primary Pro, Secondary Pro and Complete.'],
+  'open-tutor':['ai_tutor','The Clove AI tutor is part of Primary Pro, Secondary Pro and Complete.'],
+  'ai-helper-send':['ai_tutor','The Clove AI tutor is part of Primary Pro, Secondary Pro and Complete.'],
+  'start-adaptive-practice':['adaptive','Adaptive learning is part of MathsExpress Pro.'],
+  'start-recommended-path':['adaptive','Adaptive learning is part of MathsExpress Pro.'],
+  'start-exam-practice':['tests','Quizzes and tests are part of MathsExpress Pro.'],
+  'open-test-generator':['tests','Quizzes and tests are part of MathsExpress Pro.'],
+  'open-challenges':['daily_challenges','Daily challenges are part of MathsExpress Pro.'],
+  'start-daily-practice':['daily_challenges','Daily challenges are part of MathsExpress Pro.'],
+  'start-speed-challenge':['daily_challenges','Daily challenges are part of MathsExpress Pro.'],
+  'open-auto-revision':['revision','Personalised revision is part of MathsExpress Pro.'],
+  'create-revision':['revision','Personalised revision is part of MathsExpress Pro.'],
+  'create-hardest-revision':['revision','Personalised revision is part of MathsExpress Pro.'],
+  'start-mixed-revision':['revision','Personalised revision is part of MathsExpress Pro.'],
+  'open-revision-checklist':['revision','Personalised revision is part of MathsExpress Pro.'],
+  'open-mistakes':['revision','The Mistake Book and personalised revision are part of MathsExpress Pro.'],
+  'start-review-skill':['revision','Personalised revision is part of MathsExpress Pro.'],
+  'open-growth-report':['advanced_progress','Advanced progress tracking is part of MathsExpress Pro.'],
+  'start-v6-game':['all_games','More games are included with MathsExpress Pro.'],
+  'start-math-chess':['all_games','More games are included with MathsExpress Pro.'],
+};
+const planApprovedHints=new Set();
+function planGateClick(event){
+  const el=event.target?.closest?.('[data-action]'); if(!el)return;
+  const action=el.dataset.action;
+  if(action==='choose-plan'){ event.preventDefault(); event.stopImmediatePropagation(); void choosePlan(el.dataset.plan); return; }
+  if(action==='open-upgrade'){ event.preventDefault(); event.stopImmediatePropagation(); showUpgradeModal('Unlock everything in MathsExpress.'); return; }
+  if(planIsPaid())return;
+  const block=(msg)=>{ event.preventDefault(); event.stopImmediatePropagation(); showUpgradeModal(msg); };
+  // Teacher-set work keeps its own AI/hint rules; only self-paced use is limited.
+  const lock=PLAN_LOCKED_ACTIONS[action];
+  if(lock && !(planInTeacherWork() && ['ai_tutor'].includes(lock[0])) && !planFeature(lock[0])) return block(lock[1]);
+  if((action==='generated-next'||action==='next-question') && planBlocksPractice()){ event.preventDefault(); event.stopImmediatePropagation(); return; }
+  if(action==='start-edu-game' && !FREE_GAME_MODES.has(el.dataset.mode||'quick-maths')) return block('More games are included with MathsExpress Pro. Quick Maths is free.');
+  if(action==='show-hint'||action==='generated-hint'||action==='open-progressive-hints'){
+    if(planInTeacherWork())return;
+    const {q,run}=activeAssignmentRunQuestion();
+    const key=`${q?.id||'q'}:${(Number(run?.hintCount)||0)+1}`;
+    if(planApprovedHints.has(key))return;
+    event.preventDefault(); event.stopImmediatePropagation();
+    getSchoolClient().useHint(key).then(()=>{ planApprovedHints.add(key); el.click(); })
+      .catch(error=>showUpgradeModal(planErrorMessage(error)||'Free plans include 3 hints a day.'));
+  }
+}
+document.addEventListener('click',planGateClick,true);
 let toolSearchQuery='';
 function applyToolSearchFilter(){
   const view=document.getElementById('app-view'); if(!view)return;
@@ -3542,6 +3680,7 @@ function renderLearn() {
 }
 
 function startLesson(lessonId) {
+  if(planBlocksPractice()) return;
   void enterAssignmentFullscreen({quiet:true});
   clearAiChatHistoryForNewQuestion();
   const lesson = getLessonById(lessonId);
@@ -4702,7 +4841,7 @@ async function submitLessonAnswer() {
   currentLesson.recent = currentLesson.recent.slice(-3);
 
   const rewardKey=`lesson:${currentLesson.runId}:${q.id}`;
-  if(account.authenticated&&attemptNumber===1) void getSchoolClient().recordDailyQuestionAttempt(rewardKey,result.correct).catch(()=>{});
+  if(account.authenticated&&attemptNumber===1) recordPlanAttempt(rewardKey,result.correct);
   let nextState = applyQuestionResult(state, { eventId:`${rewardKey}:attempt:${attemptNumber}`, firstAttempt:attemptNumber===1, correct: result.correct, topic:q.topic, lessonId:q.lessonId, xp:q.xp, difficulty:q.difficulty });
   if (result.correct) nextState = awardQuestionGameTime(nextState, rewardKey);
   else nextState = { ...nextState, mistakeBook: [...(nextState.mistakeBook || []), { questionId:q.id, prompt:q.prompt, skill:getLessonById(q.lessonId)?.title || q.topic || 'Maths', correct:false, createdAt:new Date().toISOString() }].slice(-500) };
@@ -4727,12 +4866,20 @@ async function submitLessonAnswer() {
 }
 
 
+function planBlocksTask(taskId){
+  if(planIsPaid()||planInTeacherWork())return false;
+  if(planBlocksPractice())return true;
+  const task=getTaskById(taskId);
+  if(task&&task.skillId&&!isFreeSkill(task.skillId,task.yearLevel)){ showUpgradeModal('This topic is part of MathsExpress Pro. Free plans include the first topics in each strand.'); return true; }
+  return false;
+}
 function startGeneratedTask(taskId,{returnRoute=null}={}) {
   void enterAssignmentFullscreen({quiet:true});
   clearAiChatHistoryForNewQuestion();
   const task = getTaskById(taskId);
   if (!task) return showToast('Task unavailable', 'Choose another task from the library.');
   if(!canUseTeacherHub(account) && normaliseYearLevel(task.yearLevel)!==normaliseYearLevel(account.profile?.yearLevel)) return showToast('Your year level only','Ask your teacher to change your learning level.');
+  if(planBlocksTask(taskId)) return;
   const currentRoute=routeFromHash().route;
   const origin=returnRoute||(['home','learn','learning-path','textbook','textbook-lesson'].includes(currentRoute)?currentRoute:'learn');
   currentGeneratedTask = createUniqueGeneratedTaskRun(task); currentLesson=null;
@@ -4886,7 +5033,7 @@ async function submitGeneratedTaskAnswer() {
 
   if(correct!==initialMarkedCorrect)currentGeneratedTask.correct=Math.max(0,currentGeneratedTask.correct+(correct?1:-1));
   const rewardKey=`generated:${currentGeneratedTask.task.id}:${currentGeneratedTask.startedAt}:${q.id}`;
-  if(account.authenticated&&attemptsBefore===0) void getSchoolClient().recordDailyQuestionAttempt(rewardKey,correct).catch(()=>{});
+  if(account.authenticated&&attemptsBefore===0) recordPlanAttempt(rewardKey,correct);
   let nextState = state;
   if (!needsReview) {
     nextState = applyQuestionResult(state, { eventId:`${rewardKey}:attempt:${attemptNumber}`, firstAttempt:attemptsBefore===0, correct, difficulty:q.complexity, xp:q.xp, topic:'curriculum', lessonId:null });
@@ -6041,6 +6188,13 @@ function profileAppearanceHtml(){
   return cosmeticCharacterHtml({compact:true});
 }
 
+function profilePlanHtml(){
+  if(!account.authenticated||!planState)return '<div class="profile-plan" id="profile-plan"><span>Plan</span><strong>Checking…</strong></div>';
+  const label=planState.plan==='free'?freePlanName():(PLAN_LABELS[planState.plan]||'Plan');
+  const until=planState.expires_at?` · until ${new Date(planState.expires_at).toLocaleDateString()}`:'';
+  const outOfYears=!planState.paid&&planState.plan!=='free'?' · does not cover your year level':'';
+  return `<div class="profile-plan" id="profile-plan"><span>Plan</span><strong>${escapeHtml(label)}${escapeHtml(until)}${escapeHtml(outOfYears)}</strong>${planState.paid?'':`<small>${Math.max(0,Number(planState.questions_left)||0)} of 15 free questions left today</small><button class="btn primary small" data-action="open-upgrade">Upgrade</button>`}</div>`;
+}
 function renderProfile() {
   const view = document.getElementById('app-view');
   const m = buildProfileModel(state);
@@ -6057,6 +6211,7 @@ function renderProfile() {
           </div>
           <div class="hero-actions profile-character-actions"><button class="btn secondary small" data-route="locker">Customise character</button></div>
           <div class="profile-account"><strong>${escapeHtml(account.profile?.email || '')}</strong><span>${escapeHtml((account.profile?.role || 'player').toUpperCase())}</span></div>
+          ${profilePlanHtml()}
           ${canEditIdentity?`<div class="profile-name-row"><input id="profile-name" class="answer-input" maxlength="24" value="${escapeHtml(state.playerName)}" aria-label="Player display name"><button class="btn small secondary" data-action="save-player-name">Save name</button></div>`:`<div class="identity-locked-note"><strong>Account identity is managed by school staff.</strong><span>Students cannot change their name, username or email.</span></div>`}
         </section>
         <section>
@@ -8935,6 +9090,11 @@ Alex,alex@example.com,9"></textarea></label><p class="muted">Existing MathsExpre
       }
       showToast('Purchase failed',message||'Try again.');
     });
+    return;
+  }
+  if (action === 'owner-set-user-plan') {
+    const plan=document.getElementById('owner-user-plan')?.value||'free'; const days=Number(document.getElementById('owner-user-plan-days')?.value)||365;
+    getSchoolClient().ownerSetUserPlan(actionEl.dataset.userId,plan,days).then(r=>showToast('Plan updated',`${PLAN_LABELS[r?.info?.plan]||plan}${r?.info?.expires_at?` until ${new Date(r.info.expires_at).toLocaleDateString()}`:''}`,'success')).catch(e=>showToast('Plan not changed',e?.message||'Try again.'));
     return;
   }
   if (action === 'claim-season-reward') {
