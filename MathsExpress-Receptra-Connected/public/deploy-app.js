@@ -4040,32 +4040,12 @@ function renderLearn() {
   view.innerHTML = `
     <div class="page curriculum-learn-page minimal-learn-page">
       <div class="page-head curriculum-head">
-        <div><span class="eyebrow">K–12 Mathematics</span><h1>Learn</h1>${cloveHtml('pencil')}<p>Start with your recommendation, use a quick check, or browse the full curriculum.</p></div>
+        <div><span class="eyebrow">K–12 Mathematics</span><h1>Learn</h1>${cloveHtml('pencil')}<p>Complete daily missions, then explore the curriculum and practise your skills.</p></div>
         <div class="curriculum-count"><strong>${CURRICULUM.length}</strong><span>K–12 skills</span></div>
       </div>
-      ${learnHubHtml(learnYearLevel)}
-      <details class="learn-browse" ${learnBrowseOpen?'open':''}><summary data-action="toggle-learn-browse">Browse all skills, recommendations and more</summary>
-      ${skillFocusHtml()}
-      <section class="recommendation-control-bar"><div><strong>Recommendations</strong><span>Choose a skill from your year level.</span></div><div class="recommendation-chip-row">${[['smart','Smart'],['ready','Ready to learn'],['almost','Almost mastered'],['recent','Worked recently']].map(([id,label])=>`<button class="${recommendationCategory===id?'active':''}" data-action="recommendation-category" data-category="${id}">${label}</button>`).join('')}<button data-action="shuffle-recommendations" ${recPool.length<2?'disabled title="More matching skills are needed to shuffle"':''}>Shuffle ↻</button></div></section>
-      <section class="learn-recommended-panel">
-        <div class="learn-recommended-main">
-          <span class="eyebrow">Recommended next</span>
-          <h2>${escapeHtml(recommended?.title||recommended?.skill||'Choose a skill')}</h2>
-          <p>${recommended?`${Math.round(recommended.mastery||0)}% mastery · ${escapeHtml(recommended.strand||'Mathematics')} · ${escapeHtml(yearLabel(recommended.yearLevel))}`:'No skills match this filter yet. Try Smart or Ready to learn.'}</p>
-          <div class="simple-actions"><button class="btn primary" data-action="start-path-skill" data-skill-id="${escapeHtml(recommended?.id||'')}" data-skill-year="${recommended?.yearLevel??learnYearLevel}" ${recommended?'':'disabled'}>Start recommended</button><button class="btn secondary" data-action="start-daily-practice">Daily 5</button></div>
-        </div>
-        <div class="learn-recommended-grid">
-          <button data-action="start-path-skill" data-skill-id="${escapeHtml(recommended?.id||'')}" data-skill-year="${recommended?.yearLevel??learnYearLevel}" ${recommended?'':'disabled'}><strong>Recommended practice</strong><small>Best next skill for you</small></button>
-          <button data-action="start-adaptive-practice"><strong>Self-directed adaptive</strong><small>Difficulty changes with you</small></button>
-          <button data-action="open-topic-readiness"><strong>Topic readiness</strong><small>Check prerequisites first</small></button>
-          <button data-action="start-recurring-skill-checkin"><strong>Skills Check-In</strong><small>5-question adaptive check</small></button>
-          <button data-action="open-discovery-checkin"><strong>Discovery check</strong><small>Find strengths and gaps</small></button>
-          <button data-action="start-mixed-revision"><strong>Mixed revision</strong><small>Weak skills + spaced review</small></button>
-          <button data-route="learning-path"><strong>Learning Path</strong><small>Personalised roadmap</small></button>
-          <button data-action="start-exam-practice"><strong>Exam practice</strong><small>Strict Test Mode</small></button>
-        </div>
-      </section>
+      <!-- Daily missions and the curriculum below are the primary Learn content. -->
       <section class="daily-missions-section"><div class="section-heading"><div><span class="eyebrow">Resets daily</span><h2>Daily missions</h2></div><span>${escapeHtml(localDateString())}</span></div><div class="daily-mission-grid">${dailyMissionCards()}</div></section>
+      ${skillFocusHtml()}
       ${nextTwo.length?`<section class="learn-next-row">${nextTwo.map(skill=>`<button class="learn-next-card" data-action="start-path-skill" data-skill-id="${escapeHtml(skill.id)}" data-skill-year="${skill.yearLevel}"><span>${Math.round(skill.mastery||0)}%</span><div><strong>${escapeHtml(skill.title)}</strong><small>${escapeHtml(skill.strand)}</small></div><b>→</b></button>`).join('')}${dueReview?`<button class="learn-next-card review" data-action="start-review-skill" data-review-id="${escapeHtml(dueReview.id||'')}" data-skill-id="${escapeHtml(dueReview.skillId||recommended?.id||'')}" data-skill-year="${Number(dueReview.yearLevel??recommended?.yearLevel??learnYearLevel)}"><span>↺</span><div><strong>Spaced review due</strong><small>Keep older learning strong</small></div><b>→</b></button>`:''}</section>`:''}
       ${canBrowseAllYears?`<div class="mx-year-dropdown"><label for="learn-year-select"><span>Year level</span><select id="learn-year-select" data-action="learn-year-select" aria-label="Choose year level">${YEAR_LEVEL_OPTIONS.map(({value,label})=>`<option value="${value}" ${learnYearLevel===value?'selected':''}>${escapeHtml(label)}</option>`).join('')}</select></label></div>`:''}
       <section class="learn-mode-bar compact-learn-modes" hidden><button data-route="learning-path"><span>◎</span><div><strong>Learning Path</strong><small>Personalised roadmap</small></div></button><button data-action="start-adaptive-practice"><span>↗</span><div><strong>Adaptive</strong><small>Difficulty adjusts automatically</small></div></button><button data-action="open-discovery-checkin"><span>◉</span><div><strong>Discovery</strong><small>Find strengths and gaps</small></div></button><button data-route="textbook"><span>▤</span><div><strong>Textbook</strong><small>Read the matching lesson</small></div></button></section>
@@ -4073,7 +4053,6 @@ function renderLearn() {
       ${strands.map((strand) => { const strandSkills=skills.filter((skill)=>skill.strand===strand); return `<section class="curriculum-strand mx-classic-learn-strand"><header><small>${escapeHtml(yearLabel(learnYearLevel))} · ${strandSkills.length} skills</small><h2>${escapeHtml(strand)}</h2></header><div class="curriculum-skill-grid">${strandSkills.map((skill)=>{ const task=searchTaskLibrary({yearLevel:skill.yearLevel,skillId:skill.id,type:'practice',difficulty:'medium',questionCount:10,limit:1})[0]; const mastery=skillMasteryValue(skill.id,skill.yearLevel); return `<article class="curriculum-skill-card"><div class="skill-card-meta"><span>${Math.round(mastery)}% mastery</span>${skill.pathway!=='Core'?`<span>${escapeHtml(skill.pathway)}</span>`:''}</div><h3>${escapeHtml(skill.title)}</h3><p>${escapeHtml(skill.topic)} ${nswOutcomeChips(skill)}</p><button class="btn secondary small" data-action="start-library-task" data-task-id="${escapeHtml(task?.id||'')}">Practise</button></article>`; }).join('')}</div></section>`; }).join('')}
       </div>
       ${learnYearLevel===9 ? `<section class="curriculum-strand legacy-algebra"><div class="section-heading"><div><span class="eyebrow">Core Algebra</span><h2>Original Algebra lessons</h2></div></div><div class="grid two">${lessonCards()}</div></section>` : ''}
-      </details>
     </div>`;
   const focusClass=selectedStudentClassId||null;
   if(focusClass && String(focusClass)!==activeClassSkillFocusClassId) void loadClassSkillFocus(focusClass,{render:true});
