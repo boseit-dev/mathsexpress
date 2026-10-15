@@ -1,4 +1,4 @@
-const CACHE='mathsexpress-v11-5-34-class-controls';
+const CACHE='mathsexpress-v11-5-35-mc-freeze-and-caching';
 const CORE=[
   './','./index.html','./site.css','./site-motion.js','./receptra-widget.js','./app.html','./styles.css','./manifest.webmanifest','./mathsexpress-icon.svg','./mathsexpress-config.js',
   './supabase-loader.js','./mathsexpress-safe-math.js','./quick-assign-due.js','./startup-failsafe.js','./deploy-core-1.js','./deploy-core-2.js','./v7-features.js','./deploy-app.js',

@@ -1272,13 +1272,35 @@ function mcQuestion(task, index, prompt, answerText, distractors, solution, comp
     answers.push(d);
     if (answers.length >= 4) break;
   }
+  // Pad the options out. This used to recompute the same candidate on every
+  // pass whenever answerText was not a number -- Number('evening') is NaN, so
+  // every candidate was the string 'NaN' -- and once 'NaN' had been taken the
+  // `continue` spun forever and froze the tab. 125 call sites pass words,
+  // fractions or symbols, so this was reachable from ordinary questions.
+  //
+  // A numeric answer has near-miss neighbours worth offering. A word, fraction
+  // or symbol has none, so keep whatever distractors the question supplied
+  // rather than inventing nonsense ones that give the real answer away. Both
+  // loops are bounded as well, so no future edit can hang the page here.
+  const numericAnswer = Number(answerText);
   let filler = 1;
-  while (answers.length < 4) {
-    const candidate = String(Number(answerText) + answers.length + filler);
-    filler += 1;
-    if (seenLabels.has(candidate)) continue;
-    seenLabels.add(candidate);
-    answers.push(candidate);
+  if (Number.isFinite(numericAnswer)) {
+    while (answers.length < 4 && filler <= 50) {
+      const candidate = String(numericAnswer + answers.length + filler);
+      filler += 1;
+      if (seenLabels.has(candidate)) continue;
+      seenLabels.add(candidate);
+      answers.push(candidate);
+    }
+  } else {
+    // Never leave a single-option question; two is the minimum that can be asked.
+    while (answers.length < 2 && filler <= 4) {
+      const candidate = `Option ${filler}`;
+      filler += 1;
+      if (seenLabels.has(candidate)) continue;
+      seenLabels.add(candidate);
+      answers.push(candidate);
+    }
   }
   const r = rngFor(`${task.id}:mc:${index}`);
   for (let i = answers.length - 1; i > 0; i -= 1) { const j = int(r, 0, i); [answers[i], answers[j]] = [answers[j], answers[i]]; }
