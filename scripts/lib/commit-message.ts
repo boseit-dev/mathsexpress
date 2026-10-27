@@ -19,8 +19,12 @@ export const MAX_TITLE_LENGTH = 72;
 const TITLE_PATTERN = /^(?<type>[a-z]+)(?:\([a-z0-9][a-z0-9-]*\))?!?: \S/;
 const VERSION_LINE_PATTERN = /^Version: \d+\.\d+\.\d+(?:-[0-9A-Za-z.]+)?$/;
 const TRAILER_PATTERN = /^[A-Za-z][A-Za-z-]*: \S/;
-// Messages git writes itself (merges, reverts, autosquash) keep git's own format.
-const GENERATED_TITLE_PATTERN = /^(?:Merge |Revert "|fixup! |squash! |amend! )/;
+// Only messages git writes itself keep git's own format: merges such as
+// "Merge branch 'main' into mathsexpress-v2", and `git revert` messages.
+const GIT_MERGE_TITLE_PATTERN =
+  /^Merge (?:branch|branches|remote-tracking branch|pull request #\d+|tag|commit) /;
+const GIT_REVERT_TITLE_PATTERN = /^Revert ".+"$/;
+const GIT_REVERT_BODY_PATTERN = /^This reverts commit [0-9a-f]{7,40}\.?$/;
 const SCISSORS_LINE = '# ------------------------ >8 ------------------------';
 
 function cleanMessage(raw: string): string[] {
@@ -41,13 +45,25 @@ function isCommitType(value: string | undefined): boolean {
   return COMMIT_TYPES.some((type) => type === value);
 }
 
+function isGeneratedByGit(title: string, body: readonly string[]): boolean {
+  if (GIT_MERGE_TITLE_PATTERN.test(title)) return true;
+  return (
+    GIT_REVERT_TITLE_PATTERN.test(title) && body.some((line) => GIT_REVERT_BODY_PATTERN.test(line))
+  );
+}
+
+interface ValidationOptions {
+  /** When given, the "Version:" line must state exactly this version (from package.json). */
+  expectedVersion?: string;
+}
+
 /** Returns a list of problems with the message; an empty list means it is valid. */
-export function validateCommitMessage(raw: string): string[] {
+export function validateCommitMessage(raw: string, options: ValidationOptions = {}): string[] {
   const lines = cleanMessage(raw);
   const [title = '', separator, ...body] = lines;
 
   if (title === '') return ['The commit message is empty.'];
-  if (GENERATED_TITLE_PATTERN.test(title)) return [];
+  if (isGeneratedByGit(title, body)) return [];
 
   const problems: string[] = [];
   const titleMatch = TITLE_PATTERN.exec(title);
@@ -83,8 +99,13 @@ export function validateCommitMessage(raw: string): string[] {
   if (!body.some((line) => line.startsWith('Testing:'))) {
     problems.push('Add a "Testing:" section listing the checks that actually ran.');
   }
-  if (!body.some((line) => VERSION_LINE_PATTERN.test(line))) {
-    problems.push('Add a "Version: x.y.z" line with the version from package.json.');
+  const { expectedVersion } = options;
+  if (expectedVersion === undefined) {
+    if (!body.some((line) => VERSION_LINE_PATTERN.test(line))) {
+      problems.push('Add a "Version: x.y.z" line with the version from package.json.');
+    }
+  } else if (!body.includes(`Version: ${expectedVersion}`)) {
+    problems.push(`Add a "Version: ${expectedVersion}" line (the version in package.json).`);
   }
 
   return problems;

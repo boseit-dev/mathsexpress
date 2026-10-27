@@ -45,9 +45,13 @@ this automatically without being asked:
    failure. For UI changes, also check the page in the browser at desktop (1280px) and mobile
    (375px) widths with no console errors.
 3. Update `CHANGELOG.md` when the change is user-visible.
-4. Commit with a detailed message in the format below. The `commit-msg` hook enforces it.
-5. `git push origin mathsexpress-v2`. The `pre-push` hook runs `npm run check` again and blocks
-   pushes to `main`, `legacy-v11` and `v11.*` tags, branch deletions and history rewrites.
+4. Commit with a detailed message in the format below. The `commit-msg` hook checks the title, that
+   there is a description, a `Testing:` section and a `Version:` line matching `package.json`; the
+   other sections are required by this file. The `pre-commit` hook scans staged files for
+   credentials and runs `npm run check:quick`.
+5. Push the checked-out branch: `git push origin mathsexpress-v2`. The `pre-push` hook blocks pushes
+   to `main`, `legacy-v11` and `v11.*` tags, branch deletions, history rewrites and anything other
+   than the checked-out commit; scans every pushed commit for credentials; and runs `npm run check`.
 6. Confirm the GitHub Actions CI run passed (`gh run list --branch mathsexpress-v2 --limit 1`).
 7. Tell the user the commit title, a short summary of the description, what was tested and the
    commit hash.

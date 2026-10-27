@@ -1,5 +1,6 @@
 // Used by .githooks/commit-msg: rejects messages that don't follow the project format.
 import { readFileSync } from 'node:fs';
+import packageJson from '../package.json' with { type: 'json' };
 import { validateCommitMessage } from './lib/commit-message.ts';
 
 const messageFile = process.argv[2];
@@ -8,7 +9,9 @@ if (messageFile === undefined) {
   process.exit(2);
 }
 
-const problems = validateCommitMessage(readFileSync(messageFile, 'utf8'));
+const problems = validateCommitMessage(readFileSync(messageFile, 'utf8'), {
+  expectedVersion: packageJson.version,
+});
 if (problems.length > 0) {
   console.error('Commit message rejected (see "Commit messages" in CLAUDE.md):');
   for (const problem of problems) console.error(`  - ${problem}`);

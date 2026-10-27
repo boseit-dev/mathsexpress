@@ -22,6 +22,8 @@ jobs:
       - name: Check out code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # Full history, so every commit on the branch can be scanned for credentials.
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Set up Node.js
@@ -34,7 +36,9 @@ jobs:
         run: npm ci
 
       - name: Scan for committed credentials
-        run: node scripts/check-secrets.ts --all
+        run: |
+          node scripts/check-secrets.ts --all
+          node scripts/check-secrets.ts --commits origin/main..HEAD
 
       - name: Run all checks
         run: npm run check

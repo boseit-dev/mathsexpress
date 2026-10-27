@@ -12,9 +12,11 @@ Phase 1: project foundation and student homepage.
 
 - New project foundation replacing the v11 codebase on the development branch: React 19,
   TypeScript (strict), Vite, React Router, Vitest, ESLint and Prettier.
-- Git hooks that check commit messages, block committed credentials, run all checks before a push
-  and refuse pushes to `main`, branch deletions and history rewrites.
-- GitHub Actions CI for the `mathsexpress-v2` branch and pull requests.
+- Git hooks that check commit messages (including the version), scan staged files and every pushed
+  commit for credentials, run all checks before a push, and refuse pushes to `main`, branch
+  deletions, history rewrites and anything other than the checked-out commit.
+- GitHub Actions CI for the `mathsexpress-v2` branch and pull requests, including a credential
+  scan of every file and of every commit on the branch.
 - Cloudflare Worker configuration for a separate `mathsexpress-v2` Worker with security headers.
 - Design system: colour, type, spacing, radius, shadow and size tokens built on the official
   MathsExpress palette; global base styles; the Lexend font (self-hosted).
