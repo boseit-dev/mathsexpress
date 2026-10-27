@@ -8,7 +8,8 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage', '.wrangler']),
+  // database.types.ts is generated from the database by `npm run db:types`.
+  globalIgnores(['dist', 'coverage', '.wrangler', 'src/data/supabase/database.types.ts']),
   {
     files: ['**/*.js'],
     extends: [js.configs.recommended],
@@ -49,7 +50,7 @@ export default defineConfig([
     },
   },
   {
-    files: ['vite.config.ts', 'scripts/**/*.ts'],
+    files: ['*.config.ts', 'scripts/**/*.ts', 'tests/**/*.ts'],
     languageOptions: { globals: globals.node },
     rules: { 'no-console': 'off' },
   },

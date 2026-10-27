@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en-AU">
+  <body style="margin:0;padding:24px;background:#f8f7fc;font-family:Arial,Helvetica,sans-serif;color:#1b2142;">
+    <div style="max-width:480px;margin:0 auto;padding:32px;background:#ffffff;border-radius:16px;border:1px solid #e6e2f0;">
+      <p style="margin:0 0 24px;font-size:20px;font-weight:bold;">Maths<span style="color:#6f55e6;">Express</span></p>
+      <h1 style="margin:0 0 12px;font-size:22px;">Confirm your email address</h1>
+      <p style="margin:0 0 24px;line-height:1.5;">Thanks for creating a MathsExpress account. Confirm your email address to finish setting it up.</p>
+      <p style="margin:0 0 24px;">
+        <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email" style="display:inline-block;padding:12px 20px;background:#3d52a0;color:#ffffff;text-decoration:none;border-radius:12px;font-weight:bold;">Confirm my email</a>
+      </p>
+      <p style="margin:0;font-size:13px;line-height:1.5;color:#565d80;">If you didn't create a MathsExpress account, you can ignore this email.</p>
+    </div>
+  </body>
+</html>

@@ -4,7 +4,27 @@ All notable changes to MathsExpress 2.0 are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/). See "Versioning" in CLAUDE.md.
 
-## [2.0.0-alpha.1] - Unreleased
+## [2.0.0-alpha.2] - Unreleased
+
+Phase 2: authentication, accounts and class management.
+
+### Added
+
+- Accounts and classes database (Supabase Postgres), built only from migrations: profiles with a
+  student or teacher role, classes, teacher permissions per class, join codes, class membership
+  with teacher-assigned year levels, and an audit trail of year-level changes.
+- Server-side security: row-level security on every table, no direct table access except reading
+  your own profile, and server functions that check the caller's role and class permission for
+  every action. Students never see join codes, other students or email addresses.
+- Secure 8-character join codes from an alphabet without look-alike characters; teachers can
+  replace a code at any time.
+- Local Supabase stack for development with a test mailbox, branded confirmation and password-reset
+  emails, a password policy (8+ characters with letters and digits), and Google sign-in ready for
+  credentials.
+- Database and authentication integration tests (`npm run test:db`), also run in CI against a
+  fresh Supabase stack, with a check that the generated database types match the migrations.
+
+## [2.0.0-alpha.1] - 2026-10-28
 
 Phase 1: project foundation and student homepage.
 

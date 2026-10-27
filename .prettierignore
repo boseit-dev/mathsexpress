@@ -2,3 +2,5 @@ dist
 coverage
 .wrangler
 package-lock.json
+# Hand-written email HTML with inline styles
+supabase/templates
