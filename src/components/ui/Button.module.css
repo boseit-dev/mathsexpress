@@ -14,6 +14,11 @@
     border-color var(--transition-fast);
 }
 
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .button svg {
   inline-size: var(--size-icon-md);
   block-size: var(--size-icon-md);

@@ -1,0 +1,11 @@
+.tile {
+  fill: var(--color-brand-primary);
+}
+
+.line {
+  fill: none;
+  stroke: var(--color-text-inverse);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.75;
+}

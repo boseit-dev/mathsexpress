@@ -20,6 +20,16 @@ Phase 1: project foundation and student homepage.
   MathsExpress palette; global base styles; the Lexend font (self-hosted).
 - Shared UI components: Button, ButtonLink, ArrowLink, Panel, ProgressBar, StatusBadge, IconTile,
   CoinAmount, CoinIcon, Avatar and VisuallyHidden.
+- Student and teacher layouts with navigation at the top, never a side bar. Student: Home, Learn,
+  Textbook, Class, More. Teacher: Home, Classes, Tasks, Reports, More. On phones and tablets the
+  navigation becomes a row of tabs under the logo.
+- Accessibility basics: skip link, landmarks, page titles, focus moved to the page after
+  navigation, and the current page marked for screen readers.
+- Not-found and error pages; "Try again" on the error page reloads the page's data.
+- "Planned for a later phase" pages for sections that are not built yet, so every link works.
+- A development preview notice on every page stating that all data is sample data, with a link
+  to switch between the student and teacher layouts.
+- Data access through repository interfaces, with sample implementations for Phase 1.
 
 ### Removed
 

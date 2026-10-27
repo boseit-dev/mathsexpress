@@ -1,0 +1,23 @@
+.notice {
+  background-color: var(--color-brand-pale);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-xs);
+}
+
+.inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+  inline-size: min(100%, var(--layout-max-width));
+  margin-inline: auto;
+  padding: var(--space-2) var(--layout-gutter);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--size-touch-target-min);
+  font-weight: var(--font-weight-semibold);
+}

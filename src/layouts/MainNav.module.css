@@ -1,0 +1,66 @@
+/* Phones and tablets: a full-width row of tabs under the logo. */
+.list {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+}
+
+.link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  min-block-size: var(--size-nav-item-compact);
+  padding: var(--space-2) var(--space-1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--line-height-tight);
+  text-decoration: none;
+  box-shadow: inset 0 calc(var(--size-nav-indicator) * -1) 0 transparent;
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.link:hover {
+  background-color: var(--color-surface-subtle);
+  color: var(--color-text);
+}
+
+.link[aria-current='page'] {
+  color: var(--color-text-brand);
+  box-shadow: inset 0 calc(var(--size-nav-indicator) * -1) 0 var(--color-brand-primary);
+}
+
+.icon {
+  inline-size: var(--size-icon-md);
+  block-size: var(--size-icon-md);
+}
+
+@media (min-width: 640px) {
+  .link {
+    flex-direction: row;
+    gap: var(--space-2);
+    font-size: var(--font-size-sm);
+  }
+}
+
+/* Wide screens: the links sit inline in the header bar. */
+@media (min-width: 960px) {
+  .list {
+    display: flex;
+    gap: var(--space-1);
+  }
+
+  .link {
+    min-block-size: var(--header-height);
+    padding-inline: var(--space-3);
+  }
+
+  .icon {
+    inline-size: var(--size-icon-sm);
+    block-size: var(--size-icon-sm);
+  }
+}
