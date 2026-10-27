@@ -38,6 +38,11 @@ Repository: `boseit-dev/mathsexpress` (public). One repository only; never creat
 | `main`                       | Still the old v11 code. Replaced by 2.0 only after the user approves the release. |
 | `legacy-v11`, tag `v11.5.35` | Permanent backup of the original project. Never move, rewrite or delete.          |
 
+GitHub rulesets enforce this on the server for everyone, admins included: `main` and `legacy-v11`
+cannot be force-pushed or deleted ("Protect main and legacy-v11"), and `v11.*` tags cannot be moved
+or deleted ("Protect v11 backup tags"). Pull requests are not required yet. Never change or
+disable these rulesets without the user's approval.
+
 **After every completed, tested feature or fix** (one logical change, not every small edit), do
 this automatically without being asked:
 
