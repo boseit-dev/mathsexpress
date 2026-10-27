@@ -3,8 +3,9 @@ import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import type { StudentRepository } from '@/data/repositories';
 import { sampleStudent } from '@/data/sample/sampleStudent';
+import { createSampleStudentRepository } from '@/data/sample/sampleStudentRepository';
 import { findAccessibilityProblems } from '@/test/axe';
-import { renderApp } from '@/test/renderApp';
+import { renderApp, TEST_NOW } from '@/test/renderApp';
 
 function linkNames(container: HTMLElement) {
   return within(container)
@@ -134,7 +135,9 @@ describe('errors', () => {
       .mockRejectedValueOnce(new Error('Network unavailable'))
       .mockResolvedValue(sampleStudent);
 
-    renderApp('/student/learn', { studentRepository: { getCurrentStudent } });
+    renderApp('/student/learn', {
+      studentRepository: { ...createSampleStudentRepository(() => TEST_NOW), getCurrentStudent },
+    });
 
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Something went wrong' }),

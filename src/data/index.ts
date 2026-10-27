@@ -8,7 +8,7 @@ import { createSampleTeacherRepository } from './sample/sampleTeacherRepository'
  */
 export function createAppDependencies(now: () => Date = () => new Date()): AppDependencies {
   return {
-    studentRepository: createSampleStudentRepository(),
+    studentRepository: createSampleStudentRepository(now),
     teacherRepository: createSampleTeacherRepository(),
     now,
   };

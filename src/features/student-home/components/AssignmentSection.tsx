@@ -1,0 +1,48 @@
+import { ClipboardList } from 'lucide-react';
+import { ArrowLink } from '@/components/ui/ArrowLink';
+import { Panel } from '@/components/ui/Panel';
+import { paths } from '@/config/paths';
+import { selectHomeAssignments, type Assignment } from '@/domain/assignment';
+import { formatCount } from '@/lib/format';
+import { AssignmentCard } from './AssignmentCard';
+import styles from './AssignmentSection.module.css';
+
+/** How many tasks the home page shows before "View all": one row on wide screens. */
+const HOME_TASK_LIMIT = 3;
+
+interface AssignmentSectionProps {
+  assignments: readonly Assignment[];
+  now: Date;
+}
+
+export function AssignmentSection({ assignments, now }: AssignmentSectionProps) {
+  const shown = selectHomeAssignments(assignments, HOME_TASK_LIMIT);
+
+  return (
+    <Panel
+      title="Your assigned tasks"
+      icon={ClipboardList}
+      footer={
+        assignments.length > 0 && (
+          <ArrowLink to={paths.student.tasks}>
+            View all {formatCount(assignments.length, 'task')}
+          </ArrowLink>
+        )
+      }
+    >
+      {shown.length === 0 ? (
+        <p className={styles.empty}>
+          Your teacher hasn’t set any tasks yet. They’ll appear here when they do.
+        </p>
+      ) : (
+        <ul role="list" className={styles.list}>
+          {shown.map((assignment) => (
+            <li key={assignment.id}>
+              <AssignmentCard assignment={assignment} now={now} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </Panel>
+  );
+}

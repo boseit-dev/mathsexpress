@@ -1,0 +1,101 @@
+.banner {
+  /* White focus ring: the default primary ring would vanish on this background. */
+  --color-focus: var(--color-text-inverse);
+
+  display: grid;
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background-color: var(--color-brand-primary);
+  background-image:
+    radial-gradient(circle at 85% 15%, var(--color-hero-glow), transparent 55%),
+    linear-gradient(var(--color-hero-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-hero-grid) 1px, transparent 1px);
+  background-size:
+    auto,
+    var(--size-hero-grid) var(--size-hero-grid),
+    var(--size-hero-grid) var(--size-hero-grid);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text-inverse);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-inline-size: 0;
+}
+
+.classLabel {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  background-color: var(--color-on-brand-subtle);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.greeting {
+  font-size: var(--font-size-display);
+  font-weight: var(--font-weight-bold);
+}
+
+.summary {
+  max-inline-size: var(--layout-reading-width);
+}
+
+.continue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+  inline-size: 100%;
+  margin-block-start: var(--space-2);
+}
+
+.nextUp {
+  display: flex;
+  flex: 1 1 14rem;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-inline-size: 24rem;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-on-brand-subtle);
+}
+
+.nextUpLabel,
+.nextUpMeta {
+  font-size: var(--font-size-xs);
+}
+
+.nextUpTitle {
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-snug);
+}
+
+.continueButton {
+  inline-size: 100%;
+}
+
+.illustration {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .banner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: var(--space-8);
+  }
+
+  .continueButton {
+    inline-size: auto;
+  }
+
+  .illustration {
+    display: block;
+    inline-size: clamp(13rem, 26vw, 20rem);
+  }
+}

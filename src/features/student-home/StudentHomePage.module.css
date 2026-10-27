@@ -1,0 +1,32 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.columns {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.main,
+.sidebar {
+  display: grid;
+  align-content: start;
+  gap: var(--space-6);
+  min-inline-size: 0;
+}
+
+@media (min-width: 768px) and (max-width: 1099px) {
+  .sidebar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Wide screens: tasks and practice on the left, class and rewards on the right. */
+@media (min-width: 1100px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr) var(--layout-sidebar-width);
+    align-items: start;
+  }
+}

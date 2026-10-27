@@ -6,7 +6,9 @@ export const paths = {
     learn: '/student/learn',
     textbook: '/student/textbook',
     class: '/student/class',
+    tasks: '/student/class/tasks',
     more: '/student/more',
+    shop: '/student/more/shop',
   },
   teacher: {
     home: '/teacher',

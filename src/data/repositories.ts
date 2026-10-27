@@ -1,6 +1,7 @@
 // Contracts between the app and its data source. Pages and loaders depend on these interfaces
 // only, so the sample implementations can be replaced by a real backend without UI changes.
 import type { CurrentStudent } from '@/domain/student';
+import type { StudentHome } from '@/domain/studentHome';
 import type { CurrentTeacher } from '@/domain/teacher';
 
 export interface RequestOptions {
@@ -10,6 +11,7 @@ export interface RequestOptions {
 
 export interface StudentRepository {
   getCurrentStudent(options?: RequestOptions): Promise<CurrentStudent>;
+  getStudentHome(options?: RequestOptions): Promise<StudentHome>;
 }
 
 export interface TeacherRepository {

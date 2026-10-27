@@ -1,6 +1,8 @@
 import type { RouteObject } from 'react-router';
 import { paths } from '@/config/paths';
 import type { AppDependencies } from '@/data/repositories';
+import { StudentHomePage } from '@/features/student-home/StudentHomePage';
+import { createStudentHomeLoader } from '@/features/student-home/studentHomeLoader';
 import { StudentLayout } from '@/layouts/student/StudentLayout';
 import { createStudentLayoutLoader } from '@/layouts/student/studentLayoutLoader';
 import { LoadingScreen } from './pages/LoadingScreen';
@@ -8,12 +10,12 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { PlannedSectionPage } from './pages/PlannedSectionPage';
 import { RouteErrorPage } from './pages/RouteErrorPage';
 
-function planned(title: string, summary: string, { isHome = false } = {}) {
-  const homePath = isHome ? undefined : paths.student.home;
-  return <PlannedSectionPage title={title} summary={summary} homePath={homePath} />;
+function planned(title: string, summary: string) {
+  return <PlannedSectionPage title={title} summary={summary} homePath={paths.student.home} />;
 }
 
-export function createStudentRoutes({ studentRepository }: AppDependencies): RouteObject {
+export function createStudentRoutes(dependencies: AppDependencies): RouteObject {
+  const { studentRepository } = dependencies;
   return {
     path: paths.student.home,
     loader: createStudentLayoutLoader(studentRepository),
@@ -26,9 +28,8 @@ export function createStudentRoutes({ studentRepository }: AppDependencies): Rou
         children: [
           {
             index: true,
-            element: planned('Home', 'Your tasks, recommended practice, progress and rewards.', {
-              isHome: true,
-            }),
+            loader: createStudentHomeLoader(dependencies),
+            element: <StudentHomePage />,
           },
           {
             path: paths.student.learn,
@@ -49,6 +50,20 @@ export function createStudentRoutes({ studentRepository }: AppDependencies): Rou
             element: planned(
               'Class',
               'Your class, your teacher’s messages and how the class is going together.',
+            ),
+          },
+          {
+            path: paths.student.tasks,
+            element: planned(
+              'Your tasks',
+              'Every task your teacher has set, with due dates, progress and results.',
+            ),
+          },
+          {
+            path: paths.student.shop,
+            element: planned(
+              'Coin shop',
+              'Spend your coins on themes, avatar frames and power-ups.',
             ),
           },
           {

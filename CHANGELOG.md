@@ -30,6 +30,18 @@ Phase 1: project foundation and student homepage.
 - A development preview notice on every page stating that all data is sample data, with a link
   to switch between the student and teacher layouts.
 - Data access through repository interfaces, with sample implementations for Phase 1.
+- The MathsExpress logo (plus, dot and smile symbol with the two-colour wordmark) in the header,
+  loading screen and favicon.
+- Student home page, laid out like the agreed reference: a full-width welcome banner with a
+  personalised greeting, task summary, "pick up where you left off" progress and a prominent
+  Continue learning button; assigned task cards (artwork, type, due date, progress, coin reward,
+  not started / in progress / overdue / done states) with View all; recommended practice with a
+  quick review of recent mistakes; learning progress (topics, questions, accuracy, streak); and a
+  right-hand column with the class leaderboard, coin shop, daily challenges and rewards.
+- Original illustrations: the welcome-banner graph, task and topic card artwork, and a
+  scenery backdrop for student pages in the brand colours.
+- Development sample data for the home page, generated relative to today's date, clearly labelled
+  and kept consistent by tests.
 
 ### Removed
 

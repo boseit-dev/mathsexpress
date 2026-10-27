@@ -10,7 +10,7 @@ interface ProgressBarProps {
   /** Spoken value, e.g. "7 of 12 questions". Defaults to the percentage. */
   valueText?: string;
   tone?: 'brand' | 'success' | 'inverse';
-  size?: 'small' | 'medium';
+  size?: 'small' | 'medium' | 'large';
   className?: string;
 }
 

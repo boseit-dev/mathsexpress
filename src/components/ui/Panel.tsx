@@ -8,14 +8,16 @@ interface PanelProps {
   title: string;
   /** Optional icon shown beside the title. */
   icon?: LucideIcon;
-  /** Optional control at the end of the header, usually an ArrowLink. */
+  /** Optional content at the end of the header, e.g. a balance or a short status. */
   action?: ReactNode;
+  /** Optional centred link at the bottom of the panel, e.g. "View all". */
+  footer?: ReactNode;
   children: ReactNode;
   className?: string;
 }
 
 /** A white card that groups one section of a page under an h2 heading. */
-export function Panel({ title, icon, action, children, className }: PanelProps) {
+export function Panel({ title, icon, action, footer, children, className }: PanelProps) {
   const headingId = useId();
 
   return (
@@ -30,6 +32,7 @@ export function Panel({ title, icon, action, children, className }: PanelProps) 
         {action}
       </div>
       {children}
+      {footer && <div className={styles.footer}>{footer}</div>}
     </section>
   );
 }

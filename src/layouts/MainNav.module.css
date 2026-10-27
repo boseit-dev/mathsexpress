@@ -56,11 +56,11 @@
 
   .link {
     min-block-size: var(--header-height);
-    padding-inline: var(--space-3);
+    padding-inline: var(--space-4);
+    font-size: var(--font-size-md);
   }
 
   .icon {
-    inline-size: var(--size-icon-sm);
-    block-size: var(--size-icon-sm);
+    display: none;
   }
 }
