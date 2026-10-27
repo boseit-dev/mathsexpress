@@ -1,0 +1,13 @@
+.amount {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.icon {
+  inline-size: var(--size-icon-inline);
+  block-size: var(--size-icon-inline);
+}

@@ -1,0 +1,20 @@
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-block-size: var(--size-touch-target-min);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.icon {
+  inline-size: var(--size-icon-sm);
+  block-size: var(--size-icon-sm);
+}

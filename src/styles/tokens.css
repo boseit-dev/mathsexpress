@@ -1,0 +1,131 @@
+/*
+ * MathsExpress 2.0 design tokens.
+ * Components use these variables only: never hard-code colours, spacing, radii, shadows or sizes.
+ *
+ * Breakpoints (media queries cannot use variables, so they are listed here):
+ *   tablet  >= 768px    header nav moves into the top row, two-column panels
+ *   desktop >= 1100px   home page gains its right-hand sidebar
+ */
+:root {
+  /* Brand palette: the official MathsExpress 2.0 colours. */
+  --color-brand-primary: #3d52a0;
+  --color-brand-secondary: #7091e6;
+  --color-brand-muted: #8697c4;
+  --color-brand-soft: #adbbda;
+  --color-brand-pale: #ede8f5;
+
+  /* Darker primary shades for hover and pressed states. */
+  --color-brand-primary-hover: #34478d;
+  --color-brand-primary-active: #2c3c79;
+  --color-brand-pale-hover: #e2dcef;
+
+  /*
+   * Text. Secondary, muted and soft blues are below 4.5:1 contrast on white,
+   * so they are for shapes and accents only, never for normal-size text.
+   */
+  --color-text: #1b2142;
+  --color-text-secondary: #565d80;
+  --color-text-brand: var(--color-brand-primary);
+  --color-text-inverse: #ffffff;
+
+  /* Surfaces and lines. */
+  --color-page: #f8f7fc;
+  --color-surface: #ffffff;
+  --color-surface-subtle: #f5f3fa;
+  --color-border: #e6e2f0;
+  --color-border-strong: var(--color-brand-soft);
+
+  /* Status colours. Each text colour has at least 4.5:1 contrast on its surface. */
+  --color-success: #1a6b43;
+  --color-success-surface: #e6f4ec;
+  --color-warning: #8a5a00;
+  --color-warning-surface: #fdf1d8;
+  --color-danger: #b42318;
+  --color-danger-surface: #fdecea;
+  --color-neutral: var(--color-text-secondary);
+  --color-neutral-surface: #efeff5;
+
+  /* Coins and medals. */
+  --color-coin: #f2b630;
+  --color-coin-edge: #a87508;
+  --color-coin-surface: #fff5dc;
+  --color-medal-gold: #f2b630;
+  --color-medal-silver: #c4cad8;
+  --color-medal-bronze: #d99a6c;
+
+  /* Shapes drawn on the dark brand colour. */
+  --color-on-brand-track: rgb(255 255 255 / 0.25);
+  --color-on-brand-subtle: rgb(255 255 255 / 0.14);
+
+  /* Keyboard focus ring. Dark sections override this with a light colour. */
+  --color-focus: var(--color-brand-primary);
+
+  /* Typography. */
+  --font-family-base:
+    'Lexend Variable', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.375rem;
+  --font-size-2xl: 1.75rem;
+  --font-size-display: clamp(1.75rem, 1.3rem + 1.6vw, 2.5rem);
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --line-height-tight: 1.2;
+  --line-height-snug: 1.35;
+  --line-height-base: 1.55;
+  --letter-spacing-tight: -0.015em;
+
+  /* Spacing: a 4px grid. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* Corner radii. */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 999px;
+
+  /* Shadows: soft and tinted with the primary blue. */
+  --shadow-sm: 0 1px 2px rgb(27 33 66 / 0.06);
+  --shadow-md: 0 1px 3px rgb(27 33 66 / 0.05), 0 6px 18px rgb(61 82 160 / 0.07);
+  --shadow-lg: 0 14px 36px rgb(61 82 160 / 0.18);
+
+  /* Sizes. Touch targets: 44px for buttons, never below the 24px WCAG 2.2 minimum. */
+  --size-touch-target: 2.75rem;
+  --size-touch-target-min: 1.5rem;
+  --size-button-lg: 3.25rem;
+  --size-tile-sm: 2rem;
+  --size-tile-md: 2.5rem;
+  --size-tile-lg: 3rem;
+  --size-avatar-sm: 2rem;
+  --size-avatar-md: 2.5rem;
+  --size-icon-xs: 0.875rem;
+  --size-icon-sm: 1rem;
+  --size-icon-md: 1.25rem;
+  --size-icon-lg: 1.5rem;
+  --size-progress-sm: 0.375rem;
+  --size-progress-md: 0.5rem;
+  /* Icons inside running text scale with the text. */
+  --size-icon-inline: 1.15em;
+
+  /* Layout. */
+  --layout-max-width: 80rem;
+  --layout-gutter: clamp(1rem, 0.4rem + 2.4vw, 2rem);
+  --layout-sidebar-width: 21.5rem;
+  --header-height: 4rem;
+
+  /* Motion: state changes only, no decorative animation. */
+  --transition-fast: 120ms ease-out;
+}

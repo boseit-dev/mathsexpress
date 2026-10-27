@@ -16,6 +16,10 @@ Phase 1: project foundation and student homepage.
   and refuse pushes to `main`, branch deletions and history rewrites.
 - GitHub Actions CI for the `mathsexpress-v2` branch and pull requests.
 - Cloudflare Worker configuration for a separate `mathsexpress-v2` Worker with security headers.
+- Design system: colour, type, spacing, radius, shadow and size tokens built on the official
+  MathsExpress palette; global base styles; the Lexend font (self-hosted).
+- Shared UI components: Button, ButtonLink, ArrowLink, Panel, ProgressBar, StatusBadge, IconTile,
+  CoinAmount, CoinIcon, Avatar and VisuallyHidden.
 
 ### Removed
 
