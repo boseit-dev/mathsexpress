@@ -1,0 +1,79 @@
+.caption {
+  margin-block-start: calc(var(--space-2) * -1);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-inline: calc(var(--space-2) * -1);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+}
+
+.currentRow {
+  background-color: var(--color-brand-pale);
+}
+
+/* The current student's own row when they are outside the top places. */
+.detached {
+  margin-block-start: var(--space-2);
+  border-block-start: 1px dashed var(--color-border-strong);
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+
+.rank {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  min-inline-size: var(--size-avatar-sm);
+  block-size: var(--size-avatar-sm);
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-surface);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.gold {
+  background-color: var(--color-medal-gold);
+}
+
+.silver {
+  background-color: var(--color-medal-silver);
+}
+
+.bronze {
+  background-color: var(--color-medal-bronze);
+}
+
+.name {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  font-weight: var(--font-weight-medium);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.currentRow .name {
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-semibold);
+}
+
+.coins {
+  font-size: var(--font-size-sm);
+}
+
+.empty {
+  color: var(--color-text-secondary);
+}

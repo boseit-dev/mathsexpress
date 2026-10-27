@@ -1,0 +1,36 @@
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.mark {
+  inline-size: var(--size-logo-mark);
+  block-size: auto;
+}
+
+.wordmark {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.express {
+  color: var(--color-logo-wordmark-accent);
+}
+
+/* On the narrowest phones the symbol alone leaves room for the account area. */
+@media (max-width: 359px) {
+  .wordmark {
+    display: none;
+  }
+}
+
+@media (min-width: 960px) {
+  .wordmark {
+    font-size: var(--font-size-xl);
+  }
+}

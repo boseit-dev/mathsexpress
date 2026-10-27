@@ -1,0 +1,23 @@
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background-color: var(--color-brand-pale);
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1;
+  user-select: none;
+}
+
+.small {
+  inline-size: var(--size-avatar-sm);
+  block-size: var(--size-avatar-sm);
+  font-size: var(--font-size-xs);
+}
+
+.medium {
+  inline-size: var(--size-avatar-md);
+  block-size: var(--size-avatar-md);
+  font-size: var(--font-size-sm);
+}

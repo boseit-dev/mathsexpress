@@ -1,0 +1,23 @@
+.plus,
+.smile {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4.5;
+}
+
+.plus {
+  stroke: var(--color-logo-blue);
+}
+
+.dot {
+  fill: var(--color-logo-violet);
+}
+
+.gradientStart {
+  stop-color: var(--color-logo-blue);
+}
+
+.gradientEnd {
+  stop-color: var(--color-logo-violet);
+}

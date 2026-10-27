@@ -1,0 +1,47 @@
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface-subtle);
+}
+
+.stat dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.stat dd {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.nextBadge {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.badgeName {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.badgeDescription,
+.badgeProgress {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}

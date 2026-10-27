@@ -1,0 +1,31 @@
+.art {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.grid {
+  fill: none;
+  stroke: var(--color-on-brand-track);
+  stroke-width: 1;
+}
+
+.axis {
+  fill: none;
+  stroke: var(--color-text-inverse);
+  stroke-linecap: round;
+  stroke-width: 2;
+  opacity: 0.6;
+}
+
+.curve {
+  fill: none;
+  stroke: var(--color-text-inverse);
+  stroke-linecap: round;
+  stroke-width: 4;
+}
+
+.root {
+  fill: var(--color-coin);
+  stroke: var(--color-text-inverse);
+  stroke-width: 3;
+}

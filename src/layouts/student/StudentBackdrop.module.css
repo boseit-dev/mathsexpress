@@ -1,0 +1,67 @@
+/* Fixed behind everything on student pages; purely decorative. */
+.backdrop {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  pointer-events: none;
+}
+
+.skyTop {
+  stop-color: var(--color-backdrop-sky-top);
+}
+
+.skyBottom {
+  stop-color: var(--color-backdrop-sky-bottom);
+}
+
+.glowSoft {
+  fill: var(--color-brand-soft);
+  opacity: 0.35;
+}
+
+.glowBright {
+  fill: var(--color-brand-secondary);
+  opacity: 0.16;
+}
+
+.grid {
+  fill: none;
+  stroke: var(--color-brand-primary);
+  stroke-width: 1;
+  opacity: 0.05;
+}
+
+.curve {
+  fill: none;
+  stroke: var(--color-brand-secondary);
+  stroke-dasharray: 2 14;
+  stroke-linecap: round;
+  stroke-width: 4;
+  opacity: 0.35;
+}
+
+.shape {
+  fill: none;
+  stroke: var(--color-brand-secondary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 5;
+  opacity: 0.3;
+}
+
+.hillBack {
+  fill: var(--color-brand-soft);
+  opacity: 0.55;
+}
+
+.hillMiddle {
+  fill: var(--color-brand-muted);
+  opacity: 0.4;
+}
+
+.hillFront {
+  fill: var(--color-brand-secondary);
+  opacity: 0.3;
+}

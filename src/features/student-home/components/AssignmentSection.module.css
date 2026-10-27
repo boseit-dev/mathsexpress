@@ -1,0 +1,26 @@
+/* Columns follow the panel's width, not the window's: the sidebar changes how wide it is. */
+.cards {
+  container-type: inline-size;
+}
+
+.list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+@container (min-width: 25rem) {
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 38rem) {
+  .list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.empty {
+  color: var(--color-text-secondary);
+}

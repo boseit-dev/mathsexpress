@@ -1,0 +1,70 @@
+.disc {
+  fill: var(--color-on-brand-subtle);
+}
+
+.cardShadow {
+  fill: var(--color-hero-shadow);
+}
+
+.card {
+  fill: var(--color-surface);
+}
+
+.gridLines {
+  fill: none;
+  stroke: var(--color-brand-pale);
+  stroke-width: 1.5;
+}
+
+.axes {
+  fill: none;
+  stroke: var(--color-brand-soft);
+  stroke-linecap: round;
+  stroke-width: 2;
+}
+
+.curve {
+  fill: none;
+  stroke: var(--color-brand-primary);
+  stroke-linecap: round;
+  stroke-width: 4;
+}
+
+.point {
+  fill: var(--color-brand-secondary);
+  stroke: var(--color-surface);
+  stroke-width: 3;
+}
+
+.tile {
+  fill: var(--color-brand-secondary);
+}
+
+.tileText {
+  fill: var(--color-text-inverse);
+  /* SVG user units: scales with the artwork, not the page text. */
+  font-size: 22px;
+  font-weight: var(--font-weight-bold);
+}
+
+.triangle {
+  fill: var(--color-brand-soft);
+}
+
+.coinRim {
+  fill: var(--color-coin-edge);
+}
+
+.coinFace {
+  fill: var(--color-coin);
+}
+
+.coinMark {
+  fill: none;
+  stroke: var(--color-coin-edge);
+  stroke-width: 1.5;
+}
+
+.sparkle {
+  fill: var(--color-text-inverse);
+}

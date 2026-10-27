@@ -1,0 +1,53 @@
+#!/bin/sh
+# Runs before every push. Blocks pushes that could damage the live site or rewrite history,
+# scans the pushed commits for credentials, then runs the full check suite so broken code
+# never reaches GitHub.
+set -eu
+
+zero_sha=0000000000000000000000000000000000000000
+head_commit=$(git rev-parse HEAD)
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/main | refs/heads/legacy-v11 | refs/tags/v11.*)
+      # main only changes for an approved release; legacy-v11 and the v11 tags are permanent backups.
+      if [ "${MATHSEXPRESS_ALLOW_PROTECTED_PUSH:-}" != "1" ]; then
+        echo "pre-push: refusing to push to $remote_ref without release approval (see CLAUDE.md)." >&2
+        exit 1
+      fi
+      ;;
+  esac
+
+  if [ "$local_sha" = "$zero_sha" ]; then
+    echo "pre-push: refusing to delete $remote_ref." >&2
+    exit 1
+  fi
+
+  if [ "$remote_sha" != "$zero_sha" ] && ! git merge-base --is-ancestor "$remote_sha" "$local_sha" 2>/dev/null; then
+    echo "pre-push: $remote_ref has commits that are not in $local_ref." >&2
+    echo "pre-push: fetch and merge first; force-pushing is not allowed." >&2
+    exit 1
+  fi
+
+  # The checks below run on the checked-out commit, so that is the only commit that may be pushed.
+  if [ "$(git rev-parse "$local_sha^{commit}")" != "$head_commit" ]; then
+    echo "pre-push: $local_ref is not the checked-out commit." >&2
+    echo "pre-push: check it out first so the checks test exactly what is pushed." >&2
+    exit 1
+  fi
+
+  # Scan every commit being pushed, so a secret added and then deleted is still caught.
+  if [ "$remote_sha" = "$zero_sha" ]; then
+    node scripts/check-secrets.ts --commits "$local_sha" --not --remotes </dev/null
+  else
+    node scripts/check-secrets.ts --commits "$remote_sha..$local_sha" </dev/null
+  fi
+done
+
+# The checks run on the working tree, so it must match the commit being pushed.
+if [ -n "$(git status --porcelain)" ]; then
+  echo "pre-push: commit or stash your changes first so the checks test exactly what is pushed." >&2
+  exit 1
+fi
+
+npm run --silent check

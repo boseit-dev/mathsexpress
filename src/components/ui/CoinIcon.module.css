@@ -1,0 +1,9 @@
+.face {
+  fill: var(--color-coin);
+  stroke: var(--color-coin-edge);
+}
+
+.mark {
+  fill: none;
+  stroke: var(--color-coin-edge);
+}

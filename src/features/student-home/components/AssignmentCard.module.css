@@ -1,0 +1,167 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  block-size: 100%;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Artwork header with the task type. */
+.art {
+  position: relative;
+  block-size: 7rem;
+}
+
+.homework {
+  background-color: var(--color-art-homework);
+}
+
+.quiz {
+  background-color: var(--color-art-quiz);
+}
+
+.practice {
+  background-color: var(--color-art-practice);
+}
+
+.revision {
+  background-color: var(--color-art-revision);
+}
+
+.kindChip {
+  position: absolute;
+  inset-block-start: var(--space-3);
+  inset-inline-start: var(--space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.kindChip svg {
+  inline-size: var(--size-icon-xs);
+  block-size: var(--size-icon-xs);
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.title {
+  font-size: var(--font-size-md);
+  line-height: var(--line-height-snug);
+}
+
+.topic,
+.progressText {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.progressRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-start: var(--space-2);
+}
+
+.bar {
+  flex: 1;
+}
+
+.reward {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  background-color: var(--color-coin-surface);
+  font-size: var(--font-size-xs);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-block-start: auto;
+  padding-block-start: var(--space-2);
+}
+
+.dueChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dueChip svg {
+  inline-size: var(--size-icon-xs);
+  block-size: var(--size-icon-xs);
+}
+
+.overdue {
+  background-color: var(--color-danger-surface);
+  color: var(--color-danger);
+}
+
+.soon {
+  background-color: var(--color-warning-surface);
+  color: var(--color-warning);
+}
+
+.upcoming {
+  background-color: var(--color-brand-pale);
+  color: var(--color-text-brand);
+}
+
+/* Completed tasks: a dark card, so finished work stands apart from work still to do. */
+.completed {
+  --color-focus: var(--color-text-inverse);
+
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-color: transparent;
+  background-color: var(--color-surface-inverse);
+  color: var(--color-text-inverse);
+}
+
+.completed .kindChip {
+  position: static;
+  align-self: flex-start;
+}
+
+.completedDate {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.completedTitle {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-snug);
+}
+
+.completedMessage {
+  align-self: stretch;
+  margin-block-start: auto;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}

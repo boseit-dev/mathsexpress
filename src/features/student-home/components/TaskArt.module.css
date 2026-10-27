@@ -1,0 +1,67 @@
+.art {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.paper {
+  fill: var(--color-surface);
+  stroke: var(--color-brand-soft);
+  stroke-width: 2;
+}
+
+.line {
+  fill: none;
+  stroke: var(--color-brand-soft);
+  stroke-linecap: round;
+  stroke-width: 4;
+}
+
+.tick {
+  fill: none;
+  stroke: var(--color-brand-primary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3.5;
+}
+
+.box {
+  fill: var(--color-surface);
+  stroke: var(--color-brand-secondary);
+  stroke-width: 2.5;
+}
+
+.primary {
+  fill: var(--color-brand-primary);
+}
+
+.secondary {
+  fill: var(--color-brand-secondary);
+}
+
+.soft {
+  fill: var(--color-brand-soft);
+}
+
+.white {
+  fill: var(--color-surface);
+}
+
+.coin {
+  fill: var(--color-coin);
+}
+
+.arrow {
+  fill: none;
+  stroke: var(--color-brand-primary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 5;
+}
+
+.dash {
+  fill: none;
+  stroke: var(--color-success);
+  stroke-dasharray: 1 9;
+  stroke-linecap: round;
+  stroke-width: 4;
+}

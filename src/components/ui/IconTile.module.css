@@ -1,0 +1,62 @@
+.tile {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+}
+
+.small {
+  inline-size: var(--size-tile-sm);
+  block-size: var(--size-tile-sm);
+  border-radius: var(--radius-sm);
+}
+
+.small svg {
+  inline-size: var(--size-icon-sm);
+  block-size: var(--size-icon-sm);
+}
+
+.medium {
+  inline-size: var(--size-tile-md);
+  block-size: var(--size-tile-md);
+}
+
+.medium svg {
+  inline-size: var(--size-icon-md);
+  block-size: var(--size-icon-md);
+}
+
+.large {
+  inline-size: var(--size-tile-lg);
+  block-size: var(--size-tile-lg);
+}
+
+.large svg {
+  inline-size: var(--size-icon-lg);
+  block-size: var(--size-icon-lg);
+}
+
+.brand {
+  background-color: var(--color-brand-pale);
+  color: var(--color-brand-primary);
+}
+
+.solid {
+  background-color: var(--color-brand-primary);
+  color: var(--color-text-inverse);
+}
+
+.success {
+  background-color: var(--color-success-surface);
+  color: var(--color-success);
+}
+
+.warning {
+  background-color: var(--color-warning-surface);
+  color: var(--color-warning);
+}
+
+.coin {
+  background-color: var(--color-coin-surface);
+  color: var(--color-coin-edge);
+}

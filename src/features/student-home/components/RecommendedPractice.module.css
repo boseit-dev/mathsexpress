@@ -1,0 +1,162 @@
+.cards {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.topicArt {
+  block-size: 7rem;
+  background-color: var(--color-brand-primary);
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.strand {
+  color: var(--color-text-brand);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.cardTitle {
+  font-size: var(--font-size-lg);
+  line-height: var(--line-height-snug);
+}
+
+.reason,
+.meta {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin-block-end: var(--space-2);
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.metaItem svg {
+  inline-size: var(--size-icon-sm);
+  block-size: var(--size-icon-sm);
+}
+
+.action {
+  margin-block-start: auto;
+}
+
+/* "Quick review" card: a blue header like a revision flash card. */
+.reviewHeader {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-1);
+  min-block-size: 7rem;
+  padding: var(--space-4);
+  background-color: var(--color-art-quiz);
+}
+
+.reviewTitle {
+  color: var(--color-text-brand);
+  font-size: var(--font-size-lg);
+}
+
+.reviewCount {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.mistakes {
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+}
+
+.mistake {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-block: var(--space-3);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.mistake:first-child {
+  padding-block-start: 0;
+}
+
+.mistake:last-child {
+  padding-block-end: 0;
+  border-block-end: 0;
+}
+
+.question {
+  font-weight: var(--font-weight-semibold);
+}
+
+.answers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  font-size: var(--font-size-sm);
+}
+
+.answer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.answer dt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-text-secondary);
+}
+
+.answer svg {
+  inline-size: var(--size-icon-sm);
+  block-size: var(--size-icon-sm);
+}
+
+.given svg {
+  color: var(--color-danger);
+}
+
+.correct svg {
+  color: var(--color-success);
+}
+
+.correct dd {
+  font-weight: var(--font-weight-semibold);
+}
+
+.empty {
+  color: var(--color-text-secondary);
+}

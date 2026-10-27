@@ -1,0 +1,17 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100vh;
+}
+
+.main {
+  flex: 1;
+  inline-size: min(100%, var(--layout-max-width));
+  margin-inline: auto;
+  padding: var(--space-6) var(--layout-gutter) var(--space-12);
+}
+
+/* Focus is moved here after navigation; the outline would only add noise around the page. */
+.main:focus {
+  outline: none;
+}
