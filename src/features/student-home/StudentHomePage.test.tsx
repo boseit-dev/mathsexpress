@@ -25,7 +25,9 @@ describe('student home page', () => {
     expect(banner).toHaveTextContent('Year 9 · 9M2 Mathematics');
     expect(banner).toHaveTextContent('You have 2 tasks to finish, and 1 is overdue.');
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
-    expect(document.title).toBe('Home · MathsExpress');
+    await waitFor(() => {
+      expect(document.title).toBe('Home · MathsExpress');
+    });
   });
 
   it('keeps Continue learning prominent and working', async () => {
@@ -54,11 +56,20 @@ describe('student home page', () => {
     const [overdue, inProgress, completed] = cards as [HTMLElement, HTMLElement, HTMLElement];
     expect(overdue).toHaveTextContent('Overdue · was due yesterday');
     expect(overdue).toHaveTextContent('Not started');
+    expect(
+      within(overdue).getByRole('link', { name: 'Start Surface area revision' }),
+    ).toBeVisible();
     expect(inProgress).toHaveTextContent('Due tomorrow');
     expect(inProgress).toHaveTextContent('In progress');
     expect(inProgress).toHaveTextContent('Reward: +60 coins');
+    expect(
+      within(inProgress).getByRole('link', { name: 'Continue Solving linear equations' }),
+    ).toHaveAttribute('href', '/student/learn');
     expect(completed).toHaveTextContent('Completed 27 Oct');
-    expect(completed).toHaveTextContent('Well done! You earned 42 coins.');
+    expect(completed).toHaveTextContent('42 coins earned');
+    expect(
+      within(completed).getByRole('link', { name: 'Review Pythagoras’ theorem quiz' }),
+    ).toBeVisible();
     expect(within(tasks).getByRole('link', { name: 'View all 5 tasks' })).toHaveAttribute(
       'href',
       '/student/class/tasks',

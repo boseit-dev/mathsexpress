@@ -63,8 +63,10 @@ describe('student layout', () => {
       'page',
     );
     expect(within(nav).getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
-    expect(screen.getByRole('main')).toHaveFocus();
-    expect(document.title).toBe('Learn · MathsExpress');
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveFocus();
+      expect(document.title).toBe('Learn · MathsExpress');
+    });
   });
 
   it('shows the student’s coin balance and avatar', async () => {
@@ -175,10 +177,12 @@ describe('errors', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Something went wrong' }),
     ).toBeVisible();
-    expect(consoleError).toHaveBeenCalledWith(
-      'MathsExpress could not show this page:',
-      expect.any(Error),
-    );
+    await waitFor(() => {
+      expect(consoleError).toHaveBeenCalledWith(
+        'MathsExpress could not show this page:',
+        expect.any(Error),
+      );
+    });
 
     await user.click(screen.getByRole('button', { name: 'Try again' }));
 

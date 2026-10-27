@@ -36,12 +36,13 @@ Phase 1: project foundation and student homepage.
   loading screen and favicon.
 - Student home page, laid out like the agreed reference: a full-width welcome banner with a
   personalised greeting, task summary, "pick up where you left off" progress and a prominent
-  Continue learning button; assigned task cards (artwork, type, due date, progress, coin reward,
-  not started / in progress / overdue / done states) with View all; recommended practice with a
+  Continue learning button; assigned tasks as compact MathsExpress task strips (progress ring,
+  original task-type icons, due date, coin reward, status, and a Start, Continue or Review button;
+  completed tasks in pale lavender with a check) with View all; recommended practice with a
   quick review of recent mistakes; learning progress (topics, questions, accuracy, streak); and a
   right-hand column with the class leaderboard, coin shop, daily challenges and rewards.
-- Original illustrations: the welcome-banner graph, task and topic card artwork, and a
-  scenery backdrop for student pages in the brand colours.
+- Original illustrations and icons: the welcome-banner graph, topic card artwork, task-type
+  icons, and a scenery backdrop for student pages, all in the Metallic Chic brand palette.
 - Development sample data for the home page, generated relative to today's date, clearly labelled
   and kept consistent by tests.
 - The home page reloads its data when you return to the tab and at midnight, so due dates,

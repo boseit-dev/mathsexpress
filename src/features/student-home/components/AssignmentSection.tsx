@@ -7,7 +7,7 @@ import { formatCount } from '@/lib/format';
 import { AssignmentCard } from './AssignmentCard';
 import styles from './AssignmentSection.module.css';
 
-/** How many tasks the home page shows before "View all": one row on wide screens. */
+/** How many tasks the home page shows before "View all". */
 const HOME_TASK_LIMIT = 3;
 
 interface AssignmentSectionProps {
@@ -35,15 +35,13 @@ export function AssignmentSection({ assignments, now }: AssignmentSectionProps) 
           Your teacher hasn’t set any tasks yet. They’ll appear here when they do.
         </p>
       ) : (
-        <div className={styles.cards}>
-          <ul role="list" className={styles.list}>
-            {shown.map((assignment) => (
-              <li key={assignment.id}>
-                <AssignmentCard assignment={assignment} now={now} />
-              </li>
-            ))}
-          </ul>
-        </div>
+        <ul role="list" className={styles.list}>
+          {shown.map((assignment) => (
+            <li key={assignment.id}>
+              <AssignmentCard assignment={assignment} now={now} />
+            </li>
+          ))}
+        </ul>
       )}
     </Panel>
   );
