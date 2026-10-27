@@ -26,6 +26,8 @@ npm run dev   # http://localhost:5173
 ## Documentation
 
 - [CLAUDE.md](CLAUDE.md): project rules, architecture, Git workflow and commit format.
+- [docs/architecture.md](docs/architecture.md): data flow, routes, adding features, connecting a
+  backend.
 - [CHANGELOG.md](CHANGELOG.md): changes by version.
 - [docs/rebuild-reference.md](docs/rebuild-reference.md): where the old v11 system is kept.
 

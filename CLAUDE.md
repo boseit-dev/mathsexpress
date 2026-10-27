@@ -6,10 +6,12 @@ It overrides habits and defaults. If an instruction from the user conflicts with
 
 ## Status
 
-- **Phase 1** (current): project foundation, design system, top navigation layouts and the student
-  homepage, all running on clearly labelled development sample data.
+- **Phase 1** (`2.0.0-alpha.1`): built and awaiting the user's review. It covers the project
+  foundation, design system, student and teacher layouts with top navigation, and the student
+  homepage, all on clearly labelled development sample data.
 - Not built yet: authentication, backend/API, database access, learning engine, textbook,
-  teacher tools, shop purchases. Nav destinations for unbuilt areas show the "planned section" page.
+  teacher tools, shop purchases. Nav destinations for unbuilt areas show the "planned section" page
+  (the full route list is in `docs/architecture.md`).
 - Never start the next phase until the user has reviewed and approved the current one.
 
 ## Production safety: never break these
@@ -119,11 +121,13 @@ Co-Authored-By: <trailer provided by the session>
 Stack: React 19, TypeScript 6 (strict), Vite 8, React Router 8 (data router), CSS Modules with
 design tokens, Vitest with Testing Library and axe-core, ESLint 9 and Prettier. Hosting: a
 Cloudflare Worker serving the built static files (`wrangler.jsonc`, SPA fallback); API routes will
-be added to that Worker under `/api/*`, with Supabase as the database.
+be added to that Worker under `/api/*`, with Supabase as the database. `docs/architecture.md`
+explains the data flow, the route list, how to add a feature and how to connect a backend.
 
 ```text
 src/
-  app/            router, route table, app-level pages (not found, route errors, planned sections)
+  app/            router, route table, RootLayout (focus after navigation, scroll restoration),
+                  app-level pages (not found, route errors, planned sections)
   layouts/        StudentLayout, TeacherLayout, AppHeader, navigation, brand, dev-preview notice
   features/<x>/   one folder per feature: page, route loader, feature components and their tests
   components/ui/  shared design-system primitives (Button, Panel, ProgressBar, ...)
@@ -169,11 +173,26 @@ Rules:
   Textbook | Class | More. Teacher: Home | Classes | Tasks | Reports | More.
 - Clean, minimal, original, and not a generic AI-generated dashboard. No decorative animation.
 - Must work on desktop, tablet and mobile (check 1280px, 768px and 375px).
+- Logo: the owner's MathsExpress logo (blue plus and violet dot over a smile; "Maths" navy,
+  "Express" violet), drawn in `src/layouts/BrandMark.tsx`. Its colours are the `--color-logo-*`
+  tokens and are used for the logo only. It was recreated from a screenshot; if the owner provides
+  the original artwork file, replace the drawing with it.
+- Student home layout follows the owner's reference dashboard: a full-width welcome banner, a row
+  of task cards with "View all", recommended practice and progress on the left, and the class
+  leaderboard, coin shop, daily challenges and rewards on the right. Desktop navigation is text
+  links; phones and tablets use icon tabs. All artwork must be original (never copy another
+  product's illustrations, mascots or branding).
+- Card grids size themselves from their panel with container queries, so layouts hold at every
+  width, including just after the sidebar appears.
 
 ## Accessibility and quality
 
 - Semantic HTML and landmarks, one `h1` per page, a skip link, a page title per route.
 - Everything works with the keyboard and shows a visible focus ring. Text contrast at least 4.5:1.
+- After in-app navigation, focus moves to `<main id="main-content">` (handled once, in
+  `src/app/RootLayout.tsx` and `mainContentFocus.ts`); new pages need nothing extra.
+- Small text on coloured, gradient or translucent backgrounds needs an opaque backing that keeps
+  4.5:1. axe-core cannot measure contrast in jsdom, so check contrast in the browser.
 - Progress bars, icons-only controls and status colours have text equivalents.
 - Respect `prefers-reduced-motion`.
 
@@ -181,6 +200,8 @@ Rules:
 
 - Unit tests for domain and lib logic; component tests (Testing Library) for rendering, states and
   interactions; axe-core checks for layouts and pages. Tests sit next to the code as `*.test.ts(x)`.
+- Page tests use `renderApp(path)` (`src/test/renderApp.tsx`), which runs the real route table on
+  sample data with the time fixed at `TEST_NOW`; tests run in the Australia/Sydney time zone.
 - Never claim something works without running it. Interactive features count as done only when
   they have been exercised in a test or in the browser.
 
