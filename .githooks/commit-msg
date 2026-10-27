@@ -1,0 +1,3 @@
+#!/bin/sh
+# Rejects commit messages that don't follow the format in CLAUDE.md ("Commit messages").
+exec node scripts/check-commit-message.ts "$1"

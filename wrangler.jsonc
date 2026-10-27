@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // MathsExpress 2.0 development Worker. The live site is the separate "mathsexpress" Worker,
+  // which this project must not deploy to until the user approves the release (see CLAUDE.md).
+  "name": "mathsexpress-v2",
+  "compatibility_date": "2026-10-20",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application",
+  },
+}

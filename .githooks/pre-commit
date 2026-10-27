@@ -1,0 +1,5 @@
+#!/bin/sh
+# Fast checks on every commit: no credentials, then formatting, lint and types.
+set -eu
+node scripts/check-secrets.ts --staged
+npm run --silent check:quick

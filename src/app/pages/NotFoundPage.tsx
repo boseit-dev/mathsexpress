@@ -1,0 +1,8 @@
+export function NotFoundPage() {
+  return (
+    <main>
+      <h1>Page not found</h1>
+      <p>We couldn’t find the page you were looking for.</p>
+    </main>
+  );
+}
