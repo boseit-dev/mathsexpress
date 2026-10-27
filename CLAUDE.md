@@ -6,9 +6,11 @@ It overrides habits and defaults. If an instruction from the user conflicts with
 
 ## Status
 
-- **Phase 1** (`2.0.0-alpha.1`): built and awaiting the user's review. It covers the project
+- **Phase 1** (`2.0.0-alpha.1`): approved and merged into `main`. It covers the project
   foundation, design system, student and teacher layouts with top navigation, and the student
   homepage, all on clearly labelled development sample data.
+- **Phase 2** (in progress): assignment-card redesign, then authentication, student and teacher
+  accounts, and class management.
 - Not built yet: authentication, backend/API, database access, learning engine, textbook,
   teacher tools, shop purchases. Nav destinations for unbuilt areas show the "planned section" page
   (the full route list is in `docs/architecture.md`).
@@ -32,11 +34,11 @@ It overrides habits and defaults. If an instruction from the user conflicts with
 
 Repository: `boseit-dev/mathsexpress` (public). One repository only; never create another.
 
-| Ref                          | Purpose                                                                           |
-| ---------------------------- | --------------------------------------------------------------------------------- |
-| `mathsexpress-v2`            | All MathsExpress 2.0 development. Commit and push here.                           |
-| `main`                       | Still the old v11 code. Replaced by 2.0 only after the user approves the release. |
-| `legacy-v11`, tag `v11.5.35` | Permanent backup of the original project. Never move, rewrite or delete.          |
+| Ref                          | Purpose                                                                                     |
+| ---------------------------- | ------------------------------------------------------------------------------------------- |
+| `mathsexpress-v2`            | All MathsExpress 2.0 development. Commit and push here.                                     |
+| `main`                       | MathsExpress 2.0 as last approved; GitHub's default branch. Updated only by pull request.   |
+| `legacy-v11`, tag `v11.5.35` | The original v11.5.35, exactly as it runs on the live site. Permanent backup; never change. |
 
 GitHub rulesets enforce this on the server for everyone, admins included: `main` and `legacy-v11`
 cannot be force-pushed or deleted ("Protect main and legacy-v11"), and `v11.*` tags cannot be moved
@@ -69,9 +71,15 @@ tags; bypass hooks with `--no-verify`; push code that fails checks; set
 instruction only); deploy to production without approval. If GitHub authentication fails, ask the
 user to run `gh auth login` once; never ask for tokens in chat.
 
-**Release (only after the user approves 2.0):** open a pull request from `mathsexpress-v2` into
-`main` and merge it normally so all history is preserved. Then deploy with approval, after renaming
-the Worker in `wrangler.jsonc` as part of the agreed release plan.
+**Updating `main`** (after the user approves a phase or asks for it): open a pull request from
+`mathsexpress-v2` into `main`, wait for CI to pass, and merge it with a merge commit (never squash,
+rebase or force). Then fast-forward `mathsexpress-v2` to `main` (`git merge --ff-only origin/main`)
+and push it. Never push to `main` directly.
+
+**Deploying is separate from `main`.** Nothing deploys automatically from any branch. The live site
+keeps running v11.5.35 until the user approves replacing it; that release is a separate, agreed
+step that includes changing the Worker name in `wrangler.jsonc` (a test guards it until then). If
+the live v11 site ever needs a fix, branch from `legacy-v11` and deploy only with approval.
 
 ### Commit messages
 

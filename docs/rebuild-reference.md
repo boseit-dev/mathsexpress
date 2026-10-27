@@ -6,6 +6,7 @@ code in wholesale.
 ## In this repository
 
 - Tag `v11.5.35` and branch `legacy-v11`: the complete original project, exactly as it runs live.
+  (`main` held this code until MathsExpress 2.0 was merged into it on 28 October 2026.)
   Browse with `git show v11.5.35:<path>` or check out `legacy-v11` in a separate worktree.
 
 ## Live systems (do not change; see "Production safety" in CLAUDE.md)
