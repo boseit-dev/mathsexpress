@@ -10,5 +10,5 @@
 
 .mark {
   inline-size: var(--size-tile-lg);
-  block-size: var(--size-tile-lg);
+  block-size: auto;
 }
