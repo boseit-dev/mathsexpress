@@ -9,14 +9,11 @@
   overflow: hidden;
   border-radius: var(--radius-xl);
   background-color: var(--color-brand-primary);
+  /* Graph-paper grid only: white text on it stays above 6:1. */
   background-image:
-    radial-gradient(circle at 85% 15%, var(--color-hero-glow), transparent 55%),
     linear-gradient(var(--color-hero-grid) 1px, transparent 1px),
     linear-gradient(90deg, var(--color-hero-grid) 1px, transparent 1px);
-  background-size:
-    auto,
-    var(--size-hero-grid) var(--size-hero-grid),
-    var(--size-hero-grid) var(--size-hero-grid);
+  background-size: var(--size-hero-grid) var(--size-hero-grid);
   box-shadow: var(--shadow-lg);
   color: var(--color-text-inverse);
 }
@@ -32,7 +29,7 @@
 .classLabel {
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
-  background-color: var(--color-on-brand-subtle);
+  background-color: var(--color-brand-primary-active);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
 }
@@ -63,7 +60,7 @@
   max-inline-size: 24rem;
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-lg);
-  background-color: var(--color-on-brand-subtle);
+  background-color: var(--color-brand-primary-active);
 }
 
 .nextUpLabel,
@@ -88,6 +85,15 @@
   .banner {
     grid-template-columns: minmax(0, 1fr) auto;
     padding: var(--space-8);
+    /* A soft glow behind the artwork, sized to fade out before the text column. */
+    background-image:
+      radial-gradient(circle 14rem at 92% 18%, var(--color-hero-glow), transparent 65%),
+      linear-gradient(var(--color-hero-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-hero-grid) 1px, transparent 1px);
+    background-size:
+      auto,
+      var(--size-hero-grid) var(--size-hero-grid),
+      var(--size-hero-grid) var(--size-hero-grid);
   }
 
   .continueButton {

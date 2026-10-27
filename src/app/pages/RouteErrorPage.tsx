@@ -4,6 +4,7 @@ import { isRouteErrorResponse, useRevalidator, useRouteError } from 'react-route
 import { Button } from '@/components/ui/Button';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { paths } from '@/config/paths';
+import { requestFocusAfterRetry } from '../mainContentFocus';
 import { MessageLayout } from './MessageLayout';
 import { NotFoundPage } from './NotFoundPage';
 
@@ -25,13 +26,18 @@ export function RouteErrorPage({ homePath = paths.root }: { homePath?: string })
 
   const isRetrying = revalidator.state === 'loading';
 
+  function retry() {
+    requestFocusAfterRetry();
+    void revalidator.revalidate();
+  }
+
   return (
     <MessageLayout
       icon={TriangleAlert}
       title="Something went wrong"
       actions={
         <>
-          <Button onClick={() => void revalidator.revalidate()} disabled={isRetrying}>
+          <Button onClick={retry} disabled={isRetrying}>
             <RefreshCw />
             {isRetrying ? 'Trying again…' : 'Try again'}
           </Button>

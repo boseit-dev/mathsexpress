@@ -37,11 +37,8 @@ export function getGreeting(now: Date): string {
   return 'Good evening';
 }
 
-/** Time left until local midnight, e.g. "8h 30m", for things that reset daily. */
-export function formatTimeUntilMidnight(now: Date): string {
-  const midnight = startOfDay(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
-  const totalMinutes = Math.max(0, Math.ceil((midnight.getTime() - now.getTime()) / 60_000));
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+/** Milliseconds from `now` until the next local midnight, when daily things reset. */
+export function millisecondsUntilMidnight(now: Date): number {
+  const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  return midnight.getTime() - now.getTime();
 }

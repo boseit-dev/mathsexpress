@@ -1,8 +1,11 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+import type { StudentRepository } from '@/data/repositories';
+import { createSampleStudentRepository } from '@/data/sample/sampleStudentRepository';
+import { millisecondsUntilMidnight } from '@/lib/dates';
 import { findAccessibilityProblems } from '@/test/axe';
-import { renderApp } from '@/test/renderApp';
+import { renderApp, TEST_NOW } from '@/test/renderApp';
 
 // renderApp uses the sample data with "now" fixed at Wednesday 28 October 2026, 3:30 pm.
 async function renderHome() {
@@ -111,7 +114,7 @@ describe('student home page', () => {
     );
 
     const challenges = section('Daily challenges');
-    expect(challenges).toHaveTextContent('Resets in 8h 30m');
+    expect(challenges).toHaveTextContent('Resets at midnight');
     expect(
       within(challenges).getByRole('progressbar', { name: 'Get 5 correct in a row' }),
     ).toHaveAttribute('aria-valuetext', '5 of 5');
@@ -125,5 +128,48 @@ describe('student home page', () => {
   it('has no detectable accessibility problems', async () => {
     await renderHome();
     expect(await findAccessibilityProblems()).toEqual([]);
+  });
+});
+
+describe('keeping the home page current', () => {
+  function renderCountingHomeLoads() {
+    const repository = createSampleStudentRepository(() => TEST_NOW);
+    const getStudentHome = vi.fn<StudentRepository['getStudentHome']>((options) =>
+      repository.getStudentHome(options),
+    );
+    renderApp('/student', { studentRepository: { ...repository, getStudentHome } });
+    return getStudentHome;
+  }
+
+  it('reloads the data when the student returns to the tab', async () => {
+    const getStudentHome = renderCountingHomeLoads();
+    await screen.findByRole('heading', { level: 1 });
+    expect(getStudentHome).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+
+    await waitFor(() => {
+      expect(getStudentHome).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it('reloads the data at midnight', async () => {
+    const setTimeoutSpy = vi.spyOn(window, 'setTimeout');
+    const getStudentHome = renderCountingHomeLoads();
+    await screen.findByRole('heading', { level: 1 });
+
+    const midnightCall = setTimeoutSpy.mock.calls.find(
+      ([, delay]) => delay === millisecondsUntilMidnight(TEST_NOW),
+    );
+    expect(midnightCall).toBeDefined();
+    act(() => {
+      (midnightCall?.[0] as () => void)();
+    });
+
+    await waitFor(() => {
+      expect(getStudentHome).toHaveBeenCalledTimes(2);
+    });
   });
 });

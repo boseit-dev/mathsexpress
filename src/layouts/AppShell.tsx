@@ -1,13 +1,10 @@
-import { useRef, type ReactNode } from 'react';
-import { ScrollRestoration } from 'react-router';
+import type { ReactNode } from 'react';
+import { MAIN_CONTENT_ID } from '@/app/mainContentFocus';
 import type { NavItem } from '@/config/navigation';
-import { useFocusOnRouteChange } from '@/hooks/useFocusOnRouteChange';
 import { AppHeader } from './AppHeader';
 import { DevPreviewNotice } from './DevPreviewNotice';
 import { SkipLink } from './SkipLink';
 import styles from './AppShell.module.css';
-
-const MAIN_CONTENT_ID = 'main-content';
 
 interface AppShellProps {
   homePath: string;
@@ -30,9 +27,6 @@ export function AppShell({
   backdrop,
   children,
 }: AppShellProps) {
-  const mainRef = useRef<HTMLElement>(null);
-  useFocusOnRouteChange(mainRef);
-
   return (
     <div className={styles.shell}>
       {backdrop}
@@ -44,10 +38,9 @@ export function AppShell({
         navigationLabel={navigationLabel}
         account={account}
       />
-      <main ref={mainRef} id={MAIN_CONTENT_ID} tabIndex={-1} className={styles.main}>
+      <main id={MAIN_CONTENT_ID} tabIndex={-1} className={styles.main}>
         {children}
       </main>
-      <ScrollRestoration />
     </div>
   );
 }

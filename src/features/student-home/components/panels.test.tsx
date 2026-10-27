@@ -49,7 +49,7 @@ describe('empty states', () => {
   });
 
   it('explains when there are no challenges today', () => {
-    render(<ChallengesPanel challenges={[]} now={NOW} />);
+    render(<ChallengesPanel challenges={[]} />);
     expect(screen.getByText('New challenges appear here every day.')).toBeVisible();
   });
 });

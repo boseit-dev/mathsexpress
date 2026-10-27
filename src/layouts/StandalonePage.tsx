@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { MAIN_CONTENT_ID } from '@/app/mainContentFocus';
 import { paths } from '@/config/paths';
 import { BrandLogo } from './BrandLogo';
 import styles from './StandalonePage.module.css';
@@ -10,7 +11,9 @@ export function StandalonePage({ children }: { children: ReactNode }) {
       <header className={styles.header}>
         <BrandLogo to={paths.root} />
       </header>
-      <main className={styles.main}>{children}</main>
+      <main id={MAIN_CONTENT_ID} tabIndex={-1} className={styles.main}>
+        {children}
+      </main>
     </div>
   );
 }

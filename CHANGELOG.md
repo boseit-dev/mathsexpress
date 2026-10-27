@@ -42,6 +42,8 @@ Phase 1: project foundation and student homepage.
   scenery backdrop for student pages in the brand colours.
 - Development sample data for the home page, generated relative to today's date, clearly labelled
   and kept consistent by tests.
+- The home page reloads its data when you return to the tab and at midnight, so due dates,
+  the greeting and daily challenges stay current on a page left open.
 
 ### Removed
 

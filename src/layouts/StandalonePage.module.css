@@ -17,3 +17,8 @@
   flex: 1;
   padding: var(--space-6) var(--layout-gutter) var(--space-12);
 }
+
+/* Focus is moved here after navigation; the outline would only add noise around the page. */
+.main:focus {
+  outline: none;
+}

@@ -133,6 +133,7 @@
 .completed {
   --color-focus: var(--color-text-inverse);
 
+  align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-4);
   border-color: transparent;
@@ -156,6 +157,7 @@
 }
 
 .completedMessage {
+  align-self: stretch;
   margin-block-start: auto;
   padding: var(--space-3);
   border-radius: var(--radius-md);

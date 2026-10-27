@@ -1,9 +1,10 @@
-import { redirect, type RouteObject } from 'react-router';
+import { Navigate, type RouteObject } from 'react-router';
 import { paths } from '@/config/paths';
 import type { AppDependencies } from '@/data/repositories';
 import { StandalonePage } from '@/layouts/StandalonePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { RouteErrorPage } from './pages/RouteErrorPage';
+import { RootLayout } from './RootLayout';
 import { createStudentRoutes } from './studentRoutes';
 import { createTeacherRoutes } from './teacherRoutes';
 
@@ -11,6 +12,7 @@ import { createTeacherRoutes } from './teacherRoutes';
 export function createRoutes(dependencies: AppDependencies): RouteObject[] {
   return [
     {
+      element: <RootLayout />,
       // Catches anything the layouts can't, e.g. a failure loading the signed-in person.
       errorElement: (
         <StandalonePage>
@@ -20,7 +22,7 @@ export function createRoutes(dependencies: AppDependencies): RouteObject[] {
       children: [
         // Until sign-in exists everyone starts on the student home; later this will send
         // each person to their own role's home page.
-        { index: true, loader: () => redirect(paths.student.home) },
+        { index: true, element: <Navigate to={paths.student.home} replace /> },
         createStudentRoutes(dependencies),
         createTeacherRoutes(dependencies),
         {

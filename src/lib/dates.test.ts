@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   calendarDaysBetween,
   formatShortDate,
-  formatTimeUntilMidnight,
   formatWeekday,
   getGreeting,
+  millisecondsUntilMidnight,
 } from './dates';
 
 // Tests run in Australia/Sydney time (see vite.config.ts). Months are zero-based.
@@ -39,9 +39,12 @@ describe('date formatting', () => {
   });
 });
 
-describe('formatTimeUntilMidnight', () => {
-  it('shows hours and minutes left in the day', () => {
-    expect(formatTimeUntilMidnight(new Date(2026, 9, 28, 15, 30))).toBe('8h 30m');
-    expect(formatTimeUntilMidnight(new Date(2026, 9, 28, 23, 15))).toBe('45m');
+describe('millisecondsUntilMidnight', () => {
+  it('measures to the next local midnight', () => {
+    expect(millisecondsUntilMidnight(new Date(2026, 9, 28, 23, 15))).toBe(45 * 60 * 1000);
+  });
+
+  it('allows for the short day when daylight saving starts (4 October 2026 in NSW)', () => {
+    expect(millisecondsUntilMidnight(new Date(2026, 9, 4, 0, 0))).toBe(23 * 60 * 60 * 1000);
   });
 });

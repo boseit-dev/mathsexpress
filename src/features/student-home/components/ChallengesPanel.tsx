@@ -5,16 +5,14 @@ import { ProgressBar } from '@/components/ui/ProgressBar';
 import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
 import { isChallengeComplete, type DailyChallenge } from '@/domain/rewards';
 import { cx } from '@/lib/cx';
-import { formatTimeUntilMidnight } from '@/lib/dates';
 import styles from './ChallengesPanel.module.css';
 
 interface ChallengesPanelProps {
   challenges: readonly DailyChallenge[];
-  now: Date;
 }
 
 /** Today's challenges with progress and coin rewards. They reset at midnight. */
-export function ChallengesPanel({ challenges, now }: ChallengesPanelProps) {
+export function ChallengesPanel({ challenges }: ChallengesPanelProps) {
   return (
     <Panel
       title="Daily challenges"
@@ -22,7 +20,7 @@ export function ChallengesPanel({ challenges, now }: ChallengesPanelProps) {
       action={
         <p className={styles.reset}>
           <Clock />
-          Resets in {formatTimeUntilMidnight(now)}
+          Resets at midnight
         </p>
       }
     >

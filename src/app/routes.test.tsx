@@ -14,10 +14,23 @@ function linkNames(container: HTMLElement) {
 }
 
 describe('routing', () => {
-  it('sends the root address to the student home', async () => {
+  it('sends the root address to the student home without router warnings', async () => {
+    const consoleWarn = vi.spyOn(console, 'warn');
     const { router } = renderApp('/');
     await waitFor(() => {
       expect(router.state.location.pathname).toBe('/student');
+    });
+    await screen.findByRole('heading', { level: 1 });
+    expect(consoleWarn).not.toHaveBeenCalled();
+  });
+
+  it('moves focus to the new page after "Go to home" on the not-found page', async () => {
+    const user = userEvent.setup();
+    renderApp('/no-such-page');
+    await user.click(await screen.findByRole('link', { name: 'Go to home' }));
+    await screen.findByRole('navigation', { name: 'Student' });
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveFocus();
     });
   });
 
@@ -80,6 +93,26 @@ describe('student layout', () => {
     expect(skipLink).toHaveFocus();
     expect(skipLink).toHaveAttribute('href', '#main-content');
     expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
+  });
+
+  it('moves focus to the new page when switching to the teacher layout', async () => {
+    const user = userEvent.setup();
+    renderApp('/student/learn');
+    await user.click(await screen.findByRole('link', { name: 'View the teacher layout' }));
+    await screen.findByRole('navigation', { name: 'Teacher' });
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveFocus();
+    });
+  });
+
+  it('marks a parent section, not the current page, on pages inside it', async () => {
+    renderApp('/student/class/tasks');
+    const nav = await screen.findByRole('navigation', { name: 'Student' });
+    expect(within(nav).getByRole('link', { name: 'Class' })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+    expect(within(nav).queryByRole('link', { current: 'page' })).not.toBeInTheDocument();
   });
 
   it('keeps the navigation when an address inside the student area does not exist', async () => {
@@ -151,5 +184,9 @@ describe('errors', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Learn' })).toBeVisible();
     expect(getCurrentStudent).toHaveBeenCalledTimes(2);
+    // The pressed button is gone, so focus moves to the reloaded page instead of being lost.
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveFocus();
+    });
   });
 });

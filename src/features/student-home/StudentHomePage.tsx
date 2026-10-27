@@ -1,5 +1,6 @@
 import { countOpenAssignments, selectContinueAssignment } from '@/domain/assignment';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useRefreshWhenStale } from '@/hooks/useRefreshWhenStale';
 import { useCurrentStudent } from '@/layouts/student/useCurrentStudent';
 import { AssignmentSection } from './components/AssignmentSection';
 import { ChallengesPanel } from './components/ChallengesPanel';
@@ -17,6 +18,7 @@ export function StudentHomePage() {
   const student = useCurrentStudent();
   const { home, now } = useStudentHomeData();
   useDocumentTitle('Home');
+  useRefreshWhenStale(now);
 
   return (
     <div className={styles.page}>
@@ -35,7 +37,7 @@ export function StudentHomePage() {
         <div className={styles.sidebar}>
           <LeaderboardPanel entries={home.leaderboard} currentStudentId={student.id} />
           <ShopPanel items={home.featuredShopItems} coinBalance={student.coinBalance} />
-          <ChallengesPanel challenges={home.challenges} now={now} />
+          <ChallengesPanel challenges={home.challenges} />
           <RewardsSummary rewards={home.rewards} />
         </div>
       </div>

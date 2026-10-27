@@ -35,13 +35,15 @@ export function AssignmentSection({ assignments, now }: AssignmentSectionProps) 
           Your teacher hasn’t set any tasks yet. They’ll appear here when they do.
         </p>
       ) : (
-        <ul role="list" className={styles.list}>
-          {shown.map((assignment) => (
-            <li key={assignment.id}>
-              <AssignmentCard assignment={assignment} now={now} />
-            </li>
-          ))}
-        </ul>
+        <div className={styles.cards}>
+          <ul role="list" className={styles.list}>
+            {shown.map((assignment) => (
+              <li key={assignment.id}>
+                <AssignmentCard assignment={assignment} now={now} />
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </Panel>
   );
