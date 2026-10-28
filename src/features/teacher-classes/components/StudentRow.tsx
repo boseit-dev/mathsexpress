@@ -23,7 +23,8 @@ interface StudentRowProps {
 export function StudentRow({ student, className }: StudentRowProps) {
   const name = getFullName(student);
   const formRef = useRef<HTMLFormElement>(null);
-  const yearLevel = useFetcherForm({ formRef });
+  const saveRef = useRef<HTMLButtonElement>(null);
+  const yearLevel = useFetcherForm({ formRef, focusAfterSuccess: saveRef });
   const remove = useFetcherForm({ key: REMOVE_STUDENT_FETCHER });
   const isRemoving =
     remove.isSubmitting && remove.fetcher.formData?.get('studentId') === student.studentId;
@@ -59,6 +60,7 @@ export function StudentRow({ student, className }: StudentRowProps) {
             className={styles.select}
           />
           <SubmitButton
+            ref={saveRef}
             variant="secondary"
             name="intent"
             value="set-year-level"
@@ -80,6 +82,8 @@ export function StudentRow({ student, className }: StudentRowProps) {
             intent="remove-student"
             pending={isRemoving}
             pendingLabel="Removing…"
+            // One removal at a time: they share a fetcher, and a second would cancel the first.
+            disabled={remove.isSubmitting && !isRemoving}
           />
         </remove.fetcher.Form>
       </div>

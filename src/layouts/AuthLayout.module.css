@@ -36,8 +36,12 @@
   }
 }
 
+/* Sits over the backdrop's hills, so it needs its own opaque backing to stay readable. */
 .notice {
   max-inline-size: var(--layout-auth-width);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
   text-align: center;

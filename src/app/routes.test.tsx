@@ -1,9 +1,13 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
 import { AppError } from '@/domain/errors';
 import { findAccessibilityProblems } from '@/test/axe';
-import { createFakeDependencies, createFakeState } from '@/test/fakeDependencies';
+import {
+  createFakeDependencies,
+  createFakeState,
+  endSessionElsewhere,
+} from '@/test/fakeDependencies';
 import { renderApp } from '@/test/renderApp';
 
 function linkNames(container: HTMLElement) {
@@ -37,8 +41,9 @@ describe('where people start', () => {
     const account = state.accounts.get('mia@example.test');
     if (account) account.profile = null;
     const { router } = renderApp('/', { state });
+    // Signed in with a password, so they're first asked to prove the email address is theirs.
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Welcome to MathsExpress' }),
+      await screen.findByRole('heading', { level: 1, name: 'Confirm it’s you' }),
     ).toBeVisible();
     expect(router.state.location.pathname).toBe('/welcome');
   });
@@ -173,10 +178,12 @@ describe('account menu and signing out', () => {
   });
 
   it('leaves protected pages when the session ends in another tab', async () => {
-    const { dependencies, router } = renderApp('/student/learn');
+    const { state, router } = renderApp('/student/learn');
     await screen.findByRole('heading', { level: 1, name: 'Learn' });
 
-    await dependencies.auth.signOut();
+    act(() => {
+      endSessionElsewhere(state);
+    });
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
     expect(router.state.location.search).toBe('?redirectTo=%2Fstudent%2Flearn');
@@ -219,6 +226,40 @@ describe('errors', () => {
     await waitFor(() => {
       expect(screen.getByRole('main')).toHaveFocus();
     });
+  });
+
+  it('moves focus to the page after "Go to home" on an error shown at the same address', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const state = createFakeState();
+    const realClasses = createFakeDependencies(state).classes;
+    const listMyClasses = vi
+      .fn<typeof realClasses.listMyClasses>()
+      .mockRejectedValueOnce(new AppError('network'))
+      .mockImplementation((options) => realClasses.listMyClasses(options));
+    renderApp('/student', { state, overrides: { classes: { ...realClasses, listMyClasses } } });
+
+    await user.click(await screen.findByRole('link', { name: 'Go to home' }));
+    expect(await screen.findByRole('heading', { level: 1, name: /Mia/ })).toBeVisible();
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveFocus();
+    });
+  });
+
+  it('opens pages that don’t show classes even when loading the classes fails', async () => {
+    const user = userEvent.setup();
+    const state = createFakeState();
+    const realClasses = createFakeDependencies(state).classes;
+    const listMyClasses = vi
+      .fn<typeof realClasses.listMyClasses>()
+      .mockImplementationOnce((options) => realClasses.listMyClasses(options))
+      .mockRejectedValue(new AppError('network'));
+    renderApp('/student', { state, overrides: { classes: { ...realClasses, listMyClasses } } });
+    await screen.findByRole('heading', { level: 1, name: /Mia/ });
+
+    await user.click(screen.getByRole('link', { name: 'Learn' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Learn' })).toBeVisible();
+    expect(screen.getByRole('navigation', { name: 'Student' })).toBeVisible();
   });
 
   it('shows an error page whose Try again button reloads the data', async () => {

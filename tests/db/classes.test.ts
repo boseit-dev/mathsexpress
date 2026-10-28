@@ -213,6 +213,140 @@ describe('what students can see and do', () => {
   });
 });
 
+describe('leaving and rejoining', () => {
+  async function setLevel(teacher: TestUser, classId: string, student: TestUser, level: number) {
+    const { error } = await teacher.client.rpc('set_student_year_level', {
+      class_id: classId,
+      student_id: student.id,
+      year_level: level,
+    });
+    if (error) throw error;
+  }
+
+  it('keeps the year level the teacher set when a student leaves and rejoins', async () => {
+    const teacher = await createTeacher();
+    const created = await createClass(teacher, 'Rejoin class', 9);
+    const student = await createStudent();
+    await student.client.rpc('join_class', { code: created.join_code });
+    await setLevel(teacher, created.id, student, 7);
+
+    expect((await student.client.rpc('leave_class', { class_id: created.id })).error).toBeNull();
+    const rejoined = await student.client.rpc('join_class', { code: created.join_code });
+    expect(rejoined.error).toBeNull();
+    expect(rejoined.data?.my_year_level).toBe(7);
+    expect((await roster(teacher, created.id))[0]?.year_level).toBe(7);
+  });
+
+  it('keeps the teacher’s year level when a removed student rejoins', async () => {
+    const teacher = await createTeacher();
+    const created = await createClass(teacher, 'Removed class', 9);
+    const student = await createStudent();
+    await student.client.rpc('join_class', { code: created.join_code });
+    await setLevel(teacher, created.id, student, 11);
+    await teacher.client.rpc('remove_student', { class_id: created.id, student_id: student.id });
+
+    await student.client.rpc('join_class', { code: created.join_code });
+    expect((await myClasses(student))[0]?.my_year_level).toBe(11);
+  });
+
+  it('gives a returning student on the class level the class’s current level', async () => {
+    const teacher = await createTeacher();
+    const created = await createClass(teacher, 'Moving class', 9);
+    const student = await createStudent();
+    await student.client.rpc('join_class', { code: created.join_code });
+    await student.client.rpc('leave_class', { class_id: created.id });
+    await teacher.client.rpc('update_class', {
+      class_id: created.id,
+      name: created.name,
+      year_level: 10,
+      joining_enabled: true,
+      students_can_leave: true,
+    });
+
+    await student.client.rpc('join_class', { code: created.join_code });
+    expect((await myClasses(student))[0]?.my_year_level).toBe(10);
+  });
+
+  it('keeps the teacher’s level when a student leaves and joins at the same moment', async () => {
+    const teacher = await createTeacher();
+    const created = await createClass(teacher, 'Race class', 9);
+    const student = await createStudent();
+    await student.client.rpc('join_class', { code: created.join_code });
+    await setLevel(teacher, created.id, student, 4);
+
+    for (let attempt = 0; attempt < 6; attempt += 1) {
+      await Promise.all([
+        student.client.rpc('leave_class', { class_id: created.id }),
+        student.client.rpc('join_class', { code: created.join_code }),
+      ]);
+      // Whichever ran first, end up in the class again.
+      await student.client.rpc('join_class', { code: created.join_code });
+      expect((await myClasses(student))[0]?.my_year_level).toBe(4);
+    }
+  });
+
+  it('never deadlocks when a teacher changes the class while students come and go', async () => {
+    const teacher = await createTeacher();
+    const created = await createClass(teacher, 'Busy class', 7);
+    const student = await createStudent();
+    await student.client.rpc('join_class', { code: created.join_code });
+
+    const errors: (string | undefined)[] = [];
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const results = await Promise.all([
+        teacher.client.rpc('update_class', {
+          class_id: created.id,
+          name: created.name,
+          year_level: attempt % 2 === 0 ? 8 : 7,
+          joining_enabled: true,
+          students_can_leave: true,
+        }),
+        student.client.rpc('leave_class', { class_id: created.id }),
+        teacher.client.rpc('set_student_year_level', {
+          class_id: created.id,
+          student_id: student.id,
+          year_level: 5,
+        }),
+        student.client.rpc('join_class', { code: created.join_code }),
+      ]);
+      errors.push(...results.map((result) => result.error?.code));
+      await student.client.rpc('join_class', { code: created.join_code });
+    }
+    expect(errors).not.toContain('40P01');
+  });
+
+  it('never shows former members to anyone but the database', async () => {
+    const student = await createStudent();
+    const teacher = await createTeacher();
+    for (const client of [student.client, teacher.client, anonClient()]) {
+      const { error } = await client.from('former_class_members').select('*');
+      expect(error?.code).toBe('42501');
+    }
+  });
+});
+
+describe('teacher accounts', () => {
+  it('cannot be deleted while they teach a class, so no class is left without a teacher', async () => {
+    const teacher = await createTeacher();
+    const created = await createClass(teacher, 'Kept class', 8);
+    const student = await createStudent();
+    await student.client.rpc('join_class', { code: created.join_code });
+
+    const { error } = await admin.auth.admin.deleteUser(teacher.id);
+    expect(error).not.toBeNull();
+    expect((await myClasses(student))[0]).toMatchObject({
+      class_name: 'Kept class',
+      teacher_name: 'Test Teacher',
+    });
+  });
+
+  it('can be deleted once they teach no classes', async () => {
+    const teacher = await createTeacher();
+    const { error } = await admin.auth.admin.deleteUser(teacher.id);
+    expect(error).toBeNull();
+  });
+});
+
 describe('teacher class management', () => {
   async function classWithStudent() {
     const teacher = await createTeacher();

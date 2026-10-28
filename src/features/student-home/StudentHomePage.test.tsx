@@ -151,6 +151,9 @@ describe('student home page', () => {
       expect(section(name)).toHaveTextContent('Sample data');
     }
     expect(section('Good afternoon, Mia')).toHaveTextContent('(sample task)');
+    expect(section('Good afternoon, Mia')).toHaveTextContent(
+      'You have 2 tasks to finish, and 1 is overdue. (sample tasks)',
+    );
   });
 
   it('shows the student’s real class and teacher-assigned year level', async () => {

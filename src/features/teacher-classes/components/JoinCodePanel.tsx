@@ -28,10 +28,8 @@ export function JoinCodePanel({ teacherClass }: { teacherClass: TeacherClass }) 
           ? 'Students enter this code on their Class page to join.'
           : 'New students can’t join until you turn joining on in Class settings.'}
       </p>
-      {regenerate.successMessage && (
-        <FormMessage tone="success">{regenerate.successMessage}</FormMessage>
-      )}
-      {regenerate.formMessage && <FormMessage tone="error">{regenerate.formMessage}</FormMessage>}
+      <FormMessage tone="success">{regenerate.successMessage}</FormMessage>
+      <FormMessage tone="error">{regenerate.formMessage}</FormMessage>
       <div className={styles.actions}>
         <CopyButton text={formatJoinCode(teacherClass.joinCode)} label="Copy code" />
         <regenerate.fetcher.Form method="post" onSubmit={regenerate.onSubmit}>

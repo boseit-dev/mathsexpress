@@ -8,9 +8,15 @@ export const errorMessages = {
     'Confirm your email address first. We can send the confirmation email again.',
   invalid_email: 'Enter a valid email address.',
   weak_password: 'Use at least 8 characters, including letters and numbers.',
+  password_too_long:
+    'That password is too long. Use at most 72 letters and numbers (fewer if it has accented or non-English letters).',
   passwords_do_not_match: 'The two passwords don’t match.',
   same_password: 'Choose a password that is different from your current one.',
   link_invalid: 'This link has expired or has already been used. Request a new one.',
+  reset_link_required:
+    'To choose a new password, open the link in a password reset email. We can send you one.',
+  email_link_required:
+    'To finish setting up, open the link we email you. It shows that the email address is yours.',
   google_unavailable: 'Google sign-in isn’t set up yet. Use your email and password instead.',
   google_sign_in_failed: 'Google sign-in didn’t finish. Try again, or use your email and password.',
   password_required: 'Enter your password.',

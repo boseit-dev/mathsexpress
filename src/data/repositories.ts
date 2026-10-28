@@ -32,9 +32,21 @@ export interface AuthService {
   startGoogleSignIn(): Promise<void>;
   completeGoogleSignIn(code: string): Promise<void>;
   requestPasswordReset(email: string): Promise<void>;
+  /**
+   * Seconds since the current session signed in through an email link (or Google), measured by
+   * the server; null if it signed in with a password. Only such a session proves it owns the email
+   * address, so only it may set up the account or, just after a reset link, choose a new password.
+   */
+  emailSignInAge(): Promise<number | null>;
   updatePassword(password: string): Promise<void>;
+  /** Ends the session. Always signs out on this device, even if the server can't be reached. */
   signOut(): Promise<void>;
-  /** Calls back when the session ends, including in another tab. Returns an unsubscribe function. */
+  /**
+   * Calls back when the session ends other than through signOut() here: in another tab, or when
+   * the server ends it. The app's own sign-outs are not reported; whoever signs out decides where
+   * to go next, and re-running loaders mid-navigation could reuse a one-time email link.
+   * Returns an unsubscribe function.
+   */
   onSignedOut(listener: () => void): () => void;
 }
 

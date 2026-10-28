@@ -15,7 +15,8 @@ import styles from './ClassForms.module.css';
 /** The class's name, year level, and whether students can join or leave by themselves. */
 export function ClassSettingsPanel({ teacherClass }: { teacherClass: TeacherClass }) {
   const formRef = useRef<HTMLFormElement>(null);
-  const settings = useFetcherForm({ formRef });
+  const saveRef = useRef<HTMLButtonElement>(null);
+  const settings = useFetcherForm({ formRef, focusAfterSuccess: saveRef });
   // Rebuild the form when the saved settings change, so it always starts from them.
   const savedSettings = [
     teacherClass.name,
@@ -26,10 +27,8 @@ export function ClassSettingsPanel({ teacherClass }: { teacherClass: TeacherClas
 
   return (
     <Panel title="Class settings" icon={Settings2}>
-      {settings.successMessage && (
-        <FormMessage tone="success">{settings.successMessage}</FormMessage>
-      )}
-      {settings.formMessage && <FormMessage tone="error">{settings.formMessage}</FormMessage>}
+      <FormMessage tone="success">{settings.successMessage}</FormMessage>
+      <FormMessage tone="error">{settings.formMessage}</FormMessage>
       <settings.fetcher.Form
         key={savedSettings}
         method="post"
@@ -70,6 +69,7 @@ export function ClassSettingsPanel({ teacherClass }: { teacherClass: TeacherClas
           />
         </fieldset>
         <SubmitButton
+          ref={saveRef}
           name="intent"
           value="settings"
           pending={settings.isSubmitting}

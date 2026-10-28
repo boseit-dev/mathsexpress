@@ -15,6 +15,11 @@ interface ConfirmActionProps {
   intent: string;
   pending: boolean;
   pendingLabel: string;
+  /**
+   * Turns the confirm button off, e.g. while the same action is running for another row. The
+   * first button stays on, so cancelling can always return focus to it.
+   */
+  disabled?: boolean;
 }
 
 /**
@@ -29,25 +34,30 @@ export function ConfirmAction({
   intent,
   pending,
   pendingLabel,
+  disabled = false,
 }: ConfirmActionProps) {
-  const [confirming, setConfirming] = useState(false);
+  // Which button gets focus when the confirmation opens: Cancel while the confirm button has to
+  // wait for another row. Null while closed.
+  const [openedOn, setOpenedOn] = useState<'confirm' | 'cancel' | null>(null);
+  const confirming = openedOn !== null;
   const [wasPending, setWasPending] = useState(pending);
   // When the action has finished, close the confirmation; the form shows what happened.
   if (pending !== wasPending) {
     setWasPending(pending);
-    if (!pending) setConfirming(false);
+    if (!pending) setOpenedOn(null);
   }
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const cancelRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const wasConfirming = useRef(false);
   const messageId = useId();
 
   // Move focus into the confirmation, and back to the first button if it is cancelled.
   useEffect(() => {
-    if (confirming) confirmRef.current?.focus();
+    if (openedOn) (openedOn === 'cancel' ? cancelRef : confirmRef).current?.focus();
     else if (wasConfirming.current) triggerRef.current?.focus();
-    wasConfirming.current = confirming;
-  }, [confirming]);
+    wasConfirming.current = openedOn !== null;
+  }, [openedOn]);
 
   if (!confirming) {
     return (
@@ -55,7 +65,7 @@ export function ConfirmAction({
         ref={triggerRef}
         variant="secondary"
         onClick={() => {
-          setConfirming(true);
+          setOpenedOn(disabled ? 'cancel' : 'confirm');
         }}
       >
         {triggerLabel}
@@ -81,17 +91,18 @@ export function ConfirmAction({
           name="intent"
           value={intent}
           className={styles.danger}
-          disabled={pending}
+          disabled={pending || disabled}
           aria-busy={pending || undefined}
           aria-describedby={messageId}
         >
           {pending ? pendingLabel : confirmLabel}
         </Button>
         <Button
+          ref={cancelRef}
           variant="secondary"
           disabled={pending}
           onClick={() => {
-            setConfirming(false);
+            setOpenedOn(null);
           }}
         >
           Cancel

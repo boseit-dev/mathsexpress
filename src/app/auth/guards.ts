@@ -9,13 +9,24 @@ export function homePathFor(role: AccountRole): string {
   return role === 'student' ? paths.student.home : paths.teacher.home;
 }
 
+// Any origin works here: the value is resolved against it and must stay on it.
+const SAME_SITE = 'https://mathsexpress.invalid';
+
 /**
- * A safe place to return to after signing in: only paths inside this app, never another site
- * (so a crafted link like /sign-in?redirectTo=//evil.example cannot send people away).
+ * A safe place to return to after signing in: only paths inside this app, never another site (so
+ * crafted links like /sign-in?redirectTo=//evil.example cannot send people away). The value is
+ * resolved the way a browser would, after rejecting backslashes and control characters, which
+ * browsers ignore or treat as slashes.
  */
 export function safeRedirectPath(value: string | null): string | null {
-  if (!value?.startsWith('/') || value.startsWith('//') || value.startsWith('/\\')) return null;
-  return value;
+  if (!value?.startsWith('/') || value.startsWith('//')) return null;
+  // eslint-disable-next-line no-control-regex -- control characters are exactly what to reject
+  if (/[\\\u0000-\u001f\u007f]/.test(value) || !URL.canParse(value, SAME_SITE)) return null;
+  const url = new URL(value, SAME_SITE);
+  // Dot segments can resolve "/.//evil.example" to the path "//evil.example", which a browser
+  // reads as another website, so the result must start with exactly one slash.
+  if (url.origin !== SAME_SITE || url.pathname.startsWith('//')) return null;
+  return `${url.pathname}${url.search}${url.hash}`;
 }
 
 function signInRedirect(request: Request): Response {

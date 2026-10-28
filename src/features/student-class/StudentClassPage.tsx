@@ -4,6 +4,7 @@ import { PageHeader } from '@/components/ui/PageHeader';
 import { LatestFormScope } from '@/app/forms/LatestFormScope';
 import { useFetcherForm } from '@/app/forms/useFetcherForm';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useRefreshWhenVisible } from '@/hooks/useRefreshWhenVisible';
 import { useCurrentStudent } from '@/layouts/student/useCurrentStudent';
 import { JoinClassPanel } from './components/JoinClassPanel';
 import { LEAVE_CLASS_FETCHER } from './components/leaveClassFetcher';
@@ -21,17 +22,19 @@ export function StudentClassPage() {
 }
 
 function StudentClasses() {
-  const student = useCurrentStudent();
+  const { classes } = useCurrentStudent();
   useDocumentTitle('Class');
+  // Picks up a teacher's changes when the student comes back to the tab.
+  useRefreshWhenVisible();
   const leave = useFetcherForm({ key: LEAVE_CLASS_FETCHER });
-  const leaveMessageRef = useRef<HTMLDivElement>(null);
+  const leftRef = useRef<HTMLDivElement>(null);
+  const leaveProblemRef = useRef<HTMLDivElement>(null);
 
   // Leaving removes the card and the button that was pressed, so move focus to the result.
   useEffect(() => {
-    if (leave.result) leaveMessageRef.current?.focus();
+    if (!leave.result) return;
+    (leave.result.ok ? leftRef : leaveProblemRef).current?.focus();
   }, [leave.result]);
-
-  const leaveMessage = leave.successMessage ?? leave.formMessage;
 
   return (
     <div className={styles.page}>
@@ -47,20 +50,17 @@ function StudentClasses() {
           <h2 id="your-classes-heading" className={styles.sectionTitle}>
             Your classes
           </h2>
-          {leaveMessage && (
-            <FormMessage
-              ref={leaveMessageRef}
-              tabIndex={-1}
-              tone={leave.successMessage ? 'success' : 'error'}
-            >
-              {leaveMessage}
-            </FormMessage>
-          )}
-          {student.classes.length === 0 ? (
+          <FormMessage ref={leftRef} tabIndex={-1} tone="success">
+            {leave.successMessage}
+          </FormMessage>
+          <FormMessage ref={leaveProblemRef} tabIndex={-1} tone="error">
+            {leave.formMessage}
+          </FormMessage>
+          {classes.length === 0 ? (
             <NoClassesYet />
           ) : (
             <ul className={styles.list}>
-              {student.classes.map((membership) => (
+              {classes.map((membership) => (
                 <li key={membership.classId}>
                   <StudentClassCard membership={membership} />
                 </li>

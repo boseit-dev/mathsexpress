@@ -18,7 +18,7 @@ export function CreateClassPanel() {
 
   return (
     <Panel title="Create a class" icon={Plus}>
-      {create.formMessage && <FormMessage tone="error">{create.formMessage}</FormMessage>}
+      <FormMessage tone="error">{create.formMessage}</FormMessage>
       <create.fetcher.Form method="post" ref={formRef} noValidate className={styles.form}>
         <TextField
           label="Class name"

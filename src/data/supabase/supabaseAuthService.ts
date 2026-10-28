@@ -3,7 +3,7 @@ import type { SupabaseConfig } from '@/config/env';
 import { isAccountRole, type AuthUser } from '@/domain/account';
 import { cleanText } from '@/domain/validation';
 import type { AuthService } from '../repositories';
-import type { MathsExpressClient } from './client';
+import { AUTH_STORAGE_KEY, type MathsExpressClient } from './client';
 import { throwIfError, toAppError } from './errors';
 
 function readString(value: unknown): string | undefined {
@@ -24,6 +24,16 @@ function toAuthUser(user: User): AuthUser {
   };
 }
 
+/**
+ * Removes the stored session directly. Used when signing out can't reach the server: a shared
+ * school computer must never keep the previous person signed in.
+ */
+function forgetStoredSession() {
+  for (const key of Object.keys(window.localStorage)) {
+    if (key.startsWith(AUTH_STORAGE_KEY)) window.localStorage.removeItem(key);
+  }
+}
+
 interface AuthServiceOptions {
   /** Where the app is served, e.g. http://localhost:5173; Google sends users back here. */
   appOrigin: string;
@@ -34,6 +44,9 @@ export function createSupabaseAuthService(
   config: SupabaseConfig,
   { appOrigin }: AuthServiceOptions,
 ): AuthService {
+  // True while this tab signs out on purpose, so onSignedOut only reports other sign-outs.
+  let signingOut = false;
+
   return {
     async getCurrentUser() {
       // getSession reads the stored session (refreshing it if needed); getUser then confirms it
@@ -105,20 +118,35 @@ export function createSupabaseAuthService(
       throwIfError(error);
     },
 
+    async emailSignInAge() {
+      // Worked out by the database from the signed session token and its own clock, so neither
+      // the browser nor a wrong device clock can change the answer.
+      // Generated types can't tell that the function returns null for password sessions.
+      const { data, error }: { data: number | null; error: unknown } =
+        await client.rpc('email_sign_in_age');
+      if (error) throw toAppError(error);
+      return data;
+    },
+
     async updatePassword(password) {
       const { error } = await client.auth.updateUser({ password });
       throwIfError(error);
     },
 
     async signOut() {
-      const { error } = await client.auth.signOut();
-      // A session that already expired counts as signed out.
-      if (error && error.status !== 401 && error.status !== 403) throw toAppError(error);
+      signingOut = true;
+      try {
+        const { error } = await client.auth.signOut();
+        // The auth client keeps the session when it can't reach the server, so remove it here.
+        if (error) forgetStoredSession();
+      } finally {
+        signingOut = false;
+      }
     },
 
     onSignedOut(listener) {
       const { data } = client.auth.onAuthStateChange((event) => {
-        if (event === 'SIGNED_OUT') listener();
+        if (event === 'SIGNED_OUT' && !signingOut) listener();
       });
       return () => {
         data.subscription.unsubscribe();

@@ -95,3 +95,33 @@ describe('profiles', () => {
     expect(error?.message).toBe('profile_required');
   });
 });
+
+describe('who can set up an account', () => {
+  it('needs a session opened from an email link, not just the password', async () => {
+    // Someone who registered the address first knows its password, but never had the email:
+    // the password can't even open a session until the account is set up.
+    const user = await createSignedInUser('password-only');
+    const withPassword = await anonClient().auth.signInWithPassword({
+      email: user.email,
+      password: user.password,
+    });
+    expect(withPassword.error?.message).toBe('email_link_required');
+    expect(withPassword.data.session).toBeNull();
+
+    const fromLink = await createSignedInUser('from-link');
+    const { data: linkAge } = await fromLink.client.rpc('email_sign_in_age');
+    expect(linkAge).toBeGreaterThanOrEqual(0);
+    expect(linkAge).toBeLessThan(60);
+    const allowed = await fromLink.client.rpc('complete_profile', {
+      role: 'student',
+      first_name: 'Real',
+      last_name: 'Owner',
+    });
+    expect(allowed.error).toBeNull();
+  });
+
+  it('does not let signed-out visitors ask about sessions', async () => {
+    const { error } = await anonClient().rpc('email_sign_in_age');
+    expect(error?.code).toBe('42501');
+  });
+});

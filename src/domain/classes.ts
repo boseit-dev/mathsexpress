@@ -7,7 +7,8 @@ export interface StudentClassMembership {
   classYearLevel: YearLevel;
   /** The student's own year level in this class. Only the teacher can change it. */
   yearLevel: YearLevel;
-  teacherName: string;
+  /** Null only if the class has no teacher, which the database prevents but the app tolerates. */
+  teacherName: string | null;
   studentsCanLeave: boolean;
   joinedAt: string;
 }

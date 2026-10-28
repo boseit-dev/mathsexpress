@@ -25,6 +25,10 @@ describe('validation', () => {
     expect(validatePassword('short1')).toBe('weak_password');
     expect(validatePassword('onlyletters')).toBe('weak_password');
     expect(validatePassword('12345678')).toBe('weak_password');
+    // The auth server stores passwords with bcrypt, which reads at most 72 bytes.
+    expect(validatePassword(`a1${'x'.repeat(70)}`)).toBeNull();
+    expect(validatePassword(`a1${'x'.repeat(71)}`)).toBe('password_too_long');
+    expect(validatePassword(`a1${'é'.repeat(36)}`)).toBe('password_too_long');
   });
 
   it('checks names and class names after tidying spaces', () => {

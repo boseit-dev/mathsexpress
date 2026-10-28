@@ -44,8 +44,10 @@ export interface TestUser {
   client: Client;
 }
 
-/** A confirmed account, signed in, without a profile yet. */
-export async function createSignedInUser(label: string): Promise<TestUser> {
+/** A confirmed account without a profile, not signed in yet. */
+async function createConfirmedUser(
+  label: string,
+): Promise<{ id: string; email: string; password: string }> {
   const email = uniqueEmail(label);
   const password = testPassword();
   const { data, error } = await admin.auth.admin.createUser({
@@ -54,10 +56,27 @@ export async function createSignedInUser(label: string): Promise<TestUser> {
     email_confirm: true,
   });
   if (error) throw error;
+  return { id: data.user.id, email, password };
+}
+
+/**
+ * A confirmed account without a profile, signed in through an email link, as people are when they
+ * open the confirmation or reset email. Only such a session can set up the profile.
+ */
+export async function createSignedInUser(label: string): Promise<TestUser> {
+  const user = await createConfirmedUser(label);
+  const { data: link, error: linkError } = await admin.auth.admin.generateLink({
+    type: 'magiclink',
+    email: user.email,
+  });
+  if (linkError) throw linkError;
   const client = anonClient();
-  const { error: signInError } = await client.auth.signInWithPassword({ email, password });
-  if (signInError) throw signInError;
-  return { id: data.user.id, email, password, client };
+  const { error } = await client.auth.verifyOtp({
+    token_hash: link.properties.hashed_token,
+    type: 'magiclink',
+  });
+  if (error) throw error;
+  return { ...user, client };
 }
 
 export async function createTeacher(firstName = 'Test', lastName = 'Teacher'): Promise<TestUser> {

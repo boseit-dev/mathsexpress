@@ -35,15 +35,65 @@ Phase 2: authentication, accounts and class management.
   data.
 - A loading indicator during page changes, clear error messages for every account and class
   problem, and a setup page when the app has no database connection configured.
+- Student Class page: each class with its teacher and the student's teacher-set year level (which
+  students can't change), joining a class with a code (any case, with or without the hyphen),
+  leaving a class when the teacher allows it, and clear messages for wrong, unknown, closed or
+  already-joined codes.
+- Teacher Classes page: the teacher's classes with their codes, year levels and student counts,
+  and creating a class.
+- Teacher class page: every student with their year level, which the teacher can change; removing
+  students; the class code with Copy and "Make a new code"; and class settings (name, class year
+  level, whether students can join with the code and whether they can leave by themselves).
+- Confirmations before leaving a class, removing a student or replacing a code, and messages that
+  always describe the latest action.
 
 ### Changed
 
 - The header no longer shows a coin balance: coins are not real until the rewards system is built.
+- The Google button shows that Google sign-in isn't available yet before anyone presses it.
 
 ### Fixed
 
 - The site's Content-Security-Policy now allows connections to its Supabase project; before, a
   build served by the Worker could not reach the database.
+- Fixes from the independent Phase 2 review:
+  - The student's classes reload on every page change and when the tab is shown again, so Home
+    and Class always show a teacher's latest changes.
+  - Leaving or removing several classes or students at once is no longer possible, so a second
+    confirmation can't cancel the first.
+  - A form never shows an old result again while a new one is on its way.
+  - Focus stays on Save after saving a student's year level or the class settings, moves to the
+    field that needs fixing on the account pages, and success messages are announced.
+  - "Copy code" says on screen when copying fails.
+  - Sending the confirmation email again keeps the "Check your email" screen if it fails.
+  - Passwords over 72 bytes get a clear message instead of "Enter a valid email address".
+  - Opening `/sign-out` directly goes to the start page instead of a blank page.
+  - Text fields have a border with enough contrast, the year badge's label is readable, and the
+    footer notice on the account pages has its own background.
+  - The home banner's task summary is labelled as sample data.
+
+### Security
+
+- Setting up an account now needs the email link: the person who opens it chooses the role, name
+  and password. An account that isn't set up can't sign in with a password at all (a sign-in hook
+  refuses it), and the database only creates a profile for a session from an email link. So
+  someone who registered an address first can neither take the account over nor lock its owner
+  out. Before, confirming quietly kept the first registration's password and role.
+- Ended sessions lose database access at once: every database function checks that the session
+  still exists, so signing out or a password change takes effect immediately, not when the access
+  token expires.
+- The welcome and reset pages are offered only within 30 minutes of an email link (the reset page
+  only after a reset link), and a reset signs out afterwards. The auth server asks sessions older
+  than a day to sign in again before changing a password.
+- Leaving and rejoining a class can no longer undo the year level a teacher set, even when both are
+  sent at the same moment; class and membership rows are always locked in the same order, so
+  changes made at the same time can't deadlock.
+- A teacher who teaches classes can't be deleted, so no class is left without a teacher; a class
+  without one can't stop a student's pages loading either.
+- "Forgot password" gives the same answer even when the server limits emails to a real account.
+- Signing out always clears the session on this device, even when the server can't be reached.
+- Return addresses after signing in must stay on MathsExpress: characters browsers ignore and
+  dot segments can't point them at another site.
 
 ## [2.0.0-alpha.1] - 2026-10-28
 

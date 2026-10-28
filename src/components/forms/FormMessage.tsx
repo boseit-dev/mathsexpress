@@ -5,7 +5,11 @@ import styles from './FormMessage.module.css';
 
 interface FormMessageProps {
   tone: 'error' | 'success';
-  children: ReactNode;
+  /**
+   * The message. Render the component even when there is none yet: the live region stays in the
+   * page, empty and taking no space, so screen readers announce the message when it appears.
+   */
+  children?: ReactNode;
   /** With tabIndex -1, lets a page move focus here when the control that was used goes away. */
   ref?: Ref<HTMLDivElement>;
   tabIndex?: number;
@@ -14,15 +18,21 @@ interface FormMessageProps {
 /** The result of submitting a form. Errors are announced immediately; successes politely. */
 export function FormMessage({ tone, children, ref, tabIndex }: FormMessageProps) {
   const Icon = tone === 'error' ? TriangleAlert : CircleCheck;
+  const hasMessage = children !== undefined && children !== null && children !== false;
+
   return (
     <div
       ref={ref}
-      tabIndex={tabIndex}
-      className={cx(styles.message, styles[tone])}
+      tabIndex={hasMessage ? tabIndex : undefined}
+      className={hasMessage ? cx(styles.message, styles[tone]) : styles.empty}
       role={tone === 'error' ? 'alert' : 'status'}
     >
-      <Icon />
-      <div>{children}</div>
+      {hasMessage && (
+        <>
+          <Icon />
+          <div>{children}</div>
+        </>
+      )}
     </div>
   );
 }

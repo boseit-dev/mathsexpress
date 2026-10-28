@@ -12,11 +12,12 @@ architecture, design system and codebase.
 | Phase | Scope                                                          | Status                |
 | ----- | -------------------------------------------------------------- | --------------------- |
 | 1     | Foundation, design system, top navigation, student homepage    | Complete and approved |
-| 2     | Authentication, student and teacher accounts, class management | In progress           |
+| 2     | Authentication, student and teacher accounts, class management | Built, in review      |
 | Later | Learning engine, tasks, textbook, rewards, reports             | Planned               |
 
-- 2.0 is a development preview. The home page shows clearly labelled sample data, and sections that
-  are not built yet say so.
+- 2.0 is a development preview. Accounts and classes are real (in a local database during
+  development); home-page panels for features that aren't built yet are labelled "Sample data",
+  and sections that are not built yet say so.
 - The live website (https://mathsexpress.aarush-sharma6.workers.dev) still runs the original
   v11.5.35. It is replaced only when 2.0 is complete and the owner approves the release.
 
@@ -46,12 +47,15 @@ confirm it from the test mailbox at http://127.0.0.1:55324.
 | `npm test`               | Run the tests once (`npm run test:watch` to watch)                |
 | `npm run format`         | Apply Prettier formatting                                         |
 | `npm run preview:worker` | Build and serve through Wrangler, the way Cloudflare runs it      |
+| `npm run test:db`        | Database and sign-in tests against the local Supabase stack       |
+| `npm run db:types`       | Regenerate the database types after adding a migration            |
 
 ## Technology
 
 React 19, TypeScript (strict), Vite, React Router, CSS Modules with design tokens, Vitest with
-Testing Library and axe-core, ESLint and Prettier. It is hosted as a Cloudflare Worker that serves
-the built app (`wrangler.jsonc`).
+Testing Library and axe-core, ESLint and Prettier. Accounts and data use Supabase (Auth and
+Postgres); every permission is checked in the database. It is hosted as a Cloudflare Worker that
+serves the built app (`wrangler.jsonc`).
 
 ## Project structure
 
@@ -62,10 +66,12 @@ src/
   features/       one folder per feature (e.g. student-home): page, loader, components, tests
   components/ui/  shared design-system components (Button, Panel, ProgressBar, ...)
   domain/         types and business rules, as pure tested functions
-  data/           data-access interfaces and their implementations (sample data for now)
+  data/           data-access interfaces; Supabase implementations; sample data for unbuilt panels
   config/         paths, navigation and app settings
   lib/ hooks/     small shared helpers and React hooks
   styles/         design tokens and global styles
+supabase/         local stack config, database migrations, email templates
+tests/db/         database and sign-in tests against local Supabase
 scripts/          git-hook and CI checks (commit format, credential scanning, deploy guard)
 docs/             architecture guide and notes on the old system
 ```

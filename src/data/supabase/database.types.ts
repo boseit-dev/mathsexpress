@@ -155,6 +155,46 @@ export type Database = {
         };
         Relationships: [];
       };
+      former_class_members: {
+        Row: {
+          class_id: string;
+          followed_class_level: boolean;
+          left_at: string;
+          student_id: string;
+          year_level: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          class_id: string;
+          followed_class_level: boolean;
+          left_at?: string;
+          student_id: string;
+          year_level: number;
+        };
+        Update: {
+          class_id?: string;
+          followed_class_level?: boolean;
+          left_at?: string;
+          student_id?: string;
+          year_level?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'former_class_members_class_id_fkey';
+            columns: ['class_id'];
+            isOneToOne: false;
+            referencedRelation: 'classes';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'former_class_members_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       profiles: {
         Row: {
           created_at: string;
@@ -282,6 +322,8 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      custom_access_token_hook: { Args: { event: Json }; Returns: Json };
+      email_sign_in_age: { Args: Record<PropertyKey, never>; Returns: number };
       get_teacher_class: {
         Args: { class_id: string };
         Returns: Database['public']['CompositeTypes']['teacher_class'];

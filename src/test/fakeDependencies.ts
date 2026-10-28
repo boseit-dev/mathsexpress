@@ -11,6 +11,7 @@ import {
 } from '@/domain/classes';
 import { AppError } from '@/domain/errors';
 import { getFullName, getShortName } from '@/domain/people';
+import type { YearLevel } from '@/domain/student';
 import { createSampleStudentHomeRepository } from '@/data/sample/sampleStudentHomeRepository';
 import type { AppDependencies, EmailLinkType } from '@/data/repositories';
 
@@ -18,6 +19,8 @@ import type { AppDependencies, EmailLinkType } from '@/data/repositories';
 export const TEST_NOW = new Date(2026, 9, 28, 15, 30);
 
 export const TEST_PASSWORD = 'maths-test-1';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
 
 interface FakeAccount {
   user: AuthUser;
@@ -29,16 +32,25 @@ interface FakeAccount {
 interface FakeClass extends TeacherClass {
   teacherId: string;
   students: ClassStudent[];
+  /** Students who left or were removed, with the level to give back if they rejoin. */
+  formerStudents: Map<string, { yearLevel: YearLevel; followedClassLevel: boolean }>;
 }
 
 export interface FakeState {
   accounts: Map<string, FakeAccount>;
   classes: FakeClass[];
   signedInEmail: string | null;
+  /**
+   * When the current session signed in through an email link or Google (ms since 1970), as the
+   * real session token records it; null after a password sign-in.
+   */
+  emailSignInAt: number | null;
   googleAvailable: boolean;
   /** Email-link tokens that are still valid, by token. */
   emailLinks: Map<string, { email: string; type: EmailLinkType }>;
   sentEmails: { to: string; type: EmailLinkType }[];
+  /** Notified when the session ends elsewhere; see endSessionElsewhere. */
+  signedOutListeners: Set<() => void>;
 }
 
 export const testStudent = { email: 'mia@example.test', firstName: 'Mia', lastName: 'Chen' };
@@ -79,6 +91,7 @@ export function createFakeState(): FakeState {
         studentCount: 1,
         createdAt: '2026-10-01T00:00:00.000Z',
         teacherId: teacher.user.id,
+        formerStudents: new Map(),
         students: [
           {
             studentId: student.user.id,
@@ -91,9 +104,11 @@ export function createFakeState(): FakeState {
       },
     ],
     signedInEmail: null,
+    emailSignInAt: null,
     googleAvailable: false,
     emailLinks: new Map(),
     sentEmails: [],
+    signedOutListeners: new Set(),
   };
 }
 
@@ -137,9 +152,9 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
     };
   }
 
-  function teacherName(item: FakeClass): string {
+  function teacherName(item: FakeClass): string | null {
     const teacher = [...state.accounts.values()].find((entry) => entry.user.id === item.teacherId);
-    return teacher?.profile ? getFullName(teacher.profile) : 'Unknown teacher';
+    return teacher?.profile ? getFullName(teacher.profile) : null;
   }
 
   function membership(item: FakeClass, studentId: string): StudentClassMembership {
@@ -156,13 +171,23 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
     };
   }
 
+  /** Removes a student from a class, remembering their level as the database does. */
+  function forget(target: FakeClass, studentId: string) {
+    const leaving = target.students.find((entry) => entry.studentId === studentId);
+    if (leaving) {
+      target.formerStudents.set(studentId, {
+        yearLevel: leaving.yearLevel,
+        followedClassLevel: leaving.yearLevel === target.yearLevel,
+      });
+    }
+    target.students = target.students.filter((entry) => entry.studentId !== studentId);
+  }
+
   function sendEmail(email: string, type: EmailLinkType) {
     const token = `${type}-token-${state.sentEmails.length + 1}`;
     state.emailLinks.set(token, { email, type });
     state.sentEmails.push({ to: email, type });
   }
-
-  const signedOutListeners = new Set<() => void>();
 
   return {
     auth: {
@@ -175,9 +200,14 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
           return Promise.reject(new AppError('invalid_credentials'));
         }
         if (!found.confirmed) return Promise.reject(new AppError('email_not_confirmed'));
+        // Like the sign-in hook: a password opens no session until the account is set up.
+        if (!found.profile) return Promise.reject(new AppError('email_link_required'));
         state.signedInEmail = found.user.email;
+        state.emailSignInAt = null;
         return Promise.resolve();
       },
+      // Like the auth server, registering again before confirming keeps the first details and
+      // password, and just sends the email again.
       register({ email, password, role, firstName, lastName }) {
         if (!state.accounts.has(email)) {
           state.accounts.set(email, {
@@ -202,6 +232,7 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
         if (!found) return Promise.reject(new AppError('link_invalid'));
         found.confirmed = true;
         state.signedInEmail = found.user.email;
+        state.emailSignInAt = Date.now();
         return Promise.resolve();
       },
       isGoogleSignInAvailable() {
@@ -213,13 +244,25 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
           : Promise.reject(new AppError('google_unavailable'));
       },
       completeGoogleSignIn(code) {
-        return code === 'valid-google-code'
-          ? Promise.resolve()
-          : Promise.reject(new AppError('link_invalid'));
-      },
-      requestPasswordReset(email) {
-        if (state.accounts.has(email.trim())) sendEmail(email.trim(), 'recovery');
+        if (code !== 'valid-google-code') return Promise.reject(new AppError('link_invalid'));
+        state.emailSignInAt = Date.now();
         return Promise.resolve();
+      },
+      // Like the auth server, which limits how often it emails one address: only real accounts
+      // are ever emailed, so only they can hit the limit.
+      requestPasswordReset(email) {
+        const address = email.trim();
+        if (!state.accounts.has(address)) return Promise.resolve();
+        const alreadySent = state.sentEmails.some(
+          (sent) => sent.to === address && sent.type === 'recovery',
+        );
+        if (alreadySent) return Promise.reject(new AppError('rate_limited'));
+        sendEmail(address, 'recovery');
+        return Promise.resolve();
+      },
+      emailSignInAge() {
+        const at = state.signedInEmail === null ? null : state.emailSignInAt;
+        return Promise.resolve(at === null ? null : Math.floor((Date.now() - at) / 1000));
       },
       updatePassword(password) {
         const found = current();
@@ -228,14 +271,15 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
         found.password = password;
         return Promise.resolve();
       },
+      // Like the real service, the app's own sign-out is not reported to onSignedOut.
       signOut() {
         state.signedInEmail = null;
-        for (const listener of signedOutListeners) listener();
+        state.emailSignInAt = null;
         return Promise.resolve();
       },
       onSignedOut(listener) {
-        signedOutListeners.add(listener);
-        return () => signedOutListeners.delete(listener);
+        state.signedOutListeners.add(listener);
+        return () => state.signedOutListeners.delete(listener);
       },
     },
 
@@ -246,6 +290,11 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
       completeProfile(details) {
         const found = current();
         if (!found) return Promise.reject(new AppError('not_signed_in'));
+        // Like the database: only a session from an email link (or Google) in the last day may set
+        // up an account.
+        if (state.emailSignInAt === null || Date.now() - state.emailSignInAt >= DAY_MS) {
+          return Promise.reject(new AppError('email_link_required'));
+        }
         if (found.profile) return Promise.reject(new AppError('profile_exists'));
         found.profile = { id: found.user.id, ...details };
         return Promise.resolve(found.profile);
@@ -270,11 +319,14 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
         if (target.students.some((entry) => entry.studentId === student.id)) {
           throw new AppError('already_member');
         }
+        // Like the database: a returning student gets back the level they had.
+        const former = target.formerStudents.get(student.id);
+        target.formerStudents.delete(student.id);
         target.students.push({
           studentId: student.id,
           firstName: student.firstName,
           lastName: student.lastName,
-          yearLevel: target.yearLevel,
+          yearLevel: former && !former.followedClassLevel ? former.yearLevel : target.yearLevel,
           joinedAt: TEST_NOW.toISOString(),
         });
         return membership(target, student.id);
@@ -287,7 +339,7 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
           throw new AppError('class_not_found');
         }
         if (!target.studentsCanLeave) throw new AppError('leaving_not_allowed');
-        target.students = target.students.filter((entry) => entry.studentId !== student.id);
+        forget(target, student.id);
       },
       async listTeacherClasses() {
         await Promise.resolve();
@@ -308,6 +360,7 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
           createdAt: TEST_NOW.toISOString(),
           teacherId: teacher.id,
           students: [],
+          formerStudents: new Map(),
         };
         state.classes.unshift(created);
         return teacherView(created);
@@ -349,13 +402,20 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
         if (!target.students.some((entry) => entry.studentId === studentId)) {
           throw new AppError('student_not_found');
         }
-        target.students = target.students.filter((entry) => entry.studentId !== studentId);
+        forget(target, studentId);
       },
     },
 
     studentHome: createSampleStudentHomeRepository(() => TEST_NOW),
     now: () => TEST_NOW,
   };
+}
+
+/** Ends the session the way signing out in another tab (or the server ending it) would. */
+export function endSessionElsewhere(state: FakeState) {
+  state.signedInEmail = null;
+  state.emailSignInAt = null;
+  for (const listener of state.signedOutListeners) listener();
 }
 
 /** The short name a student's classmates see, as the app derives it. */

@@ -17,8 +17,8 @@ export function JoinClassPanel() {
       <p className={styles.intro}>
         Your teacher will give you a class code. It has 8 letters and numbers.
       </p>
-      {join.successMessage && <FormMessage tone="success">{join.successMessage}</FormMessage>}
-      {join.formMessage && <FormMessage tone="error">{join.formMessage}</FormMessage>}
+      <FormMessage tone="success">{join.successMessage}</FormMessage>
+      <FormMessage tone="error">{join.formMessage}</FormMessage>
       <join.fetcher.Form
         method="post"
         onSubmit={join.onSubmit}

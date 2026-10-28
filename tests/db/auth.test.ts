@@ -1,11 +1,24 @@
+import { createClient } from '@supabase/supabase-js';
 import { describe, expect, it } from 'vitest';
+import type { Database } from '../../src/data/supabase/database.types.ts';
 import {
   anonClient,
+  type Client,
   latestEmailTo,
   testPassword,
   tokenHashFromEmail,
   uniqueEmail,
 } from './helpers.ts';
+
+/** Sets up the profile from a session opened by an email link, as the welcome page does. */
+async function setUpProfile(client: Client) {
+  const { error } = await client.rpc('complete_profile', {
+    role: 'student',
+    first_name: 'Ada',
+    last_name: 'Lovelace',
+  });
+  if (error) throw error;
+}
 
 describe('registration and email verification', () => {
   it('requires the email address to be confirmed before signing in', async () => {
@@ -34,6 +47,12 @@ describe('registration and email verification', () => {
     expect(verified.user?.email_confirmed_at).toBeTruthy();
     expect(verified.user?.user_metadata).toMatchObject({ role: 'student', first_name: 'Ada' });
 
+    // Until the account is set up from the link, its password can't open a session: someone
+    // who registered the address first must never get one.
+    const early = await anonClient().auth.signInWithPassword({ email, password });
+    expect(early.error?.message).toBe('email_link_required');
+
+    await setUpProfile(client);
     const { error: signInError } = await anonClient().auth.signInWithPassword({ email, password });
     expect(signInError).toBeNull();
   });
@@ -91,6 +110,7 @@ describe('password reset', () => {
     await client.auth.signUp({ email, password: oldPassword });
     const confirmation = await latestEmailTo(email, 'Confirm your MathsExpress account');
     await client.auth.verifyOtp({ token_hash: tokenHashFromEmail(confirmation), type: 'email' });
+    await setUpProfile(client);
 
     const resetter = anonClient();
     const { error: requestError } = await resetter.auth.resetPasswordForEmail(email);
@@ -137,6 +157,7 @@ describe('sessions', () => {
     await client.auth.signUp({ email, password });
     const confirmation = await latestEmailTo(email, 'Confirm your MathsExpress account');
     await client.auth.verifyOtp({ token_hash: tokenHashFromEmail(confirmation), type: 'email' });
+    await setUpProfile(client);
 
     const signedIn = anonClient();
     await signedIn.auth.signInWithPassword({ email, password });
@@ -152,5 +173,17 @@ describe('sessions', () => {
     });
     expect(accessToken).toBeTruthy();
     expect(error).not.toBeNull();
+
+    // The access token itself hasn't expired yet, but the database no longer accepts it.
+    const withOldToken = createClient<Database>(
+      process.env.TEST_SUPABASE_URL ?? '',
+      process.env.TEST_SUPABASE_ANON_KEY ?? '',
+      {
+        auth: { persistSession: false, autoRefreshToken: false },
+        global: { headers: { Authorization: `Bearer ${accessToken ?? ''}` } },
+      },
+    );
+    const { error: afterSignOut } = await withOldToken.rpc('my_classes');
+    expect(afterSignOut?.message).toBe('not_signed_in');
   });
 });

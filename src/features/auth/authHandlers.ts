@@ -2,12 +2,30 @@
 // decide where to go next; the pages only display the result.
 import { redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router';
 import { formError, readText, runForm, type FormResult } from '@/app/forms/formResult';
-import { homePathFor, safeRedirectPath } from '@/app/auth/guards';
+import { homePathFor, redirectIfSignedIn, safeRedirectPath } from '@/app/auth/guards';
+import { forgetResetLink, openedResetLink, rememberResetLink } from '@/app/auth/resetLink';
 import { paths } from '@/config/paths';
-import { isAccountRole, type AuthUser, type RegistrationDetails } from '@/domain/account';
+import { isAccountRole, type AuthUser } from '@/domain/account';
 import { AppError, errorCodeOf, type AppErrorCode } from '@/domain/errors';
 import { validateEmail, validateName, validatePassword } from '@/domain/validation';
-import type { AppDependencies, EmailLinkType } from '@/data/repositories';
+import type { AppDependencies, AuthService, EmailLinkType } from '@/data/repositories';
+
+export interface SignedOutPageData {
+  /** Whether Google sign-in is configured, so the button can say so before anyone presses it. */
+  googleAvailable: boolean;
+}
+
+/** For pages only signed-out visitors need (sign in, register). */
+export function createSignedOutPageLoader(deps: AppDependencies) {
+  return async (): Promise<SignedOutPageData> => {
+    const [, googleAvailable] = await Promise.all([
+      redirectIfSignedIn(deps),
+      // If the auth server can't be asked, show Google as unavailable rather than failing the page.
+      deps.auth.isGoogleSignInAvailable().catch(() => false),
+    ]);
+    return { googleAvailable };
+  };
+}
 
 /** Starts Google sign-in, or explains why it can't. Google returns the user to /auth/callback. */
 async function startGoogle({ auth }: AppDependencies): Promise<FormResult> {
@@ -31,6 +49,11 @@ export function createSignInAction(deps: AppDependencies) {
         await deps.auth.resendConfirmation(email);
         return { ok: true, message: `We sent the confirmation email to ${email} again.` };
       }
+      if (intent === 'send-link') {
+        // For accounts not set up yet, which sign in through an email link instead.
+        await deps.auth.requestPasswordReset(email);
+        return { ok: true, message: `We sent a link to ${email}. Open it to finish setting up.` };
+      }
 
       const password = readText(form, 'password');
       if (password === '') return formError('password_required', 'password');
@@ -49,7 +72,13 @@ export function createRegisterAction(deps: AppDependencies) {
 
       const email = readText(form, 'email').trim();
       if (intent === 'resend') {
-        await deps.auth.resendConfirmation(email);
+        try {
+          await deps.auth.resendConfirmation(email);
+        } catch (error) {
+          // Keep the "Check your email" screen (it needs the address) and show the problem there.
+          if (error instanceof AppError) return { ok: false, error: error.code, email };
+          throw error;
+        }
         return { ok: true, email, message: 'We sent the confirmation email again.' };
       }
 
@@ -78,17 +107,54 @@ export function createForgotPasswordAction({ auth }: AppDependencies) {
       const emailProblem = validateEmail(email);
       if (emailProblem) return formError(emailProblem, 'email');
       // The same answer whether or not the address has an account, so this page cannot be used
-      // to find out who is registered.
-      await auth.requestPasswordReset(email);
+      // to find out who is registered. The auth server limits how often it emails an address,
+      // which only happens for real accounts, so that limit gets the same answer too.
+      try {
+        await auth.requestPasswordReset(email);
+      } catch (error) {
+        if (errorCodeOf(error) !== 'rate_limited') throw error;
+      }
       return { ok: true, email };
     });
 }
 
-export function createResetPasswordLoader({ auth }: AppDependencies) {
-  return async () => ({ signedIn: (await auth.getCurrentUser()) !== null });
+/**
+ * How long after opening an email link its page (choosing a new password, or setting up the
+ * account) is offered. Long enough to finish, short enough that a signed-in computer someone
+ * walked away from can't be used for it later.
+ */
+const EMAIL_LINK_WINDOW_SECONDS = 30 * 60;
+
+/** True when the session was opened from an email link (or Google) in the last 30 minutes. */
+async function openedEmailLinkRecently(auth: AuthService): Promise<boolean> {
+  const age = await auth.emailSignInAge();
+  return age !== null && age < EMAIL_LINK_WINDOW_SECONDS;
 }
 
-export function createResetPasswordAction({ auth }: AppDependencies) {
+/** True when this tab opened a password-reset link for this account in the last 30 minutes. */
+async function cameFromResetLink(deps: AppDependencies): Promise<boolean> {
+  const user = await deps.auth.getCurrentUser();
+  return user !== null && openedResetLink(user.id) && (await openedEmailLinkRecently(deps.auth));
+}
+
+export interface ResetPasswordData {
+  signedIn: boolean;
+  /**
+   * The form is offered only just after a reset link, not to anyone who finds a signed-in
+   * computer. The auth server separately requires sessions over a day old to sign in again.
+   */
+  fromResetLink: boolean;
+}
+
+export function createResetPasswordLoader(deps: AppDependencies) {
+  return async (): Promise<ResetPasswordData> => {
+    const signedIn = (await deps.auth.getCurrentUser()) !== null;
+    return { signedIn, fromResetLink: signedIn && (await cameFromResetLink(deps)) };
+  };
+}
+
+export function createResetPasswordAction(deps: AppDependencies) {
+  const { auth } = deps;
   return ({ request }: ActionFunctionArgs) =>
     runForm(async () => {
       const form = await request.formData();
@@ -97,33 +163,14 @@ export function createResetPasswordAction({ auth }: AppDependencies) {
       const passwordProblem = validatePassword(password);
       if (passwordProblem) return formError(passwordProblem, 'password');
       if (password !== confirmation) return formError('passwords_do_not_match', 'confirmPassword');
+      if (!(await cameFromResetLink(deps))) return formError('reset_link_required');
       await auth.updatePassword(password);
-      return { ok: true };
+      // Ends the reset session, so nobody else at this computer can use it to change the
+      // password again; the owner signs in with the new one.
+      forgetResetLink();
+      await auth.signOut();
+      throw redirect(`${paths.signIn}?notice=password-changed`);
     });
-}
-
-function isCompleteRegistration(details: AuthUser['registration']): details is RegistrationDetails {
-  return (
-    details.role !== undefined &&
-    validateName(details.firstName ?? '') === null &&
-    validateName(details.lastName ?? '') === null
-  );
-}
-
-/**
- * Sets up the profile from what was entered when registering, the first time a confirmed user
- * arrives. Does nothing when the profile exists or the details are incomplete (the welcome page
- * then asks for them).
- */
-async function setUpProfileFromRegistration({ auth, accounts }: AppDependencies): Promise<void> {
-  const user = await auth.getCurrentUser();
-  if (!user || (await accounts.getMyProfile())) return;
-  if (!isCompleteRegistration(user.registration)) return;
-  try {
-    await accounts.completeProfile(user.registration);
-  } catch (error) {
-    if (errorCodeOf(error) !== 'profile_exists') throw error;
-  }
 }
 
 export interface AuthLinkResult {
@@ -144,9 +191,13 @@ export function createConfirmEmailLoader(deps: AppDependencies) {
       if (error instanceof AppError) return { error: error.code };
       throw error;
     }
-    if (type === 'recovery') throw redirect(paths.resetPassword);
-    await setUpProfileFromRegistration(deps);
-    throw redirect(paths.root);
+    // The link proves the email address is the person's own, so an account not set up yet goes
+    // to /welcome, where they choose its role, name and password themselves.
+    if (!(await deps.accounts.getMyProfile())) throw redirect(paths.welcome);
+    if (type !== 'recovery') throw redirect(paths.root);
+    const user = await deps.auth.getCurrentUser();
+    if (user) rememberResetLink(user.id);
+    throw redirect(paths.resetPassword);
   };
 }
 
@@ -168,29 +219,61 @@ export function createGoogleCallbackLoader(deps: AppDependencies) {
 export interface WelcomeData {
   email: string;
   registration: AuthUser['registration'];
+  /**
+   * Whether this session came from an email link (or Google) in the last 30 minutes. Only such a
+   * session may set up the account (the database checks the link too); others are offered a link.
+   */
+  fromEmailLink: boolean;
 }
 
-/** /welcome: for signed-in people who have not set up their profile (e.g. after Google). */
+/**
+ * /welcome: setting up a confirmed account. Registration details are only a starting point:
+ * registering an address twice before confirming keeps the first details and password, so the
+ * person who opened the email link chooses the role, name and password here.
+ */
 export function createWelcomeLoader({ auth, accounts }: AppDependencies) {
   return async (): Promise<WelcomeData> => {
     const user = await auth.getCurrentUser();
     if (!user) throw redirect(paths.signIn);
     const profile = await accounts.getMyProfile();
     if (profile) throw redirect(homePathFor(profile.role));
-    return { email: user.email, registration: user.registration };
+    const fromEmailLink = await openedEmailLinkRecently(auth);
+    return { email: user.email, registration: user.registration, fromEmailLink };
   };
 }
 
-export function createWelcomeAction({ accounts }: AppDependencies) {
+export function createWelcomeAction({ auth, accounts }: AppDependencies) {
   return ({ request }: ActionFunctionArgs) =>
-    runForm(async () => {
+    runForm(async (): Promise<FormResult> => {
       const form = await request.formData();
+      const user = await auth.getCurrentUser();
+      if (!user) throw redirect(paths.signIn);
+
+      if (readText(form, 'intent') === 'send-link') {
+        // A reset link proves the address is theirs; opening it brings them back here. Unlike
+        // "Forgot password", a refusal (e.g. too many emails) is reported: the address is theirs.
+        await auth.requestPasswordReset(user.email);
+        return { ok: true, message: `We sent a link to ${user.email}. Open it to continue.` };
+      }
+
       const role = readText(form, 'role');
       const firstName = readText(form, 'firstName');
       const lastName = readText(form, 'lastName');
+      const password = readText(form, 'password');
       if (!isAccountRole(role)) return formError('invalid_role', 'role');
       if (validateName(firstName)) return formError('invalid_name', 'firstName');
       if (validateName(lastName)) return formError('invalid_name', 'lastName');
+      const passwordProblem = validatePassword(password);
+      if (passwordProblem) return formError(passwordProblem, 'password');
+      if (!(await openedEmailLinkRecently(auth))) return formError('email_link_required');
+
+      // Makes the password the one this person knows. (Someone who registered the address first
+      // can't sign in with theirs before the account is set up; see custom_access_token_hook.)
+      try {
+        await auth.updatePassword(password);
+      } catch (error) {
+        if (errorCodeOf(error) !== 'same_password') throw error;
+      }
       try {
         await accounts.completeProfile({ role, firstName, lastName });
       } catch (error) {

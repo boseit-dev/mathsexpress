@@ -54,7 +54,9 @@ export function WelcomeBanner({
         <h1 id={headingId} className={styles.greeting}>
           {getGreeting(now)}, {student.firstName}
         </h1>
-        <p className={styles.summary}>{describeTasks(taskCounts)}</p>
+        <p className={styles.summary}>
+          {describeTasks(taskCounts)} <span className={styles.sampleTag}>(sample tasks)</span>
+        </p>
 
         <div className={styles.continue}>
           {continueAssignment && (

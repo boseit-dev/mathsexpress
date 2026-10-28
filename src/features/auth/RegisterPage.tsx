@@ -1,4 +1,4 @@
-import { Form, Link } from 'react-router';
+import { Form, Link, useLoaderData } from 'react-router';
 import { ChoiceCards } from '@/components/forms/ChoiceCards';
 import { FormMessage } from '@/components/forms/FormMessage';
 import { PasswordField } from '@/components/forms/PasswordField';
@@ -6,22 +6,26 @@ import { SubmitButton } from '@/components/forms/SubmitButton';
 import { TextField } from '@/components/forms/TextField';
 import { paths } from '@/config/paths';
 import { AuthHeading } from './AuthHeading';
+import type { SignedOutPageData } from './authHandlers';
 import { GoogleButton } from './GoogleButton';
 import { roleChoices } from './roleChoices';
 import { useFormState } from '@/app/forms/useFormState';
 import styles from './AuthPage.module.css';
 
 export function RegisterPage() {
+  const { googleAvailable } = useLoaderData<SignedOutPageData>();
   const { result, formMessage, fieldError, isSubmitting } = useFormState();
 
-  if (result?.ok && result.email) {
+  // After registering, and after sending the email again (whether or not that worked).
+  if (result?.email) {
     return (
       <>
         <AuthHeading title="Check your email">
           We sent a link to <strong>{result.email}</strong>. Open it to confirm your email address
           and finish creating your account.
         </AuthHeading>
-        {result.message && <FormMessage tone="success">{result.message}</FormMessage>}
+        <FormMessage tone="success">{result.ok ? result.message : null}</FormMessage>
+        <FormMessage tone="error">{formMessage}</FormMessage>
         <Form method="post" className={styles.form}>
           <input type="hidden" name="email" value={result.email} />
           <SubmitButton
@@ -47,7 +51,7 @@ export function RegisterPage() {
         Students join their class with a code from their teacher.
       </AuthHeading>
 
-      {formMessage && <FormMessage tone="error">{formMessage}</FormMessage>}
+      <FormMessage tone="error">{formMessage}</FormMessage>
 
       <Form method="post" noValidate className={styles.form}>
         <ChoiceCards legend="I am a" name="role" choices={roleChoices} error={fieldError('role')} />
@@ -81,7 +85,7 @@ export function RegisterPage() {
           label="Password"
           name="password"
           autoComplete="new-password"
-          hint="At least 8 characters, including letters and numbers."
+          hint="8 to 72 characters, including letters and numbers."
           error={fieldError('password')}
         />
         <SubmitButton
@@ -98,7 +102,11 @@ export function RegisterPage() {
 
       <p className={styles.divider}>or</p>
       <Form method="post">
-        <GoogleButton label="Sign up with Google" pending={isSubmitting('google')} />
+        <GoogleButton
+          label="Sign up with Google"
+          pending={isSubmitting('google')}
+          available={googleAvailable}
+        />
       </Form>
 
       <p className={styles.footer}>

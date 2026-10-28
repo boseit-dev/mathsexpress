@@ -31,7 +31,7 @@ export function StudentClassCard({ membership }: StudentClassCardProps) {
           </h3>
           <p className={styles.teacher}>
             <UserRound aria-hidden="true" />
-            {membership.teacherName}
+            {membership.teacherName ?? 'No teacher assigned'}
           </p>
         </div>
       </div>
@@ -75,6 +75,8 @@ export function StudentClassCard({ membership }: StudentClassCardProps) {
               intent="leave"
               pending={isLeaving}
               pendingLabel="Leaving…"
+              // One class at a time: the forms share a fetcher, and a second would cancel the first.
+              disabled={leave.isSubmitting && !isLeaving}
             />
           </leave.fetcher.Form>
         ) : (

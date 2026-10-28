@@ -10,33 +10,51 @@ interface FetcherFormOptions {
   formRef?: RefObject<HTMLFormElement | null>;
   /** Clear the form after it succeeds, e.g. so a join code isn't left in the box. */
   resetOnSuccess?: boolean;
+  /**
+   * Where focus goes after a success if it was lost, e.g. because the saved data rebuilt the
+   * form and removed the button that was pressed.
+   */
+  focusAfterSuccess?: RefObject<HTMLElement | null>;
+}
+
+/** True when nothing has focus, e.g. after the focused element was removed from the page. */
+function focusWasLost(): boolean {
+  return document.activeElement === null || document.activeElement === document.body;
 }
 
 /**
  * A form that sends to the page's action without leaving the page, for pages with several
  * separate forms. Each form keeps its own result and pending state, and when a field needs fixing
- * focus moves to it, so the problem is read out with the field. Inside a LatestFormScope, only
- * the form used last shows its result; pass `onSubmit` to the form for that.
+ * focus moves to it, so the problem is read out with the field. A result shows only once the
+ * page's data has reloaded, never the previous one while a new submission is on its way. Inside
+ * a LatestFormScope, only the form used last shows its result; pass `onSubmit` to the form.
  */
-export function useFetcherForm({ key, formRef, resetOnSuccess = false }: FetcherFormOptions = {}) {
+export function useFetcherForm({
+  key,
+  formRef,
+  resetOnSuccess = false,
+  focusAfterSuccess,
+}: FetcherFormOptions = {}) {
   const fetcher = useFetcher<FormResult>(key ? { key } : undefined);
   const scope = use(LatestFormContext);
   const generatedId = useId();
   // Components sharing a fetcher share its result, so they share an id too.
   const formId = key ?? generatedId;
-  const data = fetcher.data;
-  const result = !scope || scope.latest === formId ? data : undefined;
+  const isIdle = fetcher.state === 'idle';
+  const settled = isIdle ? fetcher.data : undefined;
+  const result = !scope || scope.latest === formId ? settled : undefined;
 
   useEffect(() => {
-    if (!data) return;
-    if (data.ok) {
+    if (!settled) return;
+    if (settled.ok) {
       if (resetOnSuccess) formRef?.current?.reset();
+      if (focusWasLost()) focusAfterSuccess?.current?.focus();
       return;
     }
-    if (!data.field) return;
-    const field = formRef?.current?.elements.namedItem(data.field);
+    if (!settled.field) return;
+    const field = formRef?.current?.elements.namedItem(settled.field);
     if (field instanceof HTMLElement) field.focus();
-  }, [data, formRef, resetOnSuccess]);
+  }, [settled, formRef, resetOnSuccess, focusAfterSuccess]);
 
   return {
     fetcher,
@@ -44,7 +62,7 @@ export function useFetcherForm({ key, formRef, resetOnSuccess = false }: Fetcher
     ...describeFormResult(result),
     /** The success message of the last submission, if it succeeded. */
     successMessage: result?.ok ? (result.message ?? null) : null,
-    isSubmitting: fetcher.state !== 'idle',
+    isSubmitting: !isIdle,
     onSubmit: () => {
       scope?.setLatest(formId);
     },

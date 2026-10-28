@@ -7,7 +7,6 @@ const AUTH_ERROR_CODES: Partial<Record<string, AppErrorCode>> = {
   weak_password: 'weak_password',
   same_password: 'same_password',
   email_address_invalid: 'invalid_email',
-  validation_failed: 'invalid_email',
   otp_expired: 'link_invalid',
   flow_state_not_found: 'link_invalid',
   flow_state_expired: 'link_invalid',
@@ -16,6 +15,9 @@ const AUTH_ERROR_CODES: Partial<Record<string, AppErrorCode>> = {
   over_request_rate_limit: 'rate_limited',
   provider_disabled: 'google_unavailable',
   session_not_found: 'not_signed_in',
+  // A password change from a session that is too old (or without the current password).
+  reauthentication_needed: 'link_invalid',
+  current_password_required: 'link_invalid',
 };
 
 interface ErrorLike {
@@ -45,8 +47,17 @@ export function toAppError(error: unknown): AppError {
 
   const details = error as ErrorLike;
   if (isNetworkFailure(details)) return new AppError('network', { cause: error });
-  if (details.code === 'P0001' && isAppErrorCode(details.message)) {
+  // Database functions raise their code as the message; so does the sign-in hook, which the auth
+  // server reports with the generic code "unknown".
+  if ((details.code === 'P0001' || details.code === 'unknown') && isAppErrorCode(details.message)) {
     return new AppError(details.message, { cause: error });
+  }
+  if (details.code === 'validation_failed') {
+    // The auth server uses this one code for several checks; its message says which.
+    const message = typeof details.message === 'string' ? details.message : '';
+    if (/password/i.test(message)) return new AppError('password_too_long', { cause: error });
+    if (/email/i.test(message)) return new AppError('invalid_email', { cause: error });
+    return new AppError('unknown', { cause: error });
   }
   if (typeof details.code === 'string') {
     const authCode = AUTH_ERROR_CODES[details.code];

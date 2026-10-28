@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { SubmitButton } from '@/components/forms/SubmitButton';
 import styles from './AuthPage.module.css';
 
@@ -25,19 +26,37 @@ function GoogleMark() {
   );
 }
 
+interface GoogleButtonProps {
+  label: string;
+  pending: boolean;
+  /** False until Google sign-in is configured: the button is off and says why. */
+  available: boolean;
+}
+
 /** Submits the surrounding form with intent "google"; the action starts Google sign-in. */
-export function GoogleButton({ label, pending }: { label: string; pending: boolean }) {
+export function GoogleButton({ label, pending, available }: GoogleButtonProps) {
+  const noteId = useId();
+
   return (
-    <SubmitButton
-      name="intent"
-      value="google"
-      variant="secondary"
-      className={styles.submit}
-      pending={pending}
-      pendingLabel="Opening Google…"
-    >
-      <GoogleMark />
-      {label}
-    </SubmitButton>
+    <>
+      <SubmitButton
+        name="intent"
+        value="google"
+        variant="secondary"
+        className={styles.submit}
+        pending={pending}
+        pendingLabel="Opening Google…"
+        disabled={!available}
+        aria-describedby={available ? undefined : noteId}
+      >
+        <GoogleMark />
+        {label}
+      </SubmitButton>
+      {!available && (
+        <p id={noteId} className={styles.note}>
+          Google sign-in isn’t available yet. Use your email address and a password.
+        </p>
+      )}
+    </>
   );
 }

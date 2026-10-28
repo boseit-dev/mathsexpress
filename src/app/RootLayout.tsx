@@ -16,13 +16,13 @@ import styles from './RootLayout.module.css';
  * reacting when the session ends (for example after signing out in another tab).
  */
 export function RootLayout({ auth }: { auth: AuthService }) {
-  const { key } = useLocation();
+  const { key, pathname } = useLocation();
   const navigation = useNavigation();
   const { state: revalidationState, revalidate } = useRevalidator();
 
   useEffect(() => {
-    focusMainAfterNavigation(key);
-  }, [key]);
+    focusMainAfterNavigation({ key, pathname });
+  }, [key, pathname]);
 
   useEffect(() => {
     if (revalidationState === 'idle') focusMainAfterRetry();

@@ -39,7 +39,8 @@ export function toStudentClass(row: Composite['student_class']): StudentClassMem
     className: required(row.class_name, 'class_name'),
     classYearLevel: yearLevelFromNumber(required(row.class_year_level, 'class_year_level')),
     yearLevel: yearLevelFromNumber(required(row.my_year_level, 'my_year_level')),
-    teacherName: required(row.teacher_name, 'teacher_name'),
+    // Optional, so one class without a teacher can never stop a student's pages loading.
+    teacherName: row.teacher_name,
     studentsCanLeave: required(row.students_can_leave, 'students_can_leave'),
     joinedAt: required(row.joined_at, 'joined_at'),
   };

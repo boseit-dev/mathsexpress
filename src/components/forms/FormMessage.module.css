@@ -22,3 +22,8 @@
   background-color: var(--color-success-surface);
   color: var(--color-success);
 }
+
+/* An empty live region: kept in the accessibility tree, but out of the layout (no gap). */
+.empty {
+  position: absolute;
+}

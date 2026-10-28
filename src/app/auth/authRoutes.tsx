@@ -1,4 +1,4 @@
-import type { RouteObject } from 'react-router';
+import { redirect, type RouteObject } from 'react-router';
 import { paths } from '@/config/paths';
 import type { AppDependencies } from '@/data/repositories';
 import { AuthLinkPage } from '@/features/auth/AuthLinkPage';
@@ -9,6 +9,7 @@ import {
   createRegisterAction,
   createResetPasswordAction,
   createResetPasswordLoader,
+  createSignedOutPageLoader,
   createSignInAction,
   createSignOutAction,
   createWelcomeAction,
@@ -21,7 +22,6 @@ import { SignInPage } from '@/features/auth/SignInPage';
 import { WelcomePage } from '@/features/auth/WelcomePage';
 import { AuthLayout } from '@/layouts/AuthLayout';
 import { RouteErrorPage } from '../pages/RouteErrorPage';
-import { redirectIfSignedIn } from './guards';
 
 /** Signing in, registering, recovering a password, email links and finishing account setup. */
 export function createAuthRoutes(dependencies: AppDependencies): RouteObject[] {
@@ -34,13 +34,13 @@ export function createAuthRoutes(dependencies: AppDependencies): RouteObject[] {
           children: [
             {
               path: paths.signIn,
-              loader: () => redirectIfSignedIn(dependencies),
+              loader: createSignedOutPageLoader(dependencies),
               action: createSignInAction(dependencies),
               element: <SignInPage />,
             },
             {
               path: paths.register,
-              loader: () => redirectIfSignedIn(dependencies),
+              loader: createSignedOutPageLoader(dependencies),
               action: createRegisterAction(dependencies),
               element: <RegisterPage />,
             },
@@ -75,6 +75,11 @@ export function createAuthRoutes(dependencies: AppDependencies): RouteObject[] {
         },
       ],
     },
-    { path: paths.signOut, action: createSignOutAction(dependencies) },
+    {
+      // Signing out is a form action; opening the address directly just goes to the start.
+      path: paths.signOut,
+      loader: () => redirect(paths.root),
+      action: createSignOutAction(dependencies),
+    },
   ];
 }

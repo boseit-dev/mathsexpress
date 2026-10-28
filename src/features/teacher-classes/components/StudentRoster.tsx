@@ -17,15 +17,15 @@ interface StudentRosterProps {
 /** The students in a class, with each one's year level and removing them. */
 export function StudentRoster({ teacherClass, students }: StudentRosterProps) {
   const remove = useFetcherForm({ key: REMOVE_STUDENT_FETCHER });
-  const messageRef = useRef<HTMLDivElement>(null);
+  const removedRef = useRef<HTMLDivElement>(null);
+  const removeProblemRef = useRef<HTMLDivElement>(null);
 
   // Removing a student removes their row and the button that was pressed, so move focus to
   // the result instead.
   useEffect(() => {
-    if (remove.result) messageRef.current?.focus();
+    if (!remove.result) return;
+    (remove.result.ok ? removedRef : removeProblemRef).current?.focus();
   }, [remove.result]);
-
-  const removeMessage = remove.successMessage ?? remove.formMessage;
 
   return (
     <Panel
@@ -33,15 +33,12 @@ export function StudentRoster({ teacherClass, students }: StudentRosterProps) {
       icon={UsersRound}
       action={<span className={styles.count}>{formatCount(students.length, 'student')}</span>}
     >
-      {removeMessage && (
-        <FormMessage
-          ref={messageRef}
-          tabIndex={-1}
-          tone={remove.successMessage ? 'success' : 'error'}
-        >
-          {removeMessage}
-        </FormMessage>
-      )}
+      <FormMessage ref={removedRef} tabIndex={-1} tone="success">
+        {remove.successMessage}
+      </FormMessage>
+      <FormMessage ref={removeProblemRef} tabIndex={-1} tone="error">
+        {remove.formMessage}
+      </FormMessage>
       {students.length === 0 ? (
         <p className={styles.empty}>
           No students yet. Share the class code, and students will appear here as they join.

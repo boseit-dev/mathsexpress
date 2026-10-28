@@ -1,7 +1,7 @@
 import type { RouteObject } from 'react-router';
 import { paths } from '@/config/paths';
 import type { AppDependencies } from '@/data/repositories';
-import { createStudentClassAction } from '@/features/student-class/studentClassAction';
+import { createStudentClassAction } from '@/features/student-class/studentClassHandlers';
 import { StudentClassPage } from '@/features/student-class/StudentClassPage';
 import { StudentHomePage } from '@/features/student-home/StudentHomePage';
 import { createStudentHomeLoader } from '@/features/student-home/studentHomeLoader';
@@ -15,10 +15,18 @@ function planned(title: string, summary: string) {
   return <PlannedSectionPage title={title} summary={summary} homePath={paths.student.home} />;
 }
 
+const PAGES_SHOWING_CLASSES: readonly string[] = [paths.student.home, paths.student.class];
+
 export function createStudentRoutes(dependencies: AppDependencies): RouteObject {
   return {
     path: paths.student.home,
     loader: createStudentLayoutLoader(dependencies),
+    // The student's classes reload when opening a page that shows them, so a teacher's changes
+    // (a new year level, a removal) show there at once. Other pages don't wait for them.
+    shouldRevalidate: ({ currentUrl, nextUrl, defaultShouldRevalidate }) =>
+      defaultShouldRevalidate ||
+      (currentUrl.pathname !== nextUrl.pathname &&
+        PAGES_SHOWING_CLASSES.includes(nextUrl.pathname)),
     element: <StudentLayout />,
     children: [
       {
@@ -45,7 +53,7 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
             ),
           },
           {
-            // Uses the classes the layout loads, so it has no loader of its own.
+            // Uses the student and classes the layout loads.
             path: paths.student.class,
             action: createStudentClassAction(dependencies),
             element: <StudentClassPage />,

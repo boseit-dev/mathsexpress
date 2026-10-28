@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { findAccessibilityProblems } from '@/test/axe';
 import { createFakeState, testTeacher } from '@/test/fakeDependencies';
 import { renderApp } from '@/test/renderApp';
@@ -95,6 +95,107 @@ describe('teacher class page', () => {
 
     expect(await screen.findByText('Saved. Mia Chen is in Year 10.')).toBeVisible();
     expect(state.classes[0]?.students[0]?.yearLevel).toBe(10);
+    // The saved value rebuilds the row's form; focus stays on its Save button.
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Save Mia Chen’s year level' })).toHaveFocus();
+    });
+  });
+
+  it('keeps focus on Save after saving the class settings', async () => {
+    const user = userEvent.setup();
+    renderApp(CLASS_PAGE, { signedInAs: 'teacher' });
+    const name = await screen.findByLabelText('Class name');
+    await user.clear(name);
+    await user.type(name, '9M2 Maths');
+    await user.click(screen.getByRole('button', { name: 'Save settings' }));
+    expect(await screen.findByText('Class settings saved.')).toBeVisible();
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Save settings' })).toHaveFocus();
+    });
+  });
+
+  it('removes one student at a time', async () => {
+    const user = userEvent.setup();
+    const state = teacherState();
+    state.classes[0]?.students.push({
+      studentId: 'user-leo@example.test',
+      firstName: 'Leo',
+      lastName: 'Martin',
+      yearLevel: 9,
+      joinedAt: '2026-10-05T00:00:00.000Z',
+    });
+    const { dependencies } = renderApp(CLASS_PAGE, { signedInAs: 'teacher', state });
+    // Hold the first request until the test lets it finish.
+    let finishRemoving: (() => void) | undefined;
+    const removeStudent = dependencies.classes.removeStudent.bind(dependencies.classes);
+    vi.spyOn(dependencies.classes, 'removeStudent').mockImplementationOnce(
+      async (classId, studentId) => {
+        await new Promise<void>((resolve) => {
+          finishRemoving = resolve;
+        });
+        return removeStudent(classId, studentId);
+      },
+    );
+    await user.click(await screen.findByRole('button', { name: 'Remove Mia Chen' }));
+    await user.click(screen.getByRole('button', { name: 'Remove Leo Martin' }));
+    const [first, second] = screen.getAllByRole('button', { name: 'Remove student' });
+    if (!first || !second) throw new Error('Expected two confirmations');
+
+    await user.click(first);
+    await waitFor(() => {
+      expect(second).toBeDisabled();
+    });
+    // Cancelling the other confirmation returns focus to its Remove button.
+    const cancels = screen.getAllByRole('button', { name: 'Cancel' });
+    const leoCancel = cancels.at(-1);
+    if (!leoCancel) throw new Error('Expected a Cancel button');
+    await user.click(leoCancel);
+    expect(screen.getByRole('button', { name: 'Remove Leo Martin' })).toHaveFocus();
+    finishRemoving?.();
+    expect(await screen.findByText('Mia Chen was removed from the class.')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Remove Leo Martin' })).toBeEnabled();
+  });
+
+  it('focuses Cancel on a confirmation opened while another removal is running', async () => {
+    const user = userEvent.setup();
+    const state = teacherState();
+    state.classes[0]?.students.push({
+      studentId: 'user-leo@example.test',
+      firstName: 'Leo',
+      lastName: 'Martin',
+      yearLevel: 9,
+      joinedAt: '2026-10-05T00:00:00.000Z',
+    });
+    const { dependencies } = renderApp(CLASS_PAGE, { signedInAs: 'teacher', state });
+    let finishRemoving: (() => void) | undefined;
+    const removeStudent = dependencies.classes.removeStudent.bind(dependencies.classes);
+    vi.spyOn(dependencies.classes, 'removeStudent').mockImplementationOnce(
+      async (classId, studentId) => {
+        await new Promise<void>((resolve) => {
+          finishRemoving = resolve;
+        });
+        return removeStudent(classId, studentId);
+      },
+    );
+    await user.click(await screen.findByRole('button', { name: 'Remove Mia Chen' }));
+    await user.click(screen.getByRole('button', { name: 'Remove student' }));
+    await screen.findByRole('button', { name: 'Removing…' });
+
+    await user.click(screen.getByRole('button', { name: 'Remove Leo Martin' }));
+    const [, leoCancel] = screen.getAllByRole('button', { name: 'Cancel' });
+    expect(leoCancel).toHaveFocus();
+    finishRemoving?.();
+    expect(await screen.findByText('Mia Chen was removed from the class.')).toBeVisible();
+  });
+
+  it('says so on screen when the code can’t be copied', async () => {
+    const user = userEvent.setup();
+    renderApp(CLASS_PAGE, { signedInAs: 'teacher' });
+    vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(new Error('denied'));
+    await user.click(await screen.findByRole('button', { name: 'Copy code' }));
+    expect(
+      await screen.findByText('Couldn’t copy. Select the code and copy it instead.'),
+    ).toBeVisible();
   });
 
   it('removes a student after confirming', async () => {

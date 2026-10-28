@@ -3,7 +3,7 @@ import { AppError, errorCodeOf, errorMessages, type AppErrorCode } from '@/domai
 /** What a form action returns to its page: success (with an optional message) or an error. */
 export type FormResult =
   | { ok: true; message?: string; email?: string }
-  | { ok: false; error: AppErrorCode; field?: string };
+  | { ok: false; error: AppErrorCode; field?: string; email?: string };
 
 export function formError(error: AppErrorCode, field?: string): FormResult {
   return field ? { ok: false, error, field } : { ok: false, error };

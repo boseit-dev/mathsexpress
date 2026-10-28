@@ -31,10 +31,8 @@ export function createStudentClassAction({ classes }: AppDependencies) {
       if (codeProblem) return formError(codeProblem, 'code');
       try {
         const joined = await classes.joinClass(code);
-        return {
-          ok: true,
-          message: `You joined ${joined.className}. Your teacher is ${joined.teacherName}.`,
-        };
+        const teacher = joined.teacherName ? ` Your teacher is ${joined.teacherName}.` : '';
+        return { ok: true, message: `You joined ${joined.className}.${teacher}` };
       } catch (error) {
         if (error instanceof AppError && JOIN_CODE_ERRORS.has(error.code)) {
           return formError(error.code, 'code');

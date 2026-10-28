@@ -7,10 +7,11 @@
   inline-size: var(--size-year-crest);
   block-size: var(--size-year-crest);
   border-radius: var(--radius-lg) var(--radius-lg) var(--radius-xl) var(--radius-xl);
+  /* Solid primary behind the small label at the top, lightening only towards the lower corner. */
   background-image: linear-gradient(
-    150deg,
-    var(--color-brand-secondary),
-    var(--color-brand-primary) 70%
+    to bottom right,
+    var(--color-brand-primary) 55%,
+    var(--color-brand-secondary)
   );
   box-shadow:
     inset 0 1px 0 var(--color-on-brand-track),
@@ -20,11 +21,10 @@
 }
 
 .label {
-  font-size: 0.625rem;
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.08em;
+  font-size: var(--font-size-crest-label);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  opacity: 0.85;
 }
 
 .value {

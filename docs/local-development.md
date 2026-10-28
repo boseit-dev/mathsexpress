@@ -33,6 +33,21 @@ The local stack uses its own ports, so it can run beside other Supabase projects
 Every email the app sends locally (account confirmation, password reset) lands in the test mailbox
 instead of a real inbox.
 
+## Trying the class features
+
+1. Register a teacher at http://localhost:5173/register, open the confirmation link from the test
+   mailbox, and choose the role, name and password. Go to **Classes**, create a class and note its
+   code.
+2. Open http://[::1]:5173 in another tab and sign in as the teacher there. A different address
+   keeps its own session, so you can be the teacher and a student at once.
+3. In the first tab, sign out, then register and confirm a student the same way. Open **Class**
+   and join with the code.
+4. In the teacher's tab, open the class to see the student, change their year level, replace the
+   code, change the settings or remove the student.
+
+Use made-up addresses ending in `example.test` and throwaway passwords for local accounts.
+`supabase db reset` deletes them all.
+
 ## Database changes
 
 - Change the schema only with a new file in `supabase/migrations/`; never edit the database by hand.

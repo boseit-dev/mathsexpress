@@ -1,6 +1,6 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { findAccessibilityProblems } from '@/test/axe';
 import { createFakeState, TEST_CLASS_CODE, type FakeState } from '@/test/fakeDependencies';
 import { renderApp } from '@/test/renderApp';
@@ -19,6 +19,7 @@ function addOpenClass(state: FakeState, overrides: { joiningEnabled?: boolean } 
     joinCode: 'WXYZ2345',
     joiningEnabled: overrides.joiningEnabled ?? true,
     students: [],
+    formerStudents: new Map(),
   });
 }
 
@@ -66,9 +67,9 @@ describe('student Class page', () => {
 
     await joinWithCode(user, 'wxyz-2345');
 
-    expect(await screen.findByRole('status')).toHaveTextContent(
-      'You joined 10A Advanced. Your teacher is Priya Patel.',
-    );
+    expect(
+      await screen.findByText('You joined 10A Advanced. Your teacher is Priya Patel.'),
+    ).toBeVisible();
     expect(await screen.findByRole('article', { name: '10A Advanced' })).toBeVisible();
     expect(screen.getByLabelText('Class code')).toHaveValue('');
     expect(state.classes[1]?.students.map((student) => student.firstName)).toEqual(['Mia']);
@@ -130,8 +131,9 @@ describe('student Class page', () => {
     expect(confirm).toHaveAccessibleDescription(/To come back, you’ll need the class code/);
 
     await user.click(confirm);
-    const message = await screen.findByRole('status');
-    expect(message).toHaveTextContent('You left 9M2 Mathematics.');
+    const message = (await screen.findByText('You left 9M2 Mathematics.')).closest(
+      '[role="status"]',
+    );
     await waitFor(() => {
       expect(message).toHaveFocus();
     });
@@ -151,6 +153,118 @@ describe('student Class page', () => {
       await screen.findByText('You joined 9M2 Mathematics. Your teacher is Priya Patel.'),
     ).toBeVisible();
     expect(screen.queryByText('You left 9M2 Mathematics.')).not.toBeInTheDocument();
+  });
+
+  it('leaves one class at a time, so a second confirmation can’t cancel the first', async () => {
+    const user = userEvent.setup();
+    const state = createFakeState();
+    addOpenClass(state);
+    const [, advanced] = state.classes;
+    advanced?.students.push({
+      studentId: 'user-mia@example.test',
+      firstName: 'Mia',
+      lastName: 'Chen',
+      yearLevel: 10,
+      joinedAt: '2026-10-03T00:00:00.000Z',
+    });
+    const { dependencies } = renderApp('/student/class', { state });
+    // Hold the first request until the test lets it finish.
+    let finishLeaving: (() => void) | undefined;
+    const leaveClass = dependencies.classes.leaveClass.bind(dependencies.classes);
+    vi.spyOn(dependencies.classes, 'leaveClass').mockImplementationOnce(async (classId) => {
+      await new Promise<void>((resolve) => {
+        finishLeaving = resolve;
+      });
+      return leaveClass(classId);
+    });
+    await user.click(await screen.findByRole('button', { name: 'Leave class 9M2 Mathematics' }));
+    await user.click(screen.getByRole('button', { name: 'Leave class 10A Advanced' }));
+    const [first, second] = screen.getAllByRole('button', { name: 'Yes, leave class' });
+    if (!first || !second) throw new Error('Expected two confirmations');
+
+    await user.click(first);
+    await waitFor(() => {
+      expect(second).toBeDisabled();
+    });
+    finishLeaving?.();
+    expect(await screen.findByText('You left 9M2 Mathematics.')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Yes, leave class' })).toBeEnabled();
+  });
+
+  it('never brings back an old result while a new one is on its way', async () => {
+    const user = userEvent.setup();
+    const state = createFakeState();
+    addOpenClass(state);
+    const { dependencies } = renderApp('/student/class', { state });
+    await user.click(await screen.findByRole('button', { name: 'Leave class 9M2 Mathematics' }));
+    await user.click(screen.getByRole('button', { name: 'Yes, leave class' }));
+    await screen.findByText('You left 9M2 Mathematics.');
+    await joinWithCode(user, 'WXYZ2345');
+    await screen.findByText(/You joined 10A Advanced/);
+
+    let finishLeaving: (() => void) | undefined;
+    const leaveClass = dependencies.classes.leaveClass.bind(dependencies.classes);
+    vi.spyOn(dependencies.classes, 'leaveClass').mockImplementationOnce(async (classId) => {
+      await new Promise<void>((resolve) => {
+        finishLeaving = resolve;
+      });
+      return leaveClass(classId);
+    });
+    await user.click(screen.getByRole('button', { name: 'Leave class 10A Advanced' }));
+    await user.click(screen.getByRole('button', { name: 'Yes, leave class' }));
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Leaving…' })).toBeDisabled();
+    });
+    expect(screen.queryByText('You left 9M2 Mathematics.')).not.toBeInTheDocument();
+
+    finishLeaving?.();
+    expect(await screen.findByText('You left 10A Advanced.')).toBeVisible();
+  });
+
+  it('shows the classes as they are now, after a teacher’s changes', async () => {
+    const state = createFakeState();
+    const { router } = renderApp('/student', { state });
+    await screen.findByRole('heading', { level: 1, name: /Mia/ });
+
+    // The teacher moves Mia to Year 10 while her home page is open.
+    const membership = state.classes[0]?.students[0];
+    if (membership) membership.yearLevel = 10;
+    await act(() => router.navigate('/student/class'));
+
+    const card = await screen.findByRole('article', { name: '9M2 Mathematics' });
+    expect(within(card).getByText('Year 10')).toBeVisible();
+  });
+
+  it('copes with a class that has no teacher', async () => {
+    const state = createFakeState();
+    const [taught] = state.classes;
+    if (taught) taught.teacherId = 'user-deleted';
+    renderApp('/student/class', { state });
+    const card = await screen.findByRole('article', { name: '9M2 Mathematics' });
+    expect(within(card).getByText('No teacher assigned')).toBeVisible();
+  });
+
+  it('gives back the year level the teacher set when a student leaves and rejoins', async () => {
+    const user = userEvent.setup();
+    const state = createFakeState();
+    const membership = state.classes[0]?.students[0];
+    if (membership) membership.yearLevel = 7;
+    renderApp('/student/class', { state });
+
+    await user.click(await screen.findByRole('button', { name: 'Leave class 9M2 Mathematics' }));
+    await user.click(screen.getByRole('button', { name: 'Yes, leave class' }));
+    await screen.findByText('You left 9M2 Mathematics.');
+    await joinWithCode(user, TEST_CLASS_CODE);
+
+    const card = await screen.findByRole('article', { name: '9M2 Mathematics' });
+    expect(within(card).getByText('Year 7')).toBeVisible();
+  });
+
+  it('keeps its message areas in the page, so new messages are announced', async () => {
+    renderApp('/student/class');
+    const panel = await screen.findByRole('region', { name: 'Join a class' });
+    const [status] = within(panel).getAllByRole('status');
+    expect(status).toBeEmptyDOMElement();
   });
 
   it('can cancel leaving', async () => {

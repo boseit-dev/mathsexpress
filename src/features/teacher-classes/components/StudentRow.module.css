@@ -57,7 +57,7 @@
 
 .result:empty {
   /* Kept in the page so screen readers announce it when a message appears; takes no space. */
-  margin-block-start: calc(var(--space-3) * -1);
+  position: absolute;
 }
 
 .saved {

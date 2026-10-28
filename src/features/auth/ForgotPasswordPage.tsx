@@ -23,7 +23,7 @@ export function ForgotPasswordPage() {
         </FormMessage>
       ) : (
         <>
-          {formMessage && <FormMessage tone="error">{formMessage}</FormMessage>}
+          <FormMessage tone="error">{formMessage}</FormMessage>
           <Form method="post" noValidate className={styles.form}>
             <TextField
               label="Email"
