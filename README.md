@@ -24,13 +24,18 @@ architecture, design system and codebase.
 
 Requires Node.js 24 (see `.nvmrc`).
 
+It also needs Docker and the Supabase CLI for the local database and sign-in service; see
+[docs/local-development.md](docs/local-development.md).
+
 ```sh
-npm install   # installs dependencies and enables the git hooks in .githooks
-npm run dev   # starts the app at http://localhost:5173
+npm install         # installs dependencies and enables the git hooks in .githooks
+supabase start      # local database, auth and test mailbox (Docker)
+npm run env:local   # writes .env.local for the local stack (never committed)
+npm run dev         # starts the app at http://localhost:5173
 ```
 
-Open http://localhost:5173 to see the student home page. A bar at the top links to the teacher
-layout.
+Open http://localhost:5173, create a student or teacher account on the Register page, and
+confirm it from the test mailbox at http://127.0.0.1:55324.
 
 ## Scripts
 

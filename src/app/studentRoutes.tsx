@@ -5,7 +5,6 @@ import { StudentHomePage } from '@/features/student-home/StudentHomePage';
 import { createStudentHomeLoader } from '@/features/student-home/studentHomeLoader';
 import { StudentLayout } from '@/layouts/student/StudentLayout';
 import { createStudentLayoutLoader } from '@/layouts/student/studentLayoutLoader';
-import { LoadingScreen } from './pages/LoadingScreen';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PlannedSectionPage } from './pages/PlannedSectionPage';
 import { RouteErrorPage } from './pages/RouteErrorPage';
@@ -15,12 +14,10 @@ function planned(title: string, summary: string) {
 }
 
 export function createStudentRoutes(dependencies: AppDependencies): RouteObject {
-  const { studentRepository } = dependencies;
   return {
     path: paths.student.home,
-    loader: createStudentLayoutLoader(studentRepository),
+    loader: createStudentLayoutLoader(dependencies),
     element: <StudentLayout />,
-    hydrateFallbackElement: <LoadingScreen />,
     children: [
       {
         // Page errors render inside the layout, so the navigation stays usable.

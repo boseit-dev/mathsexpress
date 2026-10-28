@@ -23,6 +23,22 @@ Phase 2: authentication, accounts and class management.
   credentials.
 - Database and authentication integration tests (`npm run test:db`), also run in CI against a
   fresh Supabase stack, with a check that the generated database types match the migrations.
+- Sign in, registration (student or teacher), email confirmation, resending the confirmation,
+  forgot password and reset password pages, Google sign-in (explains when it is not set up), and
+  a welcome page to finish setting up accounts without a profile (e.g. after Google).
+- Persistent sessions that refresh automatically; signing out (also in another tab) returns
+  people to the sign-in page. Pages are protected by role, and people are returned to the page
+  they wanted after signing in (only ever to a page in MathsExpress).
+- Account menu with the signed-in person's name and Sign out, replacing the sample avatar.
+- The home page uses the signed-in student's real name, class and teacher-assigned year level,
+  invites students without a class to join one, and labels every panel that still shows sample
+  data.
+- A loading indicator during page changes, clear error messages for every account and class
+  problem, and a setup page when the app has no database connection configured.
+
+### Changed
+
+- The header no longer shows a coin balance: coins are not real until the rewards system is built.
 
 ## [2.0.0-alpha.1] - 2026-10-28
 

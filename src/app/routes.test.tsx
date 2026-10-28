@@ -1,11 +1,10 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import type { StudentRepository } from '@/data/repositories';
-import { sampleStudent } from '@/data/sample/sampleStudent';
-import { createSampleStudentRepository } from '@/data/sample/sampleStudentRepository';
+import { AppError } from '@/domain/errors';
 import { findAccessibilityProblems } from '@/test/axe';
-import { renderApp, TEST_NOW } from '@/test/renderApp';
+import { createFakeDependencies, createFakeState } from '@/test/fakeDependencies';
+import { renderApp } from '@/test/renderApp';
 
 function linkNames(container: HTMLElement) {
   return within(container)
@@ -13,31 +12,68 @@ function linkNames(container: HTMLElement) {
     .map((link) => link.textContent);
 }
 
-describe('routing', () => {
-  it('sends the root address to the student home without router warnings', async () => {
-    const consoleWarn = vi.spyOn(console, 'warn');
-    const { router } = renderApp('/');
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe('/student');
-    });
-    await screen.findByRole('heading', { level: 1 });
-    expect(consoleWarn).not.toHaveBeenCalled();
+describe('where people start', () => {
+  it('sends visitors who are not signed in to sign in', async () => {
+    const { router } = renderApp('/', { signedInAs: null });
+    expect(await screen.findByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
+    expect(router.state.location.pathname).toBe('/sign-in');
   });
 
-  it('moves focus to the new page after "Go to home" on the not-found page', async () => {
-    const user = userEvent.setup();
-    renderApp('/no-such-page');
-    await user.click(await screen.findByRole('link', { name: 'Go to home' }));
-    await screen.findByRole('navigation', { name: 'Student' });
+  it('sends students and teachers to their own home page', async () => {
+    const student = renderApp('/', { signedInAs: 'student' });
     await waitFor(() => {
-      expect(screen.getByRole('main')).toHaveFocus();
+      expect(student.router.state.location.pathname).toBe('/student');
     });
+    student.unmount();
+
+    const teacher = renderApp('/', { signedInAs: 'teacher' });
+    await waitFor(() => {
+      expect(teacher.router.state.location.pathname).toBe('/teacher');
+    });
+  });
+
+  it('asks signed-in people without a profile to finish setting up', async () => {
+    const state = createFakeState();
+    const account = state.accounts.get('mia@example.test');
+    if (account) account.profile = null;
+    const { router } = renderApp('/', { state });
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Welcome to MathsExpress' }),
+    ).toBeVisible();
+    expect(router.state.location.pathname).toBe('/welcome');
   });
 
   it('shows a not-found page for an unknown address', async () => {
     renderApp('/no-such-page');
     expect(await screen.findByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Go to home' })).toHaveAttribute('href', '/');
+  });
+});
+
+describe('who can see which pages', () => {
+  it('sends signed-out visitors to sign in and remembers where they were going', async () => {
+    const { router } = renderApp('/student/class', { signedInAs: null });
+    await screen.findByRole('heading', { level: 1, name: 'Sign in' });
+    expect(router.state.location.search).toBe('?redirectTo=%2Fstudent%2Fclass');
+  });
+
+  it('keeps students out of teacher pages and teachers out of student pages', async () => {
+    const student = renderApp('/teacher/classes', { signedInAs: 'student' });
+    await waitFor(() => {
+      expect(student.router.state.location.pathname).toBe('/student');
+    });
+    student.unmount();
+
+    const teacher = renderApp('/student/class', { signedInAs: 'teacher' });
+    await waitFor(() => {
+      expect(teacher.router.state.location.pathname).toBe('/teacher');
+    });
+  });
+
+  it('sends signed-in people away from the sign-in page', async () => {
+    const { router } = renderApp('/sign-in', { signedInAs: 'student' });
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/student');
+    });
   });
 });
 
@@ -62,48 +98,9 @@ describe('student layout', () => {
       'aria-current',
       'page',
     );
-    expect(within(nav).getByRole('link', { name: 'Home' })).not.toHaveAttribute('aria-current');
     await waitFor(() => {
       expect(screen.getByRole('main')).toHaveFocus();
       expect(document.title).toBe('Learn · MathsExpress');
-    });
-  });
-
-  it('shows the student’s coin balance and avatar', async () => {
-    renderApp('/student');
-    const header = await screen.findByRole('banner');
-    expect(header).toHaveTextContent('Coin balance: 340 coins');
-    expect(within(header).getByRole('img', { name: 'Mia Chen' })).toBeVisible();
-  });
-
-  it('labels the preview as sample data and links to the teacher layout', async () => {
-    renderApp('/student');
-    const notice = await screen.findByRole('complementary', { name: 'Development preview' });
-    expect(notice).toHaveTextContent('Sample data only: these are not real students or teachers.');
-    expect(within(notice).getByRole('link', { name: 'View the teacher layout' })).toHaveAttribute(
-      'href',
-      '/teacher',
-    );
-  });
-
-  it('offers a skip link as the first stop for keyboard users', async () => {
-    const user = userEvent.setup();
-    renderApp('/student');
-    await screen.findByRole('navigation', { name: 'Student' });
-    await user.tab();
-    const skipLink = screen.getByRole('link', { name: 'Skip to main content' });
-    expect(skipLink).toHaveFocus();
-    expect(skipLink).toHaveAttribute('href', '#main-content');
-    expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
-  });
-
-  it('moves focus to the new page when switching to the teacher layout', async () => {
-    const user = userEvent.setup();
-    renderApp('/student/learn');
-    await user.click(await screen.findByRole('link', { name: 'View the teacher layout' }));
-    await screen.findByRole('navigation', { name: 'Teacher' });
-    await waitFor(() => {
-      expect(screen.getByRole('main')).toHaveFocus();
     });
   });
 
@@ -115,6 +112,22 @@ describe('student layout', () => {
       'true',
     );
     expect(within(nav).queryByRole('link', { current: 'page' })).not.toBeInTheDocument();
+  });
+
+  it('explains which parts of the preview are sample data', async () => {
+    renderApp('/student');
+    const notice = await screen.findByRole('complementary', { name: 'Development preview' });
+    expect(notice).toHaveTextContent('Your account and classes are real');
+  });
+
+  it('offers a skip link as the first stop for keyboard users', async () => {
+    const user = userEvent.setup();
+    renderApp('/student');
+    await screen.findByRole('navigation', { name: 'Student' });
+    await user.tab();
+    const skipLink = screen.getByRole('link', { name: 'Skip to main content' });
+    expect(skipLink).toHaveFocus();
+    expect(skipLink).toHaveAttribute('href', '#main-content');
   });
 
   it('keeps the navigation when an address inside the student area does not exist', async () => {
@@ -130,48 +143,97 @@ describe('student layout', () => {
   });
 });
 
+describe('account menu and signing out', () => {
+  it('shows who is signed in and signs them out', async () => {
+    const user = userEvent.setup();
+    const { router, state } = renderApp('/student');
+    const menuButton = await screen.findByRole('button', { name: 'Account: Mia Chen' });
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+
+    await user.click(menuButton);
+    expect(menuButton).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Student account')).toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: 'Sign out' }));
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
+    expect(router.state.location.pathname).toBe('/sign-in');
+    expect(state.signedInEmail).toBeNull();
+  });
+
+  it('closes with Escape and returns focus to the button', async () => {
+    const user = userEvent.setup();
+    renderApp('/teacher', { signedInAs: 'teacher' });
+    const menuButton = await screen.findByRole('button', { name: 'Account: Priya Patel' });
+    await user.click(menuButton);
+    await user.keyboard('{Escape}');
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+    expect(menuButton).toHaveFocus();
+    expect(screen.queryByRole('button', { name: 'Sign out' })).not.toBeInTheDocument();
+  });
+
+  it('leaves protected pages when the session ends in another tab', async () => {
+    const { dependencies, router } = renderApp('/student/learn');
+    await screen.findByRole('heading', { level: 1, name: 'Learn' });
+
+    await dependencies.auth.signOut();
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
+    expect(router.state.location.search).toBe('?redirectTo=%2Fstudent%2Flearn');
+  });
+});
+
 describe('teacher layout', () => {
   it('shows the teacher navigation at the top in the agreed order', async () => {
-    renderApp('/teacher');
+    renderApp('/teacher', { signedInAs: 'teacher' });
     const nav = await screen.findByRole('navigation', { name: 'Teacher' });
-    const header = screen.getByRole('banner');
-    expect(header).toContainElement(nav);
+    expect(screen.getByRole('banner')).toContainElement(nav);
     expect(linkNames(nav)).toEqual(['Home', 'Classes', 'Tasks', 'Reports', 'More']);
     expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
-    expect(within(header).getByRole('img', { name: 'Priya Patel' })).toBeVisible();
   });
 
   it('offers "Back to home" on planned sections but not on the home page itself', async () => {
-    const { router } = renderApp('/teacher/tasks');
+    const { router } = renderApp('/teacher/tasks', { signedInAs: 'teacher' });
     expect(await screen.findByRole('link', { name: 'Back to home' })).toHaveAttribute(
       'href',
       '/teacher',
     );
-
     await router.navigate('/teacher');
-
     expect(await screen.findByRole('heading', { level: 1, name: 'Teacher home' })).toBeVisible();
     expect(screen.queryByRole('link', { name: 'Back to home' })).not.toBeInTheDocument();
   });
 
   it('has no detectable accessibility problems', async () => {
-    renderApp('/teacher/reports');
+    renderApp('/teacher/reports', { signedInAs: 'teacher' });
     await screen.findByRole('heading', { level: 1, name: 'Reports' });
     expect(await findAccessibilityProblems()).toEqual([]);
   });
 });
 
 describe('errors', () => {
+  it('moves focus to the new page after "Go to home" on the not-found page', async () => {
+    const user = userEvent.setup();
+    renderApp('/no-such-page');
+    await user.click(await screen.findByRole('link', { name: 'Go to home' }));
+    await screen.findByRole('navigation', { name: 'Student' });
+    await waitFor(() => {
+      expect(screen.getByRole('main')).toHaveFocus();
+    });
+  });
+
   it('shows an error page whose Try again button reloads the data', async () => {
     const user = userEvent.setup();
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
-    const getCurrentStudent = vi
-      .fn<StudentRepository['getCurrentStudent']>()
-      .mockRejectedValueOnce(new Error('Network unavailable'))
-      .mockResolvedValue(sampleStudent);
+    const state = createFakeState();
+    const realClasses = createFakeDependencies(state).classes;
+    const listMyClasses = vi
+      .fn<typeof realClasses.listMyClasses>()
+      .mockRejectedValueOnce(new AppError('network'))
+      .mockImplementation((options) => realClasses.listMyClasses(options));
 
     renderApp('/student/learn', {
-      studentRepository: { ...createSampleStudentRepository(() => TEST_NOW), getCurrentStudent },
+      state,
+      overrides: { classes: { ...realClasses, listMyClasses } },
     });
 
     expect(
@@ -180,15 +242,14 @@ describe('errors', () => {
     await waitFor(() => {
       expect(consoleError).toHaveBeenCalledWith(
         'MathsExpress could not show this page:',
-        expect.any(Error),
+        expect.any(AppError),
       );
     });
 
     await user.click(screen.getByRole('button', { name: 'Try again' }));
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Learn' })).toBeVisible();
-    expect(getCurrentStudent).toHaveBeenCalledTimes(2);
-    // The pressed button is gone, so focus moves to the reloaded page instead of being lost.
+    expect(listMyClasses).toHaveBeenCalledTimes(2);
     await waitFor(() => {
       expect(screen.getByRole('main')).toHaveFocus();
     });

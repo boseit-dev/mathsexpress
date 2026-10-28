@@ -1,0 +1,80 @@
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+}
+
+.intro {
+  color: var(--color-text-secondary);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.nameRow {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 480px) {
+  .nameRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.submit {
+  inline-size: 100%;
+}
+
+.inlineLink {
+  align-self: flex-start;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.divider::before,
+.divider::after {
+  flex: 1;
+  border-block-start: 1px solid var(--color-border);
+  content: '';
+}
+
+.footer {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+.footer a {
+  font-weight: var(--font-weight-semibold);
+}
+
+.linkButton {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.googleMark {
+  inline-size: var(--size-icon-md);
+  block-size: var(--size-icon-md);
+}

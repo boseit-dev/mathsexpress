@@ -1,8 +1,9 @@
 import { Outlet } from 'react-router';
 import { studentNavigation } from '@/config/navigation';
 import { paths } from '@/config/paths';
+import { getFullName } from '@/domain/people';
+import { AccountMenu } from '../AccountMenu';
 import { AppShell } from '../AppShell';
-import { StudentAccount } from './StudentAccount';
 import { StudentBackdrop } from './StudentBackdrop';
 import { useStudentLayoutData } from './studentLayoutLoader';
 
@@ -15,8 +16,7 @@ export function StudentLayout() {
       homePath={paths.student.home}
       navigation={studentNavigation}
       navigationLabel="Student"
-      account={<StudentAccount student={student} />}
-      previewSwitchLink={{ label: 'View the teacher layout', to: paths.teacher.home }}
+      account={<AccountMenu name={getFullName(student)} roleLabel="Student" />}
       backdrop={<StudentBackdrop />}
     >
       <Outlet context={student} />

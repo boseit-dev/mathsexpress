@@ -15,8 +15,7 @@ const student: CurrentStudent = {
   firstName: 'Sam',
   lastName: 'Lee',
   displayName: 'Sam L.',
-  enrolment: { classId: 'c1', className: '7A Maths', yearLevel: 7, teacherName: 'Mr Ng' },
-  coinBalance: 0,
+  classes: [],
 };
 
 describe('WelcomeBanner', () => {
@@ -24,6 +23,7 @@ describe('WelcomeBanner', () => {
     renderWithRouter(
       <WelcomeBanner
         student={student}
+        primaryClass={null}
         now={NOW}
         taskCounts={{ open: 0, overdue: 0 }}
         continueAssignment={null}
@@ -33,6 +33,21 @@ describe('WelcomeBanner', () => {
     expect(screen.getByText('You’re all caught up on your tasks. Nice work!')).toBeVisible();
     expect(screen.getByRole('link', { name: 'Continue learning' })).toBeVisible();
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+  });
+
+  it('links to the Class page when the student has not joined a class', () => {
+    renderWithRouter(
+      <WelcomeBanner
+        student={student}
+        primaryClass={null}
+        now={NOW}
+        taskCounts={{ open: 0, overdue: 0 }}
+        continueAssignment={null}
+      />,
+    );
+    expect(
+      screen.getByRole('link', { name: 'You’re not in a class yet · Join a class' }),
+    ).toHaveAttribute('href', '/student/class');
   });
 });
 

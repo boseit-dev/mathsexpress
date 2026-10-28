@@ -15,8 +15,11 @@ production database or the live website.
 ```sh
 npm install
 supabase start      # first run downloads the Docker images; later starts take seconds
+npm run env:local   # writes .env.local (not committed) with the local URL and publishable key
 npm run dev         # http://localhost:5173
 ```
+
+Create accounts on the Register page; the confirmation email arrives in the test mailbox below.
 
 The local stack uses its own ports, so it can run beside other Supabase projects:
 
@@ -51,6 +54,9 @@ without your own credentials.
    SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=your-client-secret
    ```
 
-4. Restart the stack: `supabase stop && supabase start`.
+4. In `supabase/config.toml`, set `enabled = true` under `[auth.external.google]`.
+5. Restart the stack: `supabase stop && supabase start`.
+
+Until then the "Continue with Google" button explains that Google sign-in is not set up yet.
 
 Never commit these values; `supabase/.env` is ignored by Git.

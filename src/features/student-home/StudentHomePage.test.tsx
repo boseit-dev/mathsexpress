@@ -1,10 +1,11 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import type { StudentRepository } from '@/data/repositories';
-import { createSampleStudentRepository } from '@/data/sample/sampleStudentRepository';
+import type { StudentHomeRepository } from '@/data/repositories';
+import { createSampleStudentHomeRepository } from '@/data/sample/sampleStudentHomeRepository';
 import { millisecondsUntilMidnight } from '@/lib/dates';
 import { findAccessibilityProblems } from '@/test/axe';
+import { createFakeState } from '@/test/fakeDependencies';
 import { renderApp, TEST_NOW } from '@/test/renderApp';
 
 // renderApp uses the sample data with "now" fixed at Wednesday 28 October 2026, 3:30 pm.
@@ -136,6 +137,39 @@ describe('student home page', () => {
     expect(rewards).toHaveTextContent('Next badge: Algebra Ace');
   });
 
+  it('marks every panel that shows sample data', async () => {
+    await renderHome();
+    for (const name of [
+      'Your assigned tasks',
+      'Your recommended practice',
+      'Your progress',
+      'Class leaderboard',
+      'Coin shop',
+      'Daily challenges',
+      'Your rewards',
+    ]) {
+      expect(section(name)).toHaveTextContent('Sample data');
+    }
+    expect(section('Good afternoon, Mia')).toHaveTextContent('(sample task)');
+  });
+
+  it('shows the student’s real class and teacher-assigned year level', async () => {
+    const state = createFakeState();
+    const membership = state.classes[0]?.students[0];
+    if (membership) membership.yearLevel = 10;
+    renderApp('/student', { state });
+    expect(await screen.findByText('Year 10 · 9M2 Mathematics')).toBeVisible();
+  });
+
+  it('asks a student who has not joined a class to join one', async () => {
+    const state = createFakeState();
+    state.classes[0]?.students.splice(0);
+    renderApp('/student', { state });
+    expect(
+      await screen.findByRole('link', { name: 'You’re not in a class yet · Join a class' }),
+    ).toHaveAttribute('href', '/student/class');
+  });
+
   it('has no detectable accessibility problems', async () => {
     await renderHome();
     expect(await findAccessibilityProblems()).toEqual([]);
@@ -144,11 +178,11 @@ describe('student home page', () => {
 
 describe('keeping the home page current', () => {
   function renderCountingHomeLoads() {
-    const repository = createSampleStudentRepository(() => TEST_NOW);
-    const getStudentHome = vi.fn<StudentRepository['getStudentHome']>((options) =>
-      repository.getStudentHome(options),
+    const repository = createSampleStudentHomeRepository(() => TEST_NOW);
+    const getStudentHome = vi.fn<StudentHomeRepository['getStudentHome']>((student, options) =>
+      repository.getStudentHome(student, options),
     );
-    renderApp('/student', { studentRepository: { ...repository, getStudentHome } });
+    renderApp('/student', { overrides: { studentHome: { getStudentHome } } });
     return getStudentHome;
   }
 

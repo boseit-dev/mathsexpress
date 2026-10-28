@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { getAssignmentStatus, isOverdue } from '@/domain/assignment';
 import { createSampleStudentHome } from './sampleStudentHome';
-import { sampleStudent } from './sampleStudent';
 
 // Guards the sample data's internal consistency, so the preview never shows impossible numbers.
 describe('sample student home data', () => {
   const now = new Date(2026, 9, 28, 15, 30);
-  const home = createSampleStudentHome(now);
+  const viewer = { id: 'student-1', displayName: 'Sam L.' };
+  const home = createSampleStudentHome(now, viewer);
 
   it('has task numbers that add up', () => {
     for (const task of home.assignments) {
@@ -23,9 +23,9 @@ describe('sample student home data', () => {
   });
 
   it('keeps the student’s weekly coins the same everywhere they appear', () => {
-    const ownRow = home.leaderboard.find((entry) => entry.studentId === sampleStudent.id);
+    const ownRow = home.leaderboard.find((entry) => entry.studentId === viewer.id);
     expect(ownRow?.coinsThisWeek).toBe(home.rewards.coinsEarnedThisWeek);
-    expect(ownRow?.displayName).toBe(sampleStudent.displayName);
+    expect(ownRow?.displayName).toBe(viewer.displayName);
   });
 
   it('has a consistent progress summary', () => {

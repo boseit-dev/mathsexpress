@@ -3,6 +3,7 @@ import { ArrowLink } from '@/components/ui/ArrowLink';
 import { CoinAmount } from '@/components/ui/CoinAmount';
 import { IconTile, type IconTileTone } from '@/components/ui/IconTile';
 import { Panel } from '@/components/ui/Panel';
+import { SampleDataBadge } from '@/components/ui/SampleDataBadge';
 import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
 import { paths } from '@/config/paths';
 import { getCoinsNeeded, type ShopItem, type ShopItemCategory } from '@/domain/rewards';
@@ -25,6 +26,7 @@ export function ShopPanel({ items, coinBalance }: ShopPanelProps) {
   return (
     <Panel
       title="Coin shop"
+      badge={<SampleDataBadge />}
       icon={Store}
       action={
         <p className={styles.balance}>

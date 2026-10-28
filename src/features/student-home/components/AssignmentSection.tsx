@@ -1,6 +1,7 @@
 import { ClipboardList } from 'lucide-react';
 import { ArrowLink } from '@/components/ui/ArrowLink';
 import { Panel } from '@/components/ui/Panel';
+import { SampleDataBadge } from '@/components/ui/SampleDataBadge';
 import { paths } from '@/config/paths';
 import { selectHomeAssignments, type Assignment } from '@/domain/assignment';
 import { formatCount } from '@/lib/format';
@@ -21,6 +22,7 @@ export function AssignmentSection({ assignments, now }: AssignmentSectionProps) 
   return (
     <Panel
       title="Your assigned tasks"
+      badge={<SampleDataBadge />}
       icon={ClipboardList}
       footer={
         assignments.length > 0 && (

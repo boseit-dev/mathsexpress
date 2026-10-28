@@ -11,7 +11,6 @@ interface AppShellProps {
   navigation: readonly NavItem[];
   navigationLabel: string;
   account: ReactNode;
-  previewSwitchLink: { label: string; to: string };
   /** Optional decorative background drawn behind the page content. */
   backdrop?: ReactNode;
   children: ReactNode;
@@ -23,7 +22,6 @@ export function AppShell({
   navigation,
   navigationLabel,
   account,
-  previewSwitchLink,
   backdrop,
   children,
 }: AppShellProps) {
@@ -31,7 +29,7 @@ export function AppShell({
     <div className={styles.shell}>
       {backdrop}
       <SkipLink targetId={MAIN_CONTENT_ID} />
-      <DevPreviewNotice switchLink={previewSwitchLink} />
+      <DevPreviewNotice />
       <AppHeader
         homePath={homePath}
         navigation={navigation}

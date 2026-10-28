@@ -1,6 +1,7 @@
 import { Circle, CircleCheck, Clock, Zap } from 'lucide-react';
 import { CoinAmount } from '@/components/ui/CoinAmount';
 import { Panel } from '@/components/ui/Panel';
+import { SampleDataBadge } from '@/components/ui/SampleDataBadge';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
 import { isChallengeComplete, type DailyChallenge } from '@/domain/rewards';
@@ -16,6 +17,7 @@ export function ChallengesPanel({ challenges }: ChallengesPanelProps) {
   return (
     <Panel
       title="Daily challenges"
+      badge={<SampleDataBadge />}
       icon={Zap}
       action={
         <p className={styles.reset}>

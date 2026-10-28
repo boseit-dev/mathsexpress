@@ -51,6 +51,7 @@ describe('findSecrets', () => {
       'function re_validate_assignment_status() {}',
       'openai_api_key = "env(OPENAI_API_KEY)"',
       's3_secret_key = "env(S3_SECRET_KEY)"',
+      "  forgotPassword: '/forgot-password',",
     ].join('\n');
     expect(findSecrets(text)).toEqual([]);
   });

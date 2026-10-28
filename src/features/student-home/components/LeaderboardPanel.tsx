@@ -3,6 +3,7 @@ import { ArrowLink } from '@/components/ui/ArrowLink';
 import { Avatar } from '@/components/ui/Avatar';
 import { CoinAmount } from '@/components/ui/CoinAmount';
 import { Panel } from '@/components/ui/Panel';
+import { SampleDataBadge } from '@/components/ui/SampleDataBadge';
 import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
 import { paths } from '@/config/paths';
 import {
@@ -67,6 +68,7 @@ export function LeaderboardPanel({ entries, currentStudentId }: LeaderboardPanel
   return (
     <Panel
       title="Class leaderboard"
+      badge={<SampleDataBadge />}
       icon={Trophy}
       footer={<ArrowLink to={paths.student.class}>View your class</ArrowLink>}
     >

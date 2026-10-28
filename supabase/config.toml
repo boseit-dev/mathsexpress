@@ -340,10 +340,10 @@ skip_nonce_check = false
 # If enabled, it will allow the user to successfully authenticate when the provider does not return an email address.
 email_optional = false
 
-# Google sign-in. The client ID and secret come from the environment (never commit them); see
-# docs/local-development.md for how to provide them.
+# Google sign-in. Off until real credentials are provided: the client ID and secret come from the
+# environment (never commit them). See docs/local-development.md, then set enabled = true.
 [auth.external.google]
-enabled = true
+enabled = false
 client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
 redirect_uri = ""

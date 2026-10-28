@@ -3,7 +3,6 @@ import { paths } from '@/config/paths';
 import type { AppDependencies } from '@/data/repositories';
 import { TeacherLayout } from '@/layouts/teacher/TeacherLayout';
 import { createTeacherLayoutLoader } from '@/layouts/teacher/teacherLayoutLoader';
-import { LoadingScreen } from './pages/LoadingScreen';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PlannedSectionPage } from './pages/PlannedSectionPage';
 import { RouteErrorPage } from './pages/RouteErrorPage';
@@ -13,12 +12,11 @@ function planned(title: string, summary: string, { isHome = false } = {}) {
   return <PlannedSectionPage title={title} summary={summary} homePath={homePath} />;
 }
 
-export function createTeacherRoutes({ teacherRepository }: AppDependencies): RouteObject {
+export function createTeacherRoutes(dependencies: AppDependencies): RouteObject {
   return {
     path: paths.teacher.home,
-    loader: createTeacherLayoutLoader(teacherRepository),
+    loader: createTeacherLayoutLoader(dependencies),
     element: <TeacherLayout />,
-    hydrateFallbackElement: <LoadingScreen />,
     children: [
       {
         // Page errors render inside the layout, so the navigation stays usable.
