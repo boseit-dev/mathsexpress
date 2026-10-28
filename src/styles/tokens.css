@@ -152,6 +152,7 @@
   --size-progress-lg: 0.75rem;
   --size-progress-ring: 3.25rem;
   --size-task-rail: 0.3125rem;
+  --size-year-crest: 3.25rem;
   /* Icons inside running text scale with the text. */
   --size-icon-inline: 1.15em;
 
@@ -162,6 +163,7 @@
   --layout-message-width: 36rem;
   --layout-auth-width: 28rem;
   --layout-menu-width: 14rem;
+  --layout-confirm-width: 26rem;
   --layout-reading-width: 34rem;
   --header-height: 4rem;
 

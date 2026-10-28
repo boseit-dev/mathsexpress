@@ -1,0 +1,31 @@
+.confirm {
+  display: flex;
+  max-inline-size: var(--layout-confirm-width);
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-danger-surface);
+  border-radius: var(--radius-md);
+  background-color: var(--color-surface);
+}
+
+.message {
+  font-size: var(--font-size-sm);
+}
+
+.buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.danger {
+  border-color: var(--color-danger);
+  background-color: var(--color-danger);
+  color: var(--color-text-inverse);
+}
+
+.danger:hover {
+  background-color: var(--color-danger);
+  opacity: 0.9;
+}

@@ -1,10 +1,22 @@
 import { normalizeJoinCode } from '@/domain/classes';
+import { AppError, type AppErrorCode } from '@/domain/errors';
 import { yearLevelToNumber } from '@/domain/student';
 import { cleanText } from '@/domain/validation';
 import type { ClassRepository } from '../repositories';
 import type { MathsExpressClient } from './client';
 import { throwIfError, unwrap } from './errors';
 import { toClassStudent, toStudentClass, toTeacherClass } from './mappers';
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Ids come from addresses and forms, so a mistyped one is reported as "not found" here rather
+ * than reaching the database as an invalid id.
+ */
+function checkId(id: string, notFound: AppErrorCode): string {
+  if (!UUID_PATTERN.test(id)) throw new AppError(notFound);
+  return id;
+}
 
 /** Class data through the database functions, which check every permission on the server. */
 export function createSupabaseClassRepository(client: MathsExpressClient): ClassRepository {
@@ -22,7 +34,9 @@ export function createSupabaseClassRepository(client: MathsExpressClient): Class
     },
 
     async leaveClass(classId) {
-      const { error } = await client.rpc('leave_class', { class_id: classId });
+      const { error } = await client.rpc('leave_class', {
+        class_id: checkId(classId, 'class_not_found'),
+      });
       throwIfError(error);
     },
 
@@ -44,7 +58,9 @@ export function createSupabaseClassRepository(client: MathsExpressClient): Class
     },
 
     async getTeacherClass(classId, { signal } = {}) {
-      const request = client.rpc('get_teacher_class', { class_id: classId });
+      const request = client.rpc('get_teacher_class', {
+        class_id: checkId(classId, 'class_not_found'),
+      });
       return toTeacherClass(unwrap(await (signal ? request.abortSignal(signal) : request)));
     },
 
@@ -52,7 +68,7 @@ export function createSupabaseClassRepository(client: MathsExpressClient): Class
       return toTeacherClass(
         unwrap(
           await client.rpc('update_class', {
-            class_id: classId,
+            class_id: checkId(classId, 'class_not_found'),
             name: cleanText(settings.name),
             year_level: yearLevelToNumber(settings.yearLevel),
             joining_enabled: settings.joiningEnabled,
@@ -63,11 +79,15 @@ export function createSupabaseClassRepository(client: MathsExpressClient): Class
     },
 
     async regenerateJoinCode(classId) {
-      return unwrap(await client.rpc('regenerate_join_code', { class_id: classId }));
+      return unwrap(
+        await client.rpc('regenerate_join_code', { class_id: checkId(classId, 'class_not_found') }),
+      );
     },
 
     async listClassStudents(classId, { signal } = {}) {
-      const request = client.rpc('class_students', { class_id: classId });
+      const request = client.rpc('class_students', {
+        class_id: checkId(classId, 'class_not_found'),
+      });
       const rows = unwrap(await (signal ? request.abortSignal(signal) : request));
       return rows.map(toClassStudent);
     },
@@ -76,8 +96,8 @@ export function createSupabaseClassRepository(client: MathsExpressClient): Class
       return toClassStudent(
         unwrap(
           await client.rpc('set_student_year_level', {
-            class_id: classId,
-            student_id: studentId,
+            class_id: checkId(classId, 'class_not_found'),
+            student_id: checkId(studentId, 'student_not_found'),
             year_level: yearLevelToNumber(yearLevel),
           }),
         ),
@@ -86,8 +106,8 @@ export function createSupabaseClassRepository(client: MathsExpressClient): Class
 
     async removeStudent(classId, studentId) {
       const { error } = await client.rpc('remove_student', {
-        class_id: classId,
-        student_id: studentId,
+        class_id: checkId(classId, 'class_not_found'),
+        student_id: checkId(studentId, 'student_not_found'),
       });
       throwIfError(error);
     },

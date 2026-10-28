@@ -1,10 +1,9 @@
 import { useActionData, useNavigation } from 'react-router';
-import type { FormResult } from '@/app/auth/formResult';
-import { errorMessages } from '@/domain/errors';
+import { describeFormResult, type FormResult } from './formResult';
 
 /**
  * The state of a page's form: the last result, which submit button is in progress, and the
- * error message for a given field.
+ * error message for a given field. For pages with several separate forms, use useFetcherForm.
  */
 export function useFormState() {
   const result = useActionData<FormResult>();
@@ -12,14 +11,9 @@ export function useFormState() {
   const submittingIntent =
     navigation.state === 'submitting' ? (navigation.formData?.get('intent') ?? 'submit') : null;
 
-  const failure = result && !result.ok ? result : null;
   return {
     result,
-    failure,
-    /** The message for a problem with the whole form (not tied to one field). */
-    formMessage: failure && !failure.field ? errorMessages[failure.error] : null,
-    fieldError: (field: string): string | null =>
-      failure?.field === field ? errorMessages[failure.error] : null,
+    ...describeFormResult(result),
     isSubmitting: (intent = 'submit'): boolean => submittingIntent === intent,
   };
 }

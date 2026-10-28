@@ -1,6 +1,8 @@
 import type { RouteObject } from 'react-router';
 import { paths } from '@/config/paths';
 import type { AppDependencies } from '@/data/repositories';
+import { createStudentClassAction } from '@/features/student-class/studentClassAction';
+import { StudentClassPage } from '@/features/student-class/StudentClassPage';
 import { StudentHomePage } from '@/features/student-home/StudentHomePage';
 import { createStudentHomeLoader } from '@/features/student-home/studentHomeLoader';
 import { StudentLayout } from '@/layouts/student/StudentLayout';
@@ -43,11 +45,10 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
             ),
           },
           {
+            // Uses the classes the layout loads, so it has no loader of its own.
             path: paths.student.class,
-            element: planned(
-              'Class',
-              'Your class, your teacher’s messages and how the class is going together.',
-            ),
+            action: createStudentClassAction(dependencies),
+            element: <StudentClassPage />,
           },
           {
             path: paths.student.tasks,

@@ -7,6 +7,8 @@ interface SelectFieldProps extends Omit<ComponentPropsWithoutRef<'select'>, 'id'
   name: string;
   options: readonly { value: string; label: string }[];
   hint?: string;
+  /** An error for this field. The select is marked invalid and the message is read with it. */
+  error?: string | null;
   /** Show the label to screen readers only, e.g. in a table row that already names it. */
   hideLabel?: boolean;
 }
@@ -15,12 +17,14 @@ export function SelectField({
   label,
   options,
   hint,
+  error,
   hideLabel,
   className,
   ...selectProps
 }: SelectFieldProps) {
   const id = useId();
   const hintId = hint ? `${id}-hint` : undefined;
+  const errorId = error ? `${id}-error` : undefined;
 
   return (
     <div className={cx(styles.field, className)}>
@@ -32,13 +36,24 @@ export function SelectField({
           {hint}
         </p>
       )}
-      <select id={id} className={styles.control} aria-describedby={hintId} {...selectProps}>
+      <select
+        id={id}
+        className={styles.control}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={[hintId, errorId].filter(Boolean).join(' ') || undefined}
+        {...selectProps}
+      >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
       </select>
+      {error && (
+        <p id={errorId} className={styles.error}>
+          {error}
+        </p>
+      )}
     </div>
   );
 }

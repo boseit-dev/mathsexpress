@@ -4,7 +4,7 @@ import { SubmitButton } from '@/components/forms/SubmitButton';
 import { TextField } from '@/components/forms/TextField';
 import { paths } from '@/config/paths';
 import { AuthHeading } from './AuthHeading';
-import { useFormState } from './useFormState';
+import { useFormState } from '@/app/forms/useFormState';
 import styles from './AuthPage.module.css';
 
 export function ForgotPasswordPage() {

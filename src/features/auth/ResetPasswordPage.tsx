@@ -6,7 +6,7 @@ import { ButtonLink } from '@/components/ui/ButtonLink';
 import { paths } from '@/config/paths';
 import { errorMessages } from '@/domain/errors';
 import { AuthHeading } from './AuthHeading';
-import { useFormState } from './useFormState';
+import { useFormState } from '@/app/forms/useFormState';
 import styles from './AuthPage.module.css';
 
 export function ResetPasswordPage() {

@@ -8,7 +8,7 @@ import { paths } from '@/config/paths';
 import { AuthHeading } from './AuthHeading';
 import { GoogleButton } from './GoogleButton';
 import { roleChoices } from './roleChoices';
-import { useFormState } from './useFormState';
+import { useFormState } from '@/app/forms/useFormState';
 import styles from './AuthPage.module.css';
 
 export function RegisterPage() {

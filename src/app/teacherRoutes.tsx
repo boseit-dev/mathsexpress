@@ -1,6 +1,14 @@
 import type { RouteObject } from 'react-router';
 import { paths } from '@/config/paths';
 import type { AppDependencies } from '@/data/repositories';
+import {
+  createTeacherClassAction,
+  createTeacherClassesAction,
+  createTeacherClassesLoader,
+  createTeacherClassLoader,
+} from '@/features/teacher-classes/teacherClassesHandlers';
+import { TeacherClassesPage } from '@/features/teacher-classes/TeacherClassesPage';
+import { TeacherClassPage } from '@/features/teacher-classes/TeacherClassPage';
 import { TeacherLayout } from '@/layouts/teacher/TeacherLayout';
 import { createTeacherLayoutLoader } from '@/layouts/teacher/teacherLayoutLoader';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -32,10 +40,15 @@ export function createTeacherRoutes(dependencies: AppDependencies): RouteObject 
           },
           {
             path: paths.teacher.classes,
-            element: planned(
-              'Classes',
-              'Create classes, invite students and set each student’s year level.',
-            ),
+            loader: createTeacherClassesLoader(dependencies),
+            action: createTeacherClassesAction(dependencies),
+            element: <TeacherClassesPage />,
+          },
+          {
+            path: `${paths.teacher.classes}/:classId`,
+            loader: createTeacherClassLoader(dependencies),
+            action: createTeacherClassAction(dependencies),
+            element: <TeacherClassPage />,
           },
           {
             path: paths.teacher.tasks,

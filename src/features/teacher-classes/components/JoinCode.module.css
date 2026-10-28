@@ -1,0 +1,21 @@
+.code {
+  display: inline-block;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background-image: linear-gradient(180deg, var(--color-surface), var(--color-brand-pale));
+  color: var(--color-text-brand);
+  font-family: var(--font-family-mono);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+.small {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-sm);
+}
+
+.large {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-2xl);
+}

@@ -25,6 +25,17 @@ export function formatWeekday(date: Date): string {
   return weekdayFormat.format(date);
 }
 
+const longDateFormat = new Intl.DateTimeFormat(appConfig.locale, {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
+
+/** "12 Nov 2026" */
+export function formatLongDate(date: Date): string {
+  return longDateFormat.format(date);
+}
+
 /** "12 Nov" */
 export function formatShortDate(date: Date): string {
   return shortDateFormat.format(date);

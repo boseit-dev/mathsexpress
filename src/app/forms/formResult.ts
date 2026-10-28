@@ -1,4 +1,4 @@
-import { AppError, errorCodeOf, type AppErrorCode } from '@/domain/errors';
+import { AppError, errorCodeOf, errorMessages, type AppErrorCode } from '@/domain/errors';
 
 /** What a form action returns to its page: success (with an optional message) or an error. */
 export type FormResult =
@@ -20,6 +20,18 @@ export async function runForm(work: () => Promise<FormResult>): Promise<FormResu
     if (error instanceof AppError) return formError(errorCodeOf(error));
     throw error;
   }
+}
+
+/** The messages to show for a result: one for the whole form, or one for a given field. */
+export function describeFormResult(result: FormResult | undefined) {
+  const failure = result && !result.ok ? result : null;
+  return {
+    failure,
+    /** The message for a problem with the whole form (not tied to one field). */
+    formMessage: failure && !failure.field ? errorMessages[failure.error] : null,
+    fieldError: (field: string): string | null =>
+      failure?.field === field ? errorMessages[failure.error] : null,
+  };
 }
 
 export function readText(form: FormData, name: string): string {

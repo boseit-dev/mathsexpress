@@ -31,6 +31,12 @@ export function yearLevelFromNumber(value: number): YearLevel {
   return yearLevel;
 }
 
+/** A year level from a form field holding its number ("0" for Kindergarten), or null. */
+export function parseYearLevel(value: string): YearLevel | null {
+  if (!/^\d{1,2}$/.test(value)) return null;
+  return YEAR_LEVELS[Number(value)] ?? null;
+}
+
 /** The class shown first, e.g. on the home page: the one the student joined first. */
 export function getPrimaryClass(student: CurrentStudent): StudentClassMembership | null {
   return student.classes[0] ?? null;

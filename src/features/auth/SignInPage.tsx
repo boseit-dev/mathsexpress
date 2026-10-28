@@ -6,7 +6,7 @@ import { TextField } from '@/components/forms/TextField';
 import { paths } from '@/config/paths';
 import { AuthHeading } from './AuthHeading';
 import { GoogleButton } from './GoogleButton';
-import { useFormState } from './useFormState';
+import { useFormState } from '@/app/forms/useFormState';
 import styles from './AuthPage.module.css';
 
 const FORM_ID = 'sign-in-form';

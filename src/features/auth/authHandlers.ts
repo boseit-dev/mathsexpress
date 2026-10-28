@@ -1,7 +1,7 @@
 // Loaders and actions for the account pages. They validate input, call the auth service and
 // decide where to go next; the pages only display the result.
 import { redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router';
-import { formError, readText, runForm, type FormResult } from '@/app/auth/formResult';
+import { formError, readText, runForm, type FormResult } from '@/app/forms/formResult';
 import { homePathFor, safeRedirectPath } from '@/app/auth/guards';
 import { paths } from '@/config/paths';
 import { isAccountRole, type AuthUser, type RegistrationDetails } from '@/domain/account';

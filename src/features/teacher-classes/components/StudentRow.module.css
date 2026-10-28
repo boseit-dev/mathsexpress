@@ -1,0 +1,69 @@
+/* The person and the controls share a line when there is room, and wrap when there isn't (for
+   example while a removal is being confirmed). */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  padding-block: var(--space-4);
+}
+
+.person {
+  display: flex;
+  flex: 1 1 14rem;
+  align-items: center;
+  gap: var(--space-3);
+  min-inline-size: min(100%, 12rem);
+}
+
+.names {
+  min-inline-size: 0;
+}
+
+.name {
+  font-weight: var(--font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.joined {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.controls {
+  display: flex;
+  flex: 0 1 auto;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-inline-size: 0;
+}
+
+.yearForm {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.select {
+  min-inline-size: 9.5rem;
+}
+
+.result {
+  flex-basis: 100%;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.result:empty {
+  /* Kept in the page so screen readers announce it when a message appears; takes no space. */
+  margin-block-start: calc(var(--space-3) * -1);
+}
+
+.saved {
+  color: var(--color-success);
+}
+
+.problem {
+  color: var(--color-danger);
+}

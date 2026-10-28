@@ -7,7 +7,7 @@ import { paths } from '@/config/paths';
 import type { WelcomeData } from './authHandlers';
 import { AuthHeading } from './AuthHeading';
 import { roleChoices } from './roleChoices';
-import { useFormState } from './useFormState';
+import { useFormState } from '@/app/forms/useFormState';
 import styles from './AuthPage.module.css';
 
 /** Finishes setting up an account: role and name. The role cannot be changed afterwards. */
