@@ -21,8 +21,13 @@ const SAME_SITE = 'https://mathsexpress.invalid';
 export function safeRedirectPath(value: string | null): string | null {
   if (!value?.startsWith('/') || value.startsWith('//')) return null;
   // eslint-disable-next-line no-control-regex -- control characters are exactly what to reject
-  if (/[\\\u0000-\u001f\u007f]/.test(value) || !URL.canParse(value, SAME_SITE)) return null;
-  const url = new URL(value, SAME_SITE);
+  if (/[\\\u0000-\u001f\u007f]/.test(value)) return null;
+  let url: URL;
+  try {
+    url = new URL(value, SAME_SITE);
+  } catch {
+    return null; // Not readable as an address at all.
+  }
   // Dot segments can resolve "/.//evil.example" to the path "//evil.example", which a browser
   // reads as another website, so the result must start with exactly one slash.
   if (url.origin !== SAME_SITE || url.pathname.startsWith('//')) return null;

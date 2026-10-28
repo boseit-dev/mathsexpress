@@ -39,10 +39,21 @@ the owner approves Phase 2.
 
 ## What's left in Phase 2
 
-1. **Final review results.** A fourth focused review of the last round of fixes (database, sign-in
-   hook, session check, lock order, welcome and reset pages) was still running when this was
-   written. Re-review those areas, fix any real problems, and add tests for them.
-2. **Confirm CI on `cc1e7c8`.** Run `gh run list --branch mathsexpress-v2 --limit 1`. The
+1. **Low-severity findings from the final review** (still to fix, each with a test):
+   - A revoked access token can still read its own row in `profiles` for up to an hour, because
+     the direct-read policy has no session check. Either add the check (through a `SECURITY
+DEFINER` wrapper, since policies can't call `private.*`) or reword the docs and CHANGELOG,
+     which say ended sessions lose all database access at once.
+   - `ConfirmAction`: a confirmation opened while another row is busy focuses a Cancel button
+     with no description. The roster then moves focus away when the other row finishes. Add
+     `aria-describedby`, and only move focus when it was lost.
+   - Saving the year level of a student who has just left removes the row silently and drops
+     focus. Report it at roster level.
+   - "Email me a link" sends the email titled "Reset your password". Reword the recovery email to
+     cover finishing set-up too.
+   - Sign-out is global, so it signs out every device. Consider `signOut({ scope: 'local' })`, and
+     fix the local walkthrough, which signs the teacher out of the other tab.
+2. **Confirm CI on the latest commit.** CI passed on `fe81783`. Run `gh run list --branch mathsexpress-v2 --limit 1`. The
    database job starts a fresh Supabase stack with the new sign-in hook, so check it passes there.
 3. **Flaky test watch.** One app test failed once while other test runs loaded the machine. It
    passed in about 20 runs since. If it recurs, find it (`npx vitest run`) and remove the timing
