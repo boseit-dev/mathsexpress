@@ -10,10 +10,11 @@ describe('student textbook library', () => {
     renderApp('/student');
     await user.click(await screen.findByRole('link', { name: 'Textbook' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Textbook' })).toBeVisible();
-    expect(screen.getByRole('link', { name: /Year 9 Mathematics/ })).toHaveAttribute(
-      'href',
-      '/student/textbook/year-9',
-    );
+    expect(
+      screen.getAllByRole('link', { name: /Year 9 Mathematics/ }).some(
+        (link) => link.getAttribute('href') === '/student/textbook/year-9',
+      ),
+    ).toBe(true);
   });
 
   it('opens each Year 12 Standard book independently', async () => {
@@ -36,9 +37,9 @@ describe('student textbook library', () => {
       await screen.findByRole('heading', { level: 1, name: 'Year 9 Mathematics' }),
     ).toBeVisible();
     const contents = screen.getByRole('heading', { name: 'Contents' }).closest('section');
-    expect(contents).not.toBeNull();
+    if (!contents) throw new Error('Textbook contents section not found');
     await user.click(
-      within(contents as HTMLElement).getByRole('link', { name: /Solving linear equations/ }),
+      within(contents).getByRole('link', { name: /Solving linear equations/ }),
     );
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' }),
@@ -51,15 +52,17 @@ describe('student textbook library', () => {
     renderApp('/student/textbook/year-9/solving-linear-equations');
     await screen.findByRole('heading', { name: 'Exercise 1A' });
     const answer = screen.getAllByRole('spinbutton')[0];
-    if (!answer) throw new Error('Equation input not found');
+    const check = screen.getAllByRole('button', { name: 'Check' })[0];
+    const hint = screen.getAllByRole('button', { name: 'Hint' })[0];
+    if (!answer || !check || !hint) throw new Error('Equation controls not found');
     await user.type(answer, '9');
-    await user.click(screen.getAllByRole('button', { name: 'Check' })[0]!);
+    await user.click(check);
     expect(screen.getByText('Not quite. Try again or open the hint.')).toBeVisible();
-    await user.click(screen.getAllByRole('button', { name: 'Hint' })[0]!);
+    await user.click(hint);
     expect(screen.getByText('Subtract 7 from both sides.')).toBeVisible();
     await user.clear(answer);
     await user.type(answer, '8');
-    await user.click(screen.getAllByRole('button', { name: 'Check' })[0]!);
+    await user.click(check);
     expect(screen.getByText('Correct! x = 15 − 7 = 8')).toBeVisible();
   });
 

@@ -70,7 +70,9 @@ function LibraryView() {
         type="search"
         placeholder="Search year or course"
         value={search}
-        onChange={(event) => setSearch(event.target.value)}
+        onChange={(event) => {
+          setSearch(event.target.value);
+        }}
       />
       {matching.length === 0 && <p role="status">No textbooks match that search.</p>}
       {groups.map((group) =>

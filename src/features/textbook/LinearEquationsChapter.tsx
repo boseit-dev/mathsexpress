@@ -6,7 +6,7 @@ import styles from './TextbookPage.module.css';
 /** A full original pilot chapter. The book does not claim to save answers to an account. */
 export function LinearEquationsChapter() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [results, setResults] = useState<Record<string, boolean>>({});
+  const [results, setResults] = useState<Record<string, boolean | undefined>>({});
   const [hints, setHints] = useState<readonly string[]>([]);
   const completed = linearEquationExercises.filter((item) => results[item.id]).length;
 
@@ -78,11 +78,7 @@ export function LinearEquationsChapter() {
                         ...previous,
                         [exercise.id]: event.target.value,
                       }));
-                      setResults((previous) => {
-                        const next = { ...previous };
-                        delete next[exercise.id];
-                        return next;
-                      });
+                      setResults((previous) => ({ ...previous, [exercise.id]: undefined }));
                     }}
                   />
                   <button className={styles.checkButton} type="submit" disabled={!answer.trim()}>
