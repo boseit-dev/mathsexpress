@@ -43,6 +43,13 @@ jobs:
       - name: Run all checks
         run: npm run check
 
+      - name: Show quick-tools formatting diff after a failed check
+        if: failure()
+        run: |
+          npx prettier --write src/features/side-panels/SidePanelContents.tsx src/features/side-panels/SidePanelToolbar.test.tsx
+          git diff -- src/features/side-panels/SidePanelContents.tsx src/features/side-panels/SidePanelToolbar.test.tsx
+
+
   database:
     name: Database and authentication tests
     runs-on: ubuntu-latest
