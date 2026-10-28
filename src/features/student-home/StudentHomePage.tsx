@@ -89,8 +89,8 @@ export function StudentHomePage() {
       </section>
 
       <p className={styles.footnote}>
-        Your account and class details are real. Sections marked “Sample data” are examples while
-        we finish building those features.
+        Your account and class details are real. Sections marked “Sample data” are examples while we
+        finish building those features.
       </p>
     </div>
   );

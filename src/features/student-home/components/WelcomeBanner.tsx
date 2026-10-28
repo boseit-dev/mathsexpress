@@ -78,8 +78,8 @@ export function WelcomeBanner({
             <p className={styles.nextUpMeta}>
               {continueAssignment.questionsCompleted} of {continueAssignment.questionCount}{' '}
               questions ·{' '}
-              {toPercent(continueAssignment.questionsCompleted, continueAssignment.questionCount)}
-              % done
+              {toPercent(continueAssignment.questionsCompleted, continueAssignment.questionCount)}%
+              done
             </p>
           </div>
         )}

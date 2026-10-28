@@ -128,11 +128,7 @@ describe('student home page', () => {
 
   it('marks every panel that shows sample data', async () => {
     await renderHome();
-    for (const name of [
-      'Your assigned tasks',
-      'Your recommended practice',
-      'Your progress',
-    ]) {
+    for (const name of ['Your assigned tasks', 'Your recommended practice', 'Your progress']) {
       expect(section(name)).toHaveTextContent('Sample data');
     }
     expect(section('Good afternoon, Mia')).toHaveTextContent('(sample task)');
