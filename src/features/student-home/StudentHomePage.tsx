@@ -14,7 +14,11 @@ import { WelcomeBanner } from './components/WelcomeBanner';
 import { useStudentHomeData } from './studentHomeLoader';
 import styles from './StudentHomePage.module.css';
 
-/** The student's home page: a welcome banner, then tasks and practice beside class rewards. */
+/**
+ * The MathsExpress Learning Desk: a two-card welcome/progress area, a separate
+ * practice-and-assignments workbench, and a classroom/rewards collection below.
+ * The existing data sources and working destinations stay unchanged.
+ */
 export function StudentHomePage() {
   const student = useCurrentStudent();
   const { home, now } = useStudentHomeData();
@@ -24,26 +28,52 @@ export function StudentHomePage() {
 
   return (
     <div className={styles.page}>
-      <WelcomeBanner
-        student={student}
-        primaryClass={primaryClass}
-        now={now}
-        taskCounts={countOpenAssignments(home.assignments, now)}
-        continueAssignment={selectContinueAssignment(home.assignments)}
-      />
-      <div className={styles.columns}>
-        <div className={styles.main}>
-          <AssignmentSection assignments={home.assignments} now={now} />
-          <RecommendedPractice recommendation={home.recommendation} />
+      <div className={styles.intro}>
+        <div className={styles.welcome}>
+          <WelcomeBanner
+            student={student}
+            primaryClass={primaryClass}
+            now={now}
+            taskCounts={countOpenAssignments(home.assignments, now)}
+            continueAssignment={selectContinueAssignment(home.assignments)}
+          />
+        </div>
+        <div className={styles.progress}>
           <StudentProgress progress={home.progress} yearLevel={primaryClass?.yearLevel ?? null} />
         </div>
-        <div className={styles.sidebar}>
-          <LeaderboardPanel entries={home.leaderboard} currentStudentId={student.id} />
-          <ShopPanel items={home.featuredShopItems} coinBalance={home.rewards.coinBalance} />
-          <ChallengesPanel challenges={home.challenges} />
-          <RewardsSummary rewards={home.rewards} />
-        </div>
       </div>
+
+      <section className={styles.workbench} aria-label="Your learning desk">
+        <div className={styles.practice}>
+          <RecommendedPractice recommendation={home.recommendation} />
+        </div>
+        <div className={styles.tasks}>
+          <AssignmentSection assignments={home.assignments} now={now} />
+        </div>
+      </section>
+
+      <section className={styles.community} aria-label="Classroom and rewards">
+        <div className={styles.sectionHeading}>
+          <h2 className={styles.sectionTitle}>Beyond the lesson</h2>
+          <p className={styles.sectionDescription}>
+            Your class, your challenges and the little wins worth celebrating.
+          </p>
+        </div>
+        <div className={styles.communityGrid}>
+          <div className={styles.challenges}>
+            <ChallengesPanel challenges={home.challenges} />
+          </div>
+          <div className={styles.leaderboard}>
+            <LeaderboardPanel entries={home.leaderboard} currentStudentId={student.id} />
+          </div>
+          <div className={styles.rewards}>
+            <RewardsSummary rewards={home.rewards} />
+          </div>
+          <div className={styles.shop}>
+            <ShopPanel items={home.featuredShopItems} coinBalance={home.rewards.coinBalance} />
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

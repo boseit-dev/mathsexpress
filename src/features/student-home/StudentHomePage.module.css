@@ -1,32 +1,104 @@
+/*
+ * The MathsExpress Learning Desk uses a distinct three-part layout:
+ * a balanced welcome and progress pair, a dedicated workbench, then a
+ * community collection below. No floating leaderboard/shop sidebar.
+ */
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
-}
-
-.columns {
-  display: grid;
-  gap: var(--space-6);
-}
-
-.main,
-.sidebar {
-  display: grid;
-  align-content: start;
-  gap: var(--space-6);
+  gap: var(--space-8);
   min-inline-size: 0;
 }
 
-@media (min-width: 768px) and (max-width: 1099px) {
-  .sidebar {
+.intro,
+.workbench,
+.communityGrid {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.intro > *,
+.workbench > *,
+.communityGrid > * {
+  min-inline-size: 0;
+}
+
+.welcome,
+.progress,
+.practice,
+.tasks,
+.challenges,
+.leaderboard,
+.rewards,
+.shop {
+  min-inline-size: 0;
+}
+
+.welcome > *,
+.progress > *,
+.practice > *,
+.tasks > *,
+.challenges > *,
+.leaderboard > *,
+.rewards > *,
+.shop > * {
+  block-size: 100%;
+}
+
+.workbench {
+  padding-block-start: var(--space-2);
+}
+
+.community {
+  display: grid;
+  gap: var(--space-4);
+  padding-block-start: var(--space-6);
+  border-block-start: 1px solid var(--color-border-strong);
+}
+
+.sectionHeading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-5);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-xl);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.sectionDescription {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+@media (min-width: 720px) {
+  .intro {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .communityGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* Wide screens: tasks and practice on the left, class and rewards on the right. */
-@media (min-width: 1100px) {
-  .columns {
-    grid-template-columns: minmax(0, 1fr) var(--layout-sidebar-width);
+/* Practice first, assignments second: a learning workspace, not a task carousel. */
+@media (min-width: 1050px) {
+  .intro {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: var(--space-6);
+  }
+
+  .workbench {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: var(--space-6);
     align-items: start;
+  }
+}
+
+@media (min-width: 1250px) {
+  .communityGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }

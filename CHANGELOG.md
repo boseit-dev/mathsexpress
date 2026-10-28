@@ -18,6 +18,15 @@ Phase 3 first learning slice (in development).
 - Unit and interface tests for the published content, answer checking, access by year and the
   complete lesson flow.
 
+### Changed
+
+- Redesigned the student homepage as the original MathsExpress **Learning Desk**: a compact
+  welcome card alongside learning progress, a separate practice-and-assignments workbench,
+  and classroom/reward panels grouped along the bottom instead of a copycat dashboard sidebar.
+- Kept real student/class details, labelled sample content, learning links, assignment links
+  and existing accessibility labels, while giving the page its own navy/blue visual hierarchy.
+- Deferred mascot artwork and animation integration until the approved character assets are ready.
+
 ### Known limitations
 
 - Only one Year 9 lesson has been published so far. Other year levels have honest empty states.

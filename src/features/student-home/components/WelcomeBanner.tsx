@@ -42,6 +42,7 @@ export function WelcomeBanner({
   return (
     <section className={styles.banner} aria-labelledby={headingId}>
       <div className={styles.content}>
+        <p className={styles.eyebrow}>MathsExpress · Your learning desk</p>
         {primaryClass ? (
           <p className={styles.classLabel}>
             {formatYearLevel(primaryClass.yearLevel)} · {primaryClass.className}
