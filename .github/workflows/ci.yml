@@ -43,6 +43,13 @@ jobs:
       - name: Run all checks
         run: npm run check
 
+      # When formatting is the blocker, show the exact changes required in CI logs.
+      - name: Show formatting diff after a failed check
+        if: failure()
+        run: |
+          npx prettier --write src/features/student-home/StudentHomePage.tsx src/features/student-home/StudentHomePage.test.tsx src/features/student-home/components/WelcomeBanner.tsx
+          git diff -- src/features/student-home/StudentHomePage.tsx src/features/student-home/StudentHomePage.test.tsx src/features/student-home/components/WelcomeBanner.tsx
+
   database:
     name: Database and authentication tests
     runs-on: ubuntu-latest
