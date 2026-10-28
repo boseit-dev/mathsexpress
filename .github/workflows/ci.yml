@@ -43,6 +43,17 @@ jobs:
       - name: Run all checks
         run: npm run check
 
+      - name: Show formatted textbook files for correction
+        if: failure()
+        run: |
+          npx prettier --write docs/architecture.md src/app/studentRoutes.tsx src/features/textbook
+          for file in docs/architecture.md src/app/studentRoutes.tsx src/features/textbook/catalogue.test.ts src/features/textbook/catalogue.ts src/features/textbook/LinearEquationsChapter.tsx src/features/textbook/pilotEquations.ts src/features/textbook/TextbookPage.module.css src/features/textbook/TextbookPage.test.tsx src/features/textbook/TextbookPage.tsx; do
+            echo "BOOK_FORMAT_START:$file"
+            base64 -w0 "$file"
+            echo
+            echo "BOOK_FORMAT_END:$file"
+          done
+
   database:
     name: Database and authentication tests
     runs-on: ubuntu-latest
