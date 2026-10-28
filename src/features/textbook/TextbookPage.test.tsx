@@ -11,9 +11,9 @@ describe('student textbook library', () => {
     await user.click(await screen.findByRole('link', { name: 'Textbook' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Textbook' })).toBeVisible();
     expect(
-      screen.getAllByRole('link', { name: /Year 9 Mathematics/ }).some(
-        (link) => link.getAttribute('href') === '/student/textbook/year-9',
-      ),
+      screen
+        .getAllByRole('link', { name: /Year 9 Mathematics/ })
+        .some((link) => link.getAttribute('href') === '/student/textbook/year-9'),
     ).toBe(true);
   });
 
@@ -38,9 +38,7 @@ describe('student textbook library', () => {
     ).toBeVisible();
     const contents = screen.getByRole('heading', { name: 'Contents' }).closest('section');
     if (!contents) throw new Error('Textbook contents section not found');
-    await user.click(
-      within(contents).getByRole('link', { name: /Solving linear equations/ }),
-    );
+    await user.click(within(contents).getByRole('link', { name: /Solving linear equations/ }));
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' }),
     ).toBeVisible();

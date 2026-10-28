@@ -1,3 +1,5 @@
+import type { YearLevel } from '@/domain/student';
+
 /** Original MathsExpress books. NESA defines syllabus stages, not a compulsory
  * year-by-year chapter order; chapter sequences remain editorial until reviewed. */
 export interface TextbookChapter {
@@ -9,7 +11,7 @@ export interface TextbookChapter {
 
 export interface TextbookBook {
   id: string;
-  year: 'K' | number;
+  year: YearLevel;
   course: string;
   stage: string;
   syllabus: string;
@@ -51,7 +53,7 @@ const k10Chapters: readonly TextbookChapter[] = [
 ];
 
 /** Stage names are factual; year-specific chapter order is not prescribed by NESA. */
-export function stageForYear(year: 'K' | number): string {
+export function stageForYear(year: YearLevel): string {
   if (year === 'K') return 'Early Stage 1';
   if (year <= 2) return 'Stage 1';
   if (year <= 4) return 'Stage 2';
@@ -61,7 +63,7 @@ export function stageForYear(year: 'K' | number): string {
   return 'Stage 6';
 }
 
-function k10Book(year: 'K' | number, lifeSkills = false): TextbookBook {
+function k10Book(year: YearLevel, lifeSkills = false): TextbookBook {
   const title = year === 'K' ? 'Kindergarten' : `Year ${year}`;
   const pilot: TextbookChapter[] =
     year === 9 && !lifeSkills
@@ -144,9 +146,8 @@ const standard12_2 = [
 ];
 
 export const textbookBooks: readonly TextbookBook[] = [
-  k10Book('K'),
-  ...Array.from({ length: 10 }, (_, index) => k10Book(index + 1)),
-  ...[7, 8, 9, 10].map((year) => k10Book(year, true)),
+  ...(['K', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] as const).map((year) => k10Book(year)),
+  ...([7, 8, 9, 10] as const).map((year) => k10Book(year, true)),
   seniorBook(11, 'Standard', 'standard', standard11),
   seniorBook(11, 'Advanced', 'advanced'),
   seniorBook(11, 'Extension 1', 'extension-1'),
