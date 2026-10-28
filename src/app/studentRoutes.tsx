@@ -18,11 +18,7 @@ function planned(title: string, summary: string) {
   return <PlannedSectionPage title={title} summary={summary} homePath={paths.student.home} />;
 }
 
-const PAGES_SHOWING_CLASSES: readonly string[] = [
-  paths.student.home,
-  paths.student.class,
-  paths.student.textbook,
-];
+const PAGES_SHOWING_CLASSES: readonly string[] = [paths.student.home, paths.student.class];
 
 export function createStudentRoutes(dependencies: AppDependencies): RouteObject {
   return {
@@ -34,8 +30,7 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
       defaultShouldRevalidate ||
       (currentUrl.pathname !== nextUrl.pathname &&
         (PAGES_SHOWING_CLASSES.includes(nextUrl.pathname) ||
-          nextUrl.pathname.startsWith(paths.student.learn) ||
-          nextUrl.pathname.startsWith(paths.student.textbook))),
+          nextUrl.pathname.startsWith(paths.student.learn))),
     element: <StudentLayout />,
     children: [
       {
