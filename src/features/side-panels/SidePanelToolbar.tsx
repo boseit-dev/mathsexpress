@@ -57,7 +57,9 @@ export function SidePanelToolbar({ student }: { student: CurrentStudent }) {
         aria-label={label}
         aria-controls={dialogId}
         aria-expanded={active === id}
-        onClick={(event) => openPanel(id, event)}
+        onClick={(event) => {
+          openPanel(id, event);
+        }}
       >
         <Icon aria-hidden="true" />
         <span className={styles.tooltip} aria-hidden="true">
@@ -80,7 +82,9 @@ export function SidePanelToolbar({ student }: { student: CurrentStudent }) {
           type="button"
           aria-expanded={mobileOpen}
           aria-controls={menuId}
-          onClick={() => setMobileOpen((open) => !open)}
+          onClick={() => {
+            setMobileOpen((open) => !open);
+          }}
         >
           <Menu aria-hidden="true" />
           Quick tools
@@ -98,7 +102,7 @@ export function SidePanelToolbar({ student }: { student: CurrentStudent }) {
           event.preventDefault();
           setActive(null);
         }}
-        onClick={(event) => {
+        onPointerDown={(event) => {
           if (event.target === event.currentTarget) setActive(null);
         }}
       >
@@ -110,7 +114,9 @@ export function SidePanelToolbar({ student }: { student: CurrentStudent }) {
               data-panel-close
               className={styles.close}
               aria-label="Close panel"
-              onClick={() => setActive(null)}
+              onClick={() => {
+                setActive(null);
+              }}
             >
               <X aria-hidden="true" />
             </button>

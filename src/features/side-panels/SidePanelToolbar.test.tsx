@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { findAccessibilityProblems } from '@/test/axe';
@@ -48,7 +48,9 @@ describe('student quick tools', () => {
     const button = within(toolbar).getByRole('button', { name: 'Rewards' });
     await user.click(button);
     const dialog = screen.getByRole('dialog', { name: 'Rewards' });
-    fireEvent.cancel(dialog);
+    act(() => {
+      dialog.dispatchEvent(new Event('cancel', { cancelable: true }));
+    });
     await waitFor(() => expect(dialog).not.toHaveAttribute('open'));
     expect(button).toHaveFocus();
   });
