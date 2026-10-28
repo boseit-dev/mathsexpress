@@ -20,6 +20,15 @@
 .fill {
   block-size: 100%;
   border-radius: inherit;
+  transform-origin: left center;
+  transition: inline-size 500ms var(--ease-out-soft);
+  animation: progress-grow 700ms var(--ease-out-soft);
+}
+
+@keyframes progress-grow {
+  from {
+    transform: scaleX(0);
+  }
 }
 
 .brand .fill {

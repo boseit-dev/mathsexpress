@@ -43,6 +43,43 @@ describe('student quick tools', () => {
     }
   });
 
+  it('switches panels inside the open panel without closing it', async () => {
+    const { user, toolbar } = await openTools();
+    const leaderboard = within(toolbar).getByRole('button', { name: 'Leaderboard' });
+    await user.click(leaderboard);
+    const dialog = screen.getByRole('dialog', { name: 'Leaderboard' });
+    const switcher = within(dialog).getByRole('group', { name: 'Switch panel' });
+    expect(within(switcher).getByRole('button', { name: 'Leaderboard' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await user.click(within(switcher).getByRole('button', { name: 'Achievements' }));
+    expect(screen.getByRole('dialog', { name: 'Achievements' })).toBe(dialog);
+    expect(dialog).toHaveAttribute('open');
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(within(switcher).getByRole('button', { name: 'Achievements' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await user.click(within(dialog).getByRole('button', { name: 'Close panel' }));
+    await waitFor(() => {
+      expect(dialog).not.toHaveAttribute('open');
+    });
+    expect(leaderboard).toHaveFocus();
+  });
+
+  it('closes when the backdrop is clicked', async () => {
+    const { user, toolbar } = await openTools();
+    await user.click(within(toolbar).getByRole('button', { name: 'Shop' }));
+    const dialog = screen.getByRole('dialog', { name: 'Shop' });
+    act(() => {
+      dialog.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+    });
+    await waitFor(() => {
+      expect(dialog).not.toHaveAttribute('open');
+    });
+  });
+
   it('closes with Escape and preserves the focus return', async () => {
     const { user, toolbar } = await openTools();
     const button = within(toolbar).getByRole('button', { name: 'Rewards' });

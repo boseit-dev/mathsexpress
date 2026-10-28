@@ -172,4 +172,11 @@
 
   /* Motion: state changes only, no decorative animation. */
   --transition-fast: 120ms ease-out;
+  /* Motion: calm, quick and consistent. global.css removes it for reduced motion. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-soft: cubic-bezier(0.55, 0, 0.75, 0.2);
+  --duration-quick: 160ms;
+  --duration-panel: 300ms;
+  --duration-panel-exit: 240ms;
+  --motion-stagger: 45ms;
 }

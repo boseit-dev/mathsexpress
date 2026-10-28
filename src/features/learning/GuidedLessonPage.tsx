@@ -1,3 +1,4 @@
+import { Celebration } from '@/components/ui/Celebration';
 import { useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2, Lightbulb, RotateCcw, Sparkles } from 'lucide-react';
 import { Link, useParams } from 'react-router';
@@ -107,6 +108,7 @@ export function GuidedLessonPage() {
         <section className={styles.practicePanel} aria-labelledby="try-it-heading">
           {complete ? (
             <div className={styles.summary} aria-live="polite">
+              <Celebration />
               <CheckCircle2 size={42} aria-hidden="true" className={styles.successIcon} />
               <h2 id="try-it-heading">Lesson completed!</h2>
               <p>You solved all {lesson.questions.length} questions.</p>
@@ -149,7 +151,11 @@ export function GuidedLessonPage() {
                 <div style={{ width: `${(index / lesson.questions.length) * 100}%` }} />
               </div>
               <h2 id="try-it-heading">Find the value of x</h2>
-              <div className={styles.question} aria-label={`Equation: ${current.expression}`}>
+              <div
+                key={index}
+                className={styles.question}
+                aria-label={`Equation: ${current.expression}`}
+              >
                 {current.expression}
               </div>
               <form

@@ -276,9 +276,9 @@
 }
 .progressTrack > div {
   height: 100%;
+  transition: width 500ms var(--ease-out-soft);
   background: var(--color-brand-primary);
   border-radius: inherit;
-  transition: width var(--transition-fast);
 }
 .question {
   background: var(--color-brand-pale);
@@ -416,5 +416,68 @@
   }
   .cardFooter .primaryLink {
     width: 100%;
+  }
+}
+
+/* Question feedback: a soft entrance; a small nudge (never a flash) for a wrong answer. */
+.correct,
+.hint {
+  animation: fade-up var(--duration-panel) var(--ease-out-soft);
+}
+
+.incorrect {
+  animation:
+    fade-up var(--duration-panel) var(--ease-out-soft),
+    nudge 280ms var(--ease-out-soft) var(--duration-panel);
+}
+
+.question {
+  animation: pop-in var(--duration-panel) var(--ease-out-soft);
+}
+
+.summary {
+  position: relative;
+  animation: pop-in 400ms var(--ease-out-soft);
+}
+
+.lessonCard {
+  transition:
+    box-shadow var(--duration-quick) var(--ease-out-soft),
+    transform var(--duration-quick) var(--ease-out-soft);
+}
+
+@media (hover: hover) {
+  .lessonCard:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-4px);
+  }
+
+  75% {
+    transform: translateX(4px);
   }
 }

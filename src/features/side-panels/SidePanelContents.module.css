@@ -93,3 +93,52 @@
   color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
 }
+
+/* Contents follow the panel in: each block, then each list item, rises with a short stagger. */
+.contents > *,
+.contents li {
+  animation: rise var(--duration-panel) var(--ease-out-soft) both;
+  animation-delay: calc(140ms + var(--i, 0) * var(--motion-stagger));
+}
+
+.contents > :nth-child(2),
+.contents li:nth-child(2) {
+  --i: 1;
+}
+
+.contents > :nth-child(3),
+.contents li:nth-child(3) {
+  --i: 2;
+}
+
+.contents > :nth-child(4),
+.contents li:nth-child(4) {
+  --i: 3;
+}
+
+.contents > :nth-child(5),
+.contents li:nth-child(5) {
+  --i: 4;
+}
+
+.contents > :nth-child(6),
+.contents li:nth-child(6) {
+  --i: 5;
+}
+
+.contents > :nth-child(7),
+.contents li:nth-child(7) {
+  --i: 6;
+}
+
+.contents > :nth-child(8),
+.contents li:nth-child(8) {
+  --i: 7;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}

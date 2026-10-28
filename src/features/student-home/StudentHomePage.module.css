@@ -28,7 +28,8 @@
   text-decoration: none;
   transition:
     border-color var(--transition-fast),
-    transform var(--transition-fast);
+    box-shadow var(--duration-quick) var(--ease-out-soft),
+    transform var(--duration-quick) var(--ease-out-soft);
 }
 
 .path:hover,
@@ -36,8 +37,15 @@
   border-color: var(--color-brand-primary);
 }
 
+@media (hover: hover) {
+  .path:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+}
+
 .path:active {
-  transform: translateY(1px);
+  transform: translateY(0) scale(0.98);
 }
 
 .pathIcon {
