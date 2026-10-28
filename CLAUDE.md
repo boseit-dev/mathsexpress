@@ -220,13 +220,14 @@ Rules:
   "Express" violet), drawn in `src/layouts/BrandMark.tsx`. Its colours are the `--color-logo-*`
   tokens and are used for the logo only. It was recreated from a screenshot; if the owner provides
   the original artwork file, replace the drawing with it.
-- Student home layout follows the owner's reference dashboard: a full-width welcome banner, a row
-  of task cards with "View all", recommended practice and progress on the left, and the class
-  leaderboard, coin shop, daily challenges and rewards on the right. Desktop navigation is text
-  links; phones and tablets use icon tabs. All artwork must be original (never copy another
-  product's illustrations, mascots or branding).
-- Card grids size themselves from their panel with container queries, so layouts hold at every
-  width, including just after the sidebar appears.
+- Student home is the owner's original **Study Journal**, not a copy of Mathspace: a compact
+  personal greeting, three study shortcuts, and clearly separated task, progress and practice
+  sections. Do not restore the old banner, right-side dashboard sidebar, decorative backdrop
+  or any competitor-specific layout, illustrations, mascot or task cards.
+- The separate student quick-tools toolbar gives access to Leaderboard, Shop, Daily challenges,
+  Achievements and Rewards. These currently contain labelled preview data, not real scores,
+  coins, purchases or awards. Its panel motion will be added in a separately tested pass.
+- Card layouts must respond to their available width and never overlap lesson controls.
 
 ## Accessibility and quality
 

@@ -1,0 +1,180 @@
+/* Stable, functional controls only. Claude will add the approved motion layer later. */
+.desktopToolbar {
+  position: fixed;
+  z-index: 30;
+  inset-block-start: 50%;
+  inset-inline-end: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  transform: translateY(-50%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.tool {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-brand);
+  cursor: pointer;
+}
+
+.tool:hover,
+.tool:focus-visible,
+.tool[aria-expanded='true'] {
+  background: var(--color-brand-pale);
+}
+
+.tool svg,
+.close svg,
+.mobileToggle svg {
+  inline-size: var(--size-icon-md);
+  block-size: var(--size-icon-md);
+}
+
+.tooltip {
+  position: absolute;
+  inset-inline-end: calc(100% + var(--space-3));
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-text);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.tool:hover .tooltip,
+.tool:focus-visible .tooltip {
+  opacity: 1;
+}
+
+.mobileToolbar {
+  display: none;
+}
+
+.mobileMenu[hidden] {
+  display: none;
+}
+
+.dialog {
+  position: fixed;
+  inset: 0 0 0 auto;
+  inline-size: min(27rem, 100vw);
+  max-inline-size: none;
+  block-size: 100dvh;
+  max-block-size: none;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  border-inline-start: 1px solid var(--color-border-strong);
+  background: var(--color-page);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
+}
+
+.dialog::backdrop {
+  background: rgb(27 33 66 / 0.38);
+}
+
+.dialogInner {
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+  min-block-size: 100%;
+  padding: var(--space-5);
+}
+
+.dialogHeader {
+  position: sticky;
+  z-index: 2;
+  inset-block-start: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-2);
+  background: var(--color-page);
+}
+
+.dialogHeader h2 {
+  font-size: var(--font-size-xl);
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--size-touch-target);
+  inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--color-brand-pale);
+}
+
+@media (max-width: 767px) {
+  .desktopToolbar {
+    display: none;
+  }
+
+  .mobileToolbar {
+    position: fixed;
+    z-index: 30;
+    inset-inline-end: var(--space-3);
+    inset-block-end: calc(var(--space-4) + env(safe-area-inset-bottom));
+    display: grid;
+    justify-items: end;
+    gap: var(--space-2);
+  }
+
+  .mobileToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-block-size: var(--size-touch-target);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-full);
+    background: var(--color-brand-primary);
+    color: var(--color-text-inverse);
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+  }
+
+  .mobileMenu {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: end;
+    gap: var(--space-1);
+    max-inline-size: calc(100vw - var(--space-6));
+    padding: var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-md);
+  }
+
+  .tooltip {
+    display: none;
+  }
+
+  .dialogInner {
+    padding: var(--space-4);
+  }
+}

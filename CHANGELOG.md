@@ -10,6 +10,15 @@ Phase 3 first learning slice (in development).
 
 ### Added
 
+- Added a compact student quick-tools toolbar for Leaderboard, Shop, Daily challenges,
+  Achievements and Rewards, with a mobile Quick tools menu.
+- Each control opens a real, keyboard-accessible modal panel with a close button, native
+  Escape handling, backdrop dismissal and focus restored to the opening control.
+- The panels reuse existing labelled sample content; achievement examples are explicitly
+  previews, shop purchase buttons are disabled, and students without a class get a class link.
+- The quick-tools toolbar stays out of the way on active guided-lesson pages. Animation and
+  visual motion polish are deliberately deferred for a separate Claude pass.
+
 - Replaced the student Learn placeholder with a real topic catalogue. Only published lessons for
   teacher-assigned year levels appear. Students without a class are prompted to join one.
 - One carefully authored Year 9 algebra lesson: solving linear equations with an explanation,
