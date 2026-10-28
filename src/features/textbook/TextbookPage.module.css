@@ -237,8 +237,12 @@
   white-space: nowrap;
 }
 
-.ready { color: var(--color-success); }
-.planned { color: var(--color-text-secondary); }
+.ready {
+  color: var(--color-success);
+}
+.planned {
+  color: var(--color-text-secondary);
+}
 
 .chapterIntro {
   display: grid;
@@ -367,9 +371,17 @@
   font-size: var(--font-size-sm);
 }
 
-.hintText { background: var(--color-brand-pale); }
-.correctText { background: var(--color-success-surface); color: var(--color-success); }
-.retryText { background: var(--color-warning-surface); color: var(--color-warning); }
+.hintText {
+  background: var(--color-brand-pale);
+}
+.correctText {
+  background: var(--color-success-surface);
+  color: var(--color-success);
+}
+.retryText {
+  background: var(--color-warning-surface);
+  color: var(--color-warning);
+}
 
 .exerciseFooter p {
   max-inline-size: 45rem;

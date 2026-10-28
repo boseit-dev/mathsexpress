@@ -17,9 +17,11 @@ export interface TextbookBook {
   chapters: readonly TextbookChapter[];
 }
 
-const NSW_K10 = 'https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-k-10-2022/overview';
+const NSW_K10 =
+  'https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-k-10-2022/overview';
 const NSW_SENIOR = 'https://curriculum.nsw.edu.au/learning-areas/mathematics';
-const NSW_STANDARD = 'https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-standard-11-12-2024/overview/course';
+const NSW_STANDARD =
+  'https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-standard-11-12-2024/overview/course';
 
 const guide: TextbookChapter = {
   id: 'getting-started',
@@ -28,9 +30,24 @@ const guide: TextbookChapter = {
 };
 
 const k10Chapters: readonly TextbookChapter[] = [
-  { id: 'number-and-algebra', title: 'Number and algebra', status: 'planned', strand: 'Number and algebra' },
-  { id: 'measurement-and-space', title: 'Measurement and space', status: 'planned', strand: 'Measurement and space' },
-  { id: 'statistics-and-probability', title: 'Statistics and probability', status: 'planned', strand: 'Statistics and probability' },
+  {
+    id: 'number-and-algebra',
+    title: 'Number and algebra',
+    status: 'planned',
+    strand: 'Number and algebra',
+  },
+  {
+    id: 'measurement-and-space',
+    title: 'Measurement and space',
+    status: 'planned',
+    strand: 'Measurement and space',
+  },
+  {
+    id: 'statistics-and-probability',
+    title: 'Statistics and probability',
+    status: 'planned',
+    strand: 'Statistics and probability',
+  },
 ];
 
 /** Stage names are factual; year-specific chapter order is not prescribed by NESA. */
@@ -48,7 +65,14 @@ function k10Book(year: 'K' | number, lifeSkills = false): TextbookBook {
   const title = year === 'K' ? 'Kindergarten' : `Year ${year}`;
   const pilot: TextbookChapter[] =
     year === 9 && !lifeSkills
-      ? [{ id: 'solving-linear-equations', title: 'Solving linear equations', status: 'ready', strand: 'Number and algebra' }]
+      ? [
+          {
+            id: 'solving-linear-equations',
+            title: 'Solving linear equations',
+            status: 'ready',
+            strand: 'Number and algebra',
+          },
+        ]
       : [];
   return {
     id: `${year === 'K' ? 'kindergarten' : `year-${year}`}${lifeSkills ? '-life-skills' : ''}`,
@@ -88,17 +112,35 @@ function seniorBook(
 // These headings for Mathematics Standard come from the 2024 NESA course overview.
 // Other course books begin with a guide until their distinct focus areas are audited.
 const standard11 = [
-  'Formulas and equations', 'Linear relationships', 'Earning money', 'Managing money',
-  'Applications of measurement', 'Time and location', 'Networks, paths and trees', 'Data analysis',
+  'Formulas and equations',
+  'Linear relationships',
+  'Earning money',
+  'Managing money',
+  'Applications of measurement',
+  'Time and location',
+  'Networks, paths and trees',
+  'Data analysis',
 ];
 const standard12_1 = [
-  'Algebraic relationships', 'Investment', 'Depreciation and loans', 'Right-angled triangles',
-  'Ratios and rates', 'Bivariate data analysis', 'Relative frequency and probability',
+  'Algebraic relationships',
+  'Investment',
+  'Depreciation and loans',
+  'Right-angled triangles',
+  'Ratios and rates',
+  'Bivariate data analysis',
+  'Relative frequency and probability',
 ];
 const standard12_2 = [
-  'Algebraic relationships', 'Investment and loans', 'Annuities', 'Trigonometry',
-  'Ratios and rates', 'Network flow', 'Critical path analysis', 'Bivariate data analysis',
-  'Relative frequency and probability', 'The normal distribution',
+  'Algebraic relationships',
+  'Investment and loans',
+  'Annuities',
+  'Trigonometry',
+  'Ratios and rates',
+  'Network flow',
+  'Critical path analysis',
+  'Bivariate data analysis',
+  'Relative frequency and probability',
+  'The normal distribution',
 ];
 
 export const textbookBooks: readonly TextbookBook[] = [

@@ -15,8 +15,8 @@ export function LinearEquationsChapter() {
       <section className={styles.lessonBlock} aria-labelledby="concept-heading">
         <h2 id="concept-heading">1. Understanding equations</h2>
         <p>
-          An equation says two expressions have the same value. To find an unknown number, keep
-          both sides equal by performing the same operation on each side.
+          An equation says two expressions have the same value. To find an unknown number, keep both
+          sides equal by performing the same operation on each side.
         </p>
         <div className={styles.example}>
           <strong>Worked example 1</strong>
@@ -35,7 +35,9 @@ export function LinearEquationsChapter() {
             <p className={styles.kicker}>PRACTISE</p>
             <h2 id="exercise-heading">Exercise 1A</h2>
           </div>
-          <p className={styles.score}>{completed} / {linearEquationExercises.length} correct</p>
+          <p className={styles.score}>
+            {completed} / {linearEquationExercises.length} correct
+          </p>
         </div>
         <p>Find the value of x. Use the hint if you need a starting point.</p>
         <div className={styles.exerciseList}>
@@ -72,7 +74,10 @@ export function LinearEquationsChapter() {
                     value={answer}
                     className={styles.answerInput}
                     onChange={(event) => {
-                      setAnswers((previous) => ({ ...previous, [exercise.id]: event.target.value }));
+                      setAnswers((previous) => ({
+                        ...previous,
+                        [exercise.id]: event.target.value,
+                      }));
                       setResults((previous) => {
                         const next = { ...previous };
                         delete next[exercise.id];
@@ -101,7 +106,9 @@ export function LinearEquationsChapter() {
                 {hintVisible && <p className={styles.hintText}>{exercise.hint}</p>}
                 {checked !== undefined && (
                   <p className={checked ? styles.correctText : styles.retryText} role="status">
-                    {checked ? `Correct! ${exercise.method}` : 'Not quite. Try again or open the hint.'}
+                    {checked
+                      ? `Correct! ${exercise.method}`
+                      : 'Not quite. Try again or open the hint.'}
                   </p>
                 )}
               </form>

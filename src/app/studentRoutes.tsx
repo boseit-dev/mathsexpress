@@ -34,8 +34,8 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
       defaultShouldRevalidate ||
       (currentUrl.pathname !== nextUrl.pathname &&
         (PAGES_SHOWING_CLASSES.includes(nextUrl.pathname) ||
-          (nextUrl.pathname.startsWith(paths.student.learn) ||
-            nextUrl.pathname.startsWith(paths.student.textbook)))),
+          nextUrl.pathname.startsWith(paths.student.learn) ||
+          nextUrl.pathname.startsWith(paths.student.textbook))),
     element: <StudentLayout />,
     children: [
       {

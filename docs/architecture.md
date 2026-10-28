@@ -39,31 +39,31 @@ URL ──▶ React Router (src/app/routes.tsx)
 
 ## Routes
 
-| Path                        | Page                                                  | Status       |
-| --------------------------- | ----------------------------------------------------- | ------------ |
-| `/`                         | Sends people to sign in, `/welcome` or their home     | Built        |
-| `/sign-in`, `/register`     | Sign in; create a student or teacher account          | Built        |
-| `/forgot-password`          | Request a password reset email                        | Built        |
-| `/reset-password`           | Choose a new password (from the email link)           | Built        |
-| `/auth/confirm`             | Where confirmation and reset email links land         | Built        |
-| `/auth/callback`            | Where Google sign-in returns                          | Built        |
-| `/welcome`                  | Choose a role and name (accounts without a profile)   | Built        |
-| `/sign-out`                 | Sign out (form action only)                           | Built        |
-| `/student`                  | Student home (tasks and side panels are sample data)  | Built        |
-| `/student/class`            | Classes, teachers, year levels; join or leave a class | Built        |
-| `/student/learn`            | Learn                                                 | Planned page |
-| `/student/textbook`         | Separate NSW textbook volumes and book contents       | Pilot built  |
-| `/student/textbook/:bookId` | Individual MathsExpress book contents                 | Pilot built  |
-| `/student/textbook/:bookId/:chapterId` | Chapter reader and checked Year 9 exercises | Pilot built |
-| `/student/class/tasks`      | All of the student's tasks                            | Planned page |
-| `/student/more`             | More                                                  | Planned page |
-| `/student/more/shop`        | Coin shop                                             | Planned page |
-| `/teacher`                  | Teacher home                                          | Planned page |
-| `/teacher/classes`          | The teacher's classes; create a class                 | Built        |
-| `/teacher/classes/:classId` | Students and year levels, class code, class settings  | Built        |
-| `/teacher/tasks`            | Tasks                                                 | Planned page |
-| `/teacher/reports`          | Reports                                               | Planned page |
-| `/teacher/more`             | More                                                  | Planned page |
+| Path                                   | Page                                                  | Status       |
+| -------------------------------------- | ----------------------------------------------------- | ------------ |
+| `/`                                    | Sends people to sign in, `/welcome` or their home     | Built        |
+| `/sign-in`, `/register`                | Sign in; create a student or teacher account          | Built        |
+| `/forgot-password`                     | Request a password reset email                        | Built        |
+| `/reset-password`                      | Choose a new password (from the email link)           | Built        |
+| `/auth/confirm`                        | Where confirmation and reset email links land         | Built        |
+| `/auth/callback`                       | Where Google sign-in returns                          | Built        |
+| `/welcome`                             | Choose a role and name (accounts without a profile)   | Built        |
+| `/sign-out`                            | Sign out (form action only)                           | Built        |
+| `/student`                             | Student home (tasks and side panels are sample data)  | Built        |
+| `/student/class`                       | Classes, teachers, year levels; join or leave a class | Built        |
+| `/student/learn`                       | Learn                                                 | Planned page |
+| `/student/textbook`                    | Separate NSW textbook volumes and book contents       | Pilot built  |
+| `/student/textbook/:bookId`            | Individual MathsExpress book contents                 | Pilot built  |
+| `/student/textbook/:bookId/:chapterId` | Chapter reader and checked Year 9 exercises           | Pilot built  |
+| `/student/class/tasks`                 | All of the student's tasks                            | Planned page |
+| `/student/more`                        | More                                                  | Planned page |
+| `/student/more/shop`                   | Coin shop                                             | Planned page |
+| `/teacher`                             | Teacher home                                          | Planned page |
+| `/teacher/classes`                     | The teacher's classes; create a class                 | Built        |
+| `/teacher/classes/:classId`            | Students and year levels, class code, class settings  | Built        |
+| `/teacher/tasks`                       | Tasks                                                 | Planned page |
+| `/teacher/reports`                     | Reports                                               | Planned page |
+| `/teacher/more`                        | More                                                  | Planned page |
 
 Every planned page must be replaced by the real feature before release.
 

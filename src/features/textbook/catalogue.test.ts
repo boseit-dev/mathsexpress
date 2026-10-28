@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  findTextbook,
-  findTextbookChapter,
-  stageForYear,
-  textbookBooks,
-} from './catalogue';
+import { findTextbook, findTextbookChapter, stageForYear, textbookBooks } from './catalogue';
 import { isEquationAnswerCorrect, linearEquationExercises } from './pilotEquations';
 
 describe('NSW textbook catalogue', () => {
@@ -29,7 +24,9 @@ describe('NSW textbook catalogue', () => {
   });
 
   it('maps the compulsory year bands to the correct syllabus stages', () => {
-    expect(['K', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((year) => stageForYear(year as number | 'K'))).toEqual([
+    expect(
+      ['K', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((year) => stageForYear(year as number | 'K')),
+    ).toEqual([
       'Early Stage 1',
       'Stage 1',
       'Stage 1',

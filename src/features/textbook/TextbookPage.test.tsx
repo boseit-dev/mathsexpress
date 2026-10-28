@@ -11,7 +11,8 @@ describe('student textbook library', () => {
     await user.click(await screen.findByRole('link', { name: 'Textbook' }));
     expect(await screen.findByRole('heading', { level: 1, name: 'Textbook' })).toBeVisible();
     expect(screen.getByRole('link', { name: /Year 9 Mathematics/ })).toHaveAttribute(
-      'href', '/student/textbook/year-9',
+      'href',
+      '/student/textbook/year-9',
     );
   });
 
@@ -19,21 +20,29 @@ describe('student textbook library', () => {
     renderApp('/student/textbook');
     await screen.findByRole('heading', { level: 1, name: 'Textbook' });
     expect(screen.getByRole('link', { name: /Year 12 Standard 1/ })).toHaveAttribute(
-      'href', '/student/textbook/year-12-standard-1',
+      'href',
+      '/student/textbook/year-12-standard-1',
     );
     expect(screen.getByRole('link', { name: /Year 12 Standard 2/ })).toHaveAttribute(
-      'href', '/student/textbook/year-12-standard-2',
+      'href',
+      '/student/textbook/year-12-standard-2',
     );
   });
 
   it('navigates book contents and shows the ready Year 9 chapter', async () => {
     const user = userEvent.setup();
     renderApp('/student/textbook/year-9');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Year 9 Mathematics' })).toBeVisible();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Year 9 Mathematics' }),
+    ).toBeVisible();
     const contents = screen.getByRole('heading', { name: 'Contents' }).closest('section');
     expect(contents).not.toBeNull();
-    await user.click(within(contents as HTMLElement).getByRole('link', { name: /Solving linear equations/ }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' })).toBeVisible();
+    await user.click(
+      within(contents as HTMLElement).getByRole('link', { name: /Solving linear equations/ }),
+    );
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' }),
+    ).toBeVisible();
     expect(screen.getByRole('heading', { name: 'Exercise 1A' })).toBeVisible();
   });
 
@@ -56,7 +65,9 @@ describe('student textbook library', () => {
 
   it('does not claim that unpublished chapters are finished', async () => {
     renderApp('/student/textbook/year-4/measurement-and-space');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Measurement and space' })).toBeVisible();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Measurement and space' }),
+    ).toBeVisible();
     expect(screen.getByRole('heading', { name: 'Chapter in preparation' })).toBeVisible();
   });
 

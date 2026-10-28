@@ -13,7 +13,9 @@ function BookCover({ book }: { book: TextbookBook }) {
     <div className={styles.cover} aria-hidden="true">
       <span>MathsExpress</span>
       <span className={styles.coverYear}>{book.year === 'K' ? 'K' : book.year}</span>
-      <span className={styles.coverCourse}>{book.course.replace(/^Year \d+ /, '').replace(/^Kindergarten /, '')}</span>
+      <span className={styles.coverCourse}>
+        {book.course.replace(/^Year \d+ /, '').replace(/^Kindergarten /, '')}
+      </span>
       <span className={styles.coverMark}>＋ ○ △</span>
     </div>
   );
@@ -27,9 +29,22 @@ function LibraryView() {
     `${book.course} ${book.stage}`.toLowerCase().includes(search.toLowerCase().trim()),
   );
   const groups = [
-    { title: 'Primary · Kindergarten to Year 6', list: matching.filter((book) => book.year === 'K' || (typeof book.year === 'number' && book.year <= 6)) },
-    { title: 'Secondary · Years 7 to 10', list: matching.filter((book) => typeof book.year === 'number' && book.year >= 7 && book.year <= 10) },
-    { title: 'Senior · Years 11 and 12', list: matching.filter((book) => typeof book.year === 'number' && book.year >= 11) },
+    {
+      title: 'Primary · Kindergarten to Year 6',
+      list: matching.filter(
+        (book) => book.year === 'K' || (typeof book.year === 'number' && book.year <= 6),
+      ),
+    },
+    {
+      title: 'Secondary · Years 7 to 10',
+      list: matching.filter(
+        (book) => typeof book.year === 'number' && book.year >= 7 && book.year <= 10,
+      ),
+    },
+    {
+      title: 'Senior · Years 11 and 12',
+      list: matching.filter((book) => typeof book.year === 'number' && book.year >= 11),
+    },
   ];
 
   return (
@@ -64,14 +79,20 @@ function LibraryView() {
             <h2>{group.title}</h2>
             <div className={styles.bookGrid}>
               {group.list.map((book) => (
-                <Link className={styles.bookCard} to={paths.student.textbookBook(book.id)} key={book.id}>
+                <Link
+                  className={styles.bookCard}
+                  to={paths.student.textbookBook(book.id)}
+                  key={book.id}
+                >
                   <BookCover book={book} />
                   <span className={styles.bookTitle}>{book.course}</span>
                   <span className={styles.bookDetail}>
-                    {book.stage} · {book.syllabus.includes('2022') ? '2022 syllabus' : '2024 syllabus'}
+                    {book.stage} ·{' '}
+                    {book.syllabus.includes('2022') ? '2022 syllabus' : '2024 syllabus'}
                   </span>
                   <span className={styles.bookStatus}>
-                    {ownYears.has(book.year) ? 'Your assigned year · ' : ''}Open book <ChevronRight aria-hidden="true" />
+                    {ownYears.has(book.year) ? 'Your assigned year · ' : ''}Open book{' '}
+                    <ChevronRight aria-hidden="true" />
                   </span>
                 </Link>
               ))}
@@ -98,7 +119,9 @@ function BookDetail({ book }: { book: TextbookBook }) {
         <div className={styles.bookIntroText}>
           <p className={styles.kicker}>MATHSEXPRESS DIGITAL TEXTBOOK</p>
           <h1>{book.course}</h1>
-          <p>{book.stage} · {book.syllabus}</p>
+          <p>
+            {book.stage} · {book.syllabus}
+          </p>
           <p>
             Every chapter is written for MathsExpress. Published content includes explanations,
             worked examples and practice exercises. Other chapters are still being prepared.
@@ -113,7 +136,10 @@ function BookDetail({ book }: { book: TextbookBook }) {
         <ol className={styles.chapterList}>
           {book.chapters.map((chapter, index) => (
             <li key={chapter.id}>
-              <Link to={paths.student.textbookChapter(book.id, chapter.id)} className={styles.chapterLink}>
+              <Link
+                to={paths.student.textbookChapter(book.id, chapter.id)}
+                className={styles.chapterLink}
+              >
                 <span className={styles.chapterNumber}>{String(index + 1).padStart(2, '0')}</span>
                 <span className={styles.chapterName}>{chapter.title}</span>
                 <span className={chapter.status === 'ready' ? styles.ready : styles.planned}>
@@ -138,7 +164,9 @@ function ChapterView({ book, chapterId }: { book: TextbookBook; chapterId: strin
         <ChevronLeft aria-hidden="true" /> {book.course} contents
       </Link>
       <div className={styles.chapterIntro}>
-        <p className={styles.kicker}>{book.course.toUpperCase()} · {book.stage.toUpperCase()}</p>
+        <p className={styles.kicker}>
+          {book.course.toUpperCase()} · {book.stage.toUpperCase()}
+        </p>
         <h1>{chapter.title}</h1>
         <p>{book.syllabus}</p>
       </div>
@@ -152,8 +180,8 @@ function ChapterView({ book, chapterId }: { book: TextbookBook; chapterId: strin
             example, then try the questions yourself. Open a hint when you need help.
           </p>
           <p>
-            Our books use the NSW syllabus as their reference, but chapter sequencing is chosen
-            by MathsExpress and requires academic review before publication.
+            Our books use the NSW syllabus as their reference, but chapter sequencing is chosen by
+            MathsExpress and requires academic review before publication.
           </p>
           <a href={book.syllabusUrl} target="_blank" rel="noopener noreferrer">
             Check the official syllabus
@@ -164,8 +192,8 @@ function ChapterView({ book, chapterId }: { book: TextbookBook; chapterId: strin
           <BookOpenCheck aria-hidden="true" className={styles.placeholderIcon} />
           <h2>Chapter in preparation</h2>
           <p>
-            This chapter is listed in the contents, but its explanations and exercises have not
-            yet been reviewed or published. We will not display unverified maths content.
+            This chapter is listed in the contents, but its explanations and exercises have not yet
+            been reviewed or published. We will not display unverified maths content.
           </p>
           <Link to={paths.student.textbookBook(book.id)}>Return to the contents</Link>
         </section>
