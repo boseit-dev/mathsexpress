@@ -40,6 +40,11 @@ Phase 2: authentication, accounts and class management.
 
 - The header no longer shows a coin balance: coins are not real until the rewards system is built.
 
+### Fixed
+
+- The site's Content-Security-Policy now allows connections to its Supabase project; before, a
+  build served by the Worker could not reach the database.
+
 ## [2.0.0-alpha.1] - 2026-10-28
 
 Phase 1: project foundation and student homepage.

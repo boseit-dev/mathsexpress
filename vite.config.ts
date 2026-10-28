@@ -1,10 +1,35 @@
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
+import { loadEnv, type Plugin } from 'vite';
 import { configDefaults, defineConfig } from 'vitest/config';
 import packageJson from './package.json' with { type: 'json' };
+import { allowConnectionsTo } from './scripts/lib/content-security-policy.ts';
 
-export default defineConfig({
-  plugins: [react()],
+/** Lets the built site connect to the Supabase project it was built for (see public/_headers). */
+function allowSupabaseConnections(supabaseUrl: string | undefined): Plugin {
+  let outDir = 'dist';
+  return {
+    name: 'mathsexpress:allow-supabase-connections',
+    apply: 'build',
+    configResolved(config) {
+      outDir = config.build.outDir;
+    },
+    closeBundle() {
+      if (!supabaseUrl) return;
+      const headersPath = join(outDir, '_headers');
+      const headers = readFileSync(headersPath, 'utf8');
+      writeFileSync(headersPath, allowConnectionsTo(headers, new URL(supabaseUrl).origin));
+    },
+  };
+}
+
+export default defineConfig(({ mode }) => ({
+  plugins: [
+    react(),
+    allowSupabaseConnections(loadEnv(mode, process.cwd(), 'VITE_').VITE_SUPABASE_URL),
+  ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
@@ -37,4 +62,4 @@ export default defineConfig({
     env: { TZ: 'Australia/Sydney' },
     restoreMocks: true,
   },
-});
+}));
