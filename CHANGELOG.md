@@ -27,6 +27,20 @@ Phase 3 first learning slice (in development).
   and existing accessibility labels, while giving the page its own navy/blue visual hierarchy.
 - Deferred mascot artwork and animation integration until the approved character assets are ready.
 
+### Changed
+
+- Rebuilt the student homepage into an original, minimal **Study Journal** instead of a
+  game-like dashboard. The layout now has a plain personal greeting, one clear next step,
+  three study shortcuts, and separate vertical sections for tasks, progress and practice.
+- Removed the old hero illustration, background decoration, leaderboard, shop, challenge and
+  rewards panels from the student homepage. Their underlying data and separate routes are
+  untouched; sample information stays clearly labelled wherever it is shown.
+- Removed the purple development-preview bar from both student and teacher layouts.
+  On the student homepage, a quiet note and individual badges still distinguish sample
+  panels from the real account and class data.
+- Preserved teacher-assigned year levels, existing lesson links, refresh behaviour, keyboard
+  navigation and accessibility labels. Mascot and motion design remain a separate later task.
+
 ### Known limitations
 
 - Only one Year 9 lesson has been published so far. Other year levels have honest empty states.

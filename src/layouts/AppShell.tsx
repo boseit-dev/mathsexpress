@@ -2,7 +2,6 @@ import type { ReactNode } from 'react';
 import { MAIN_CONTENT_ID } from '@/app/mainContentFocus';
 import type { NavItem } from '@/config/navigation';
 import { AppHeader } from './AppHeader';
-import { DevPreviewNotice } from './DevPreviewNotice';
 import { SkipLink } from './SkipLink';
 import styles from './AppShell.module.css';
 
@@ -29,7 +28,6 @@ export function AppShell({
     <div className={styles.shell}>
       {backdrop}
       <SkipLink targetId={MAIN_CONTENT_ID} />
-      <DevPreviewNotice />
       <AppHeader
         homePath={homePath}
         navigation={navigation}

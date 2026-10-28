@@ -119,10 +119,12 @@ describe('student layout', () => {
     expect(within(nav).queryByRole('link', { current: 'page' })).not.toBeInTheDocument();
   });
 
-  it('explains which parts of the preview are sample data', async () => {
+  it('does not show the old development-preview banner', async () => {
     renderApp('/student');
-    const notice = await screen.findByRole('complementary', { name: 'Development preview' });
-    expect(notice).toHaveTextContent('Your account and classes are real');
+    await screen.findByRole('heading', { level: 1 });
+    expect(
+      screen.queryByRole('complementary', { name: 'Development preview' }),
+    ).not.toBeInTheDocument();
   });
 
   it('offers a skip link as the first stop for keyboard users', async () => {

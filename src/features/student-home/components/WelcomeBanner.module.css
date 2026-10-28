@@ -1,45 +1,12 @@
-/*
- * A compact, navy learning card, purposefully unlike a full-width scenic
- * dashboard hero. Its own mathematical diagram can sit beside the text on
- * larger screens. All visual styling uses the MathsExpress design tokens.
- */
+/* Editorial greeting and a quiet next-step card; no scenic hero or game widgets. */
 .banner {
-  --color-focus: var(--color-text-inverse);
-
-  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-4);
-  min-block-size: 100%;
-  padding: var(--space-6);
-  overflow: hidden;
-  border-radius: var(--radius-xl);
-  background-color: var(--color-brand-primary-active);
-  background-image: radial-gradient(
-    circle at 105% -10%,
-    var(--color-brand-primary),
-    transparent 70%
-  );
-  color: var(--color-text-inverse);
-  box-shadow: var(--shadow-md);
+  gap: var(--space-6);
+  padding-block: var(--space-5);
 }
 
-.banner::before {
-  position: absolute;
-  inset-inline-end: calc(var(--space-12) * -1);
-  inset-block-start: calc(var(--space-12) * -1);
-  inline-size: 10rem;
-  block-size: 10rem;
-  border: 1px solid var(--color-on-brand-track);
-  border-radius: var(--radius-full);
-  pointer-events: none;
-  content: '';
-}
-
-.content {
-  position: relative;
-  z-index: 1;
+.introduction {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -48,97 +15,85 @@
 }
 
 .eyebrow {
-  color: var(--color-brand-soft);
+  color: var(--color-text-brand);
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.classLabel {
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--color-on-brand-track);
-  border-radius: var(--radius-full);
-  color: var(--color-text-inverse);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-}
-
-a.classLabel {
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-.sampleTag {
-  opacity: 0.85;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.11em;
 }
 
 .greeting {
   font-size: var(--font-size-display);
-  font-weight: var(--font-weight-bold);
   line-height: var(--line-height-tight);
 }
 
 .summary {
-  max-inline-size: var(--layout-reading-width);
-  line-height: var(--line-height-base);
+  max-inline-size: 37rem;
+  color: var(--color-text-secondary);
 }
 
-.continue {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-4);
-  inline-size: 100%;
-  margin-block-start: var(--space-3);
+.sampleTag {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.classLabel {
+  display: inline-flex;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-brand-pale);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
 }
 
 .nextUp {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-inline-size: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-surface);
+}
+
+.nextUpHeading {
+  font-weight: var(--font-weight-semibold);
+}
+
+.preview {
+  display: grid;
   gap: var(--space-2);
   inline-size: 100%;
-  max-inline-size: 28rem;
-  padding: var(--space-3) var(--space-4);
-  border-inline-start: 3px solid var(--color-brand-soft);
-  border-radius: var(--radius-md);
-  background-color: var(--color-on-brand-subtle);
 }
 
 .nextUpLabel,
 .nextUpMeta {
+  color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
 }
 
 .nextUpTitle {
   font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-snug);
 }
 
 .continueButton {
   inline-size: 100%;
 }
 
-.illustration {
-  display: none;
+@media (min-width: 760px) {
+  .banner {
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.72fr);
+  }
 }
 
-@media (min-width: 480px) {
+@media (min-width: 1000px) {
+  .nextUp {
+    padding: var(--space-6);
+  }
+
   .continueButton {
     inline-size: auto;
-  }
-}
-
-/* Only reserve room for the original mathematical illustration if the
- * learning card has enough space; never let it cover text or controls. */
-@media (min-width: 1350px) {
-  .banner {
-    grid-template-columns: minmax(0, 1fr) 9rem;
-    padding: var(--space-8);
-  }
-
-  .illustration {
-    display: block;
-    inline-size: 100%;
   }
 }

@@ -4,7 +4,6 @@ import { paths } from '@/config/paths';
 import { getFullName } from '@/domain/people';
 import { AccountMenu } from '../AccountMenu';
 import { AppShell } from '../AppShell';
-import { StudentBackdrop } from './StudentBackdrop';
 import { useStudentLayoutData } from './studentLayoutLoader';
 
 /** Frame for every student page: top navigation Home | Learn | Textbook | Class | More. */
@@ -17,7 +16,6 @@ export function StudentLayout() {
       navigation={studentNavigation}
       navigationLabel="Student"
       account={<AccountMenu name={getFullName(student)} roleLabel="Student" />}
-      backdrop={<StudentBackdrop />}
     >
       <Outlet context={student} />
     </AppShell>
