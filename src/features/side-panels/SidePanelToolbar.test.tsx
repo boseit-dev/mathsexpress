@@ -35,7 +35,9 @@ describe('student quick tools', () => {
     const dialog = screen.getByRole('dialog', { name: 'Shop' });
     expect(dialog).toHaveTextContent('Preview only');
     expect(dialog).toHaveTextContent('Sample data');
-    expect(within(dialog).getAllByRole('button', { name: /coming soon/i }).length).toBeGreaterThan(0);
+    expect(within(dialog).getAllByRole('button', { name: /coming soon/i }).length).toBeGreaterThan(
+      0,
+    );
     for (const button of within(dialog).getAllByRole('button', { name: /coming soon/i })) {
       expect(button).toBeDisabled();
     }

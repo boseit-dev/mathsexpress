@@ -45,10 +45,7 @@ export function SidePanelContents({ panel, student }: SidePanelContentsProps) {
       )}
       {panel === 'shop' && (
         <>
-          <ShopPanel
-            items={preview.featuredShopItems}
-            coinBalance={preview.rewards.coinBalance}
-          />
+          <ShopPanel items={preview.featuredShopItems} coinBalance={preview.rewards.coinBalance} />
           <div className={styles.previewShop}>
             <p>Purchases are not available yet.</p>
             {preview.featuredShopItems.map((item) => (
