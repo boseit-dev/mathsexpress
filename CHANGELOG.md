@@ -10,6 +10,15 @@ Phase 3 first learning slice (in development).
 
 ### Added
 
+- Introduced an original MathsExpress textbook library with 25 separate books for K–10,
+  secondary Life Skills and the distinct Year 11–12 mathematics courses. All books open
+  through their own links, with chapter contents, a getting-started chapter and syllabus links.
+- Added a Year 9 linear-equations textbook pilot with an original worked example, six
+  checkable exercises, hints and retry feedback. Other chapters explicitly say they are in
+  preparation rather than presenting unreviewed content as finished.
+- Added a textbook curriculum coverage record and unit/interface tests for the book
+  routes, course distinctions, chapter navigation and numerical answer checking.
+
 - Added a compact student quick-tools toolbar for Leaderboard, Shop, Daily challenges,
   Achievements and Rewards, with a mobile Quick tools menu.
 - Each control opens a real, keyboard-accessible modal panel with a close button, native

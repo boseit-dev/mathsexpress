@@ -52,7 +52,9 @@ URL ──▶ React Router (src/app/routes.tsx)
 | `/student`                  | Student home (tasks and side panels are sample data)  | Built        |
 | `/student/class`            | Classes, teachers, year levels; join or leave a class | Built        |
 | `/student/learn`            | Learn                                                 | Planned page |
-| `/student/textbook`         | Textbook                                              | Planned page |
+| `/student/textbook`         | Separate NSW textbook volumes and book contents       | Pilot built  |
+| `/student/textbook/:bookId` | Individual MathsExpress book contents                 | Pilot built  |
+| `/student/textbook/:bookId/:chapterId` | Chapter reader and checked Year 9 exercises | Pilot built |
 | `/student/class/tasks`      | All of the student's tasks                            | Planned page |
 | `/student/more`             | More                                                  | Planned page |
 | `/student/more/shop`        | Coin shop                                             | Planned page |

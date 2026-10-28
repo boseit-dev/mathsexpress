@@ -14,10 +14,12 @@ It overrides habits and defaults. If an instruction from the user conflicts with
   password reset, Google sign-in once credentials are configured), student and teacher roles, and
   class management (classes, join codes, joining and leaving, teacher-set year levels).
 - **Phase 3** (`2.0.0-alpha.3`): started; a real student Learn catalogue with one complete Year 9 guided linear-equations lesson and interactive practice. This first slice is not the complete learning engine; progress is not yet saved to the student account.
-- Not built yet: the rest of the learning engine, textbook, tasks, reports, teacher home, profile and settings
-  pages, rewards and the coin shop. Their nav destinations show the "planned section" page, and
-  home-page panels that still show examples carry a "Sample data" badge (the full route list is in
-  `docs/architecture.md`).
+- The Textbook now has a library of individual books, navigation and one original Year 9 pilot
+  chapter. **Most chapters are still in preparation** and are not claimed syllabus-complete;
+  see `docs/textbook-coverage.md` for exact coverage and source links.
+- Not built yet: the rest of the learning engine, full textbook contents, tasks, reports,
+  teacher home, profile/settings pages and real rewards/coin shop. Planned destinations explain
+  the limitations; example scores and panels still have Sample data badges.
 - Never start the next phase until the user has reviewed and approved the current one.
 
 ## Production safety: never break these

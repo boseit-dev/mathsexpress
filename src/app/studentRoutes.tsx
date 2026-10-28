@@ -6,6 +6,7 @@ import { StudentClassPage } from '@/features/student-class/StudentClassPage';
 import { StudentHomePage } from '@/features/student-home/StudentHomePage';
 import { LearnPage } from '@/features/learning/LearnPage';
 import { GuidedLessonPage } from '@/features/learning/GuidedLessonPage';
+import { TextbookPage } from '@/features/textbook/TextbookPage';
 import { createStudentHomeLoader } from '@/features/student-home/studentHomeLoader';
 import { StudentLayout } from '@/layouts/student/StudentLayout';
 import { createStudentLayoutLoader } from '@/layouts/student/studentLayoutLoader';
@@ -17,7 +18,11 @@ function planned(title: string, summary: string) {
   return <PlannedSectionPage title={title} summary={summary} homePath={paths.student.home} />;
 }
 
-const PAGES_SHOWING_CLASSES: readonly string[] = [paths.student.home, paths.student.class];
+const PAGES_SHOWING_CLASSES: readonly string[] = [
+  paths.student.home,
+  paths.student.class,
+  paths.student.textbook,
+];
 
 export function createStudentRoutes(dependencies: AppDependencies): RouteObject {
   return {
@@ -29,7 +34,8 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
       defaultShouldRevalidate ||
       (currentUrl.pathname !== nextUrl.pathname &&
         (PAGES_SHOWING_CLASSES.includes(nextUrl.pathname) ||
-          nextUrl.pathname.startsWith(paths.student.learn))),
+          (nextUrl.pathname.startsWith(paths.student.learn) ||
+            nextUrl.pathname.startsWith(paths.student.textbook)))),
     element: <StudentLayout />,
     children: [
       {
@@ -49,13 +55,9 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
             path: `${paths.student.learn}/:lessonId`,
             element: <GuidedLessonPage />,
           },
-          {
-            path: paths.student.textbook,
-            element: planned(
-              'Textbook',
-              'The MathsExpress textbook for your year, with worked examples for every topic.',
-            ),
-          },
+          { path: paths.student.textbook, element: <TextbookPage /> },
+          { path: `${paths.student.textbook}/:bookId`, element: <TextbookPage /> },
+          { path: `${paths.student.textbook}/:bookId/:chapterId`, element: <TextbookPage /> },
           {
             // Uses the student and classes the layout loads.
             path: paths.student.class,
