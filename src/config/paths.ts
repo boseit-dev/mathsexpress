@@ -14,6 +14,7 @@ export const paths = {
   student: {
     home: '/student',
     learn: '/student/learn',
+    lesson: (lessonId: string) => `/student/learn/${encodeURIComponent(lessonId)}`,
     textbook: '/student/textbook',
     class: '/student/class',
     tasks: '/student/class/tasks',

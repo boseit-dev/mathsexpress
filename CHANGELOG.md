@@ -4,6 +4,28 @@ All notable changes to MathsExpress 2.0 are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/). See "Versioning" in CLAUDE.md.
 
+## [2.0.0-alpha.3] - Unreleased
+
+Phase 3 first learning slice (in development).
+
+### Added
+
+- Replaced the student Learn placeholder with a real topic catalogue. Only published lessons for
+  teacher-assigned year levels appear. Students without a class are prompted to join one.
+- One carefully authored Year 9 algebra lesson: solving linear equations with an explanation,
+  a worked example, five interactive questions, graduated hints and verified numeric marking.
+- Clear correct/incorrect feedback, worked solutions, a completion summary and replay.
+- Unit and interface tests for the published content, answer checking, access by year and the
+  complete lesson flow.
+
+### Known limitations
+
+- Only one Year 9 lesson has been published so far. Other year levels have honest empty states.
+- Lesson progress and attempts currently stay in the browser session and are **not yet saved to
+  the student's account**. Persistent account-based progress is planned later in Phase 3.
+- No rewards, teacher assignments or adaptive question generation are claimed for this slice.
+- Google sign-in and the remaining Phase 2 security review are still pending.
+
 ## [2.0.0-alpha.2] - Unreleased
 
 Phase 2: authentication, accounts and class management.

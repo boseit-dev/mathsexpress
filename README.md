@@ -9,11 +9,12 @@ architecture, design system and codebase.
 
 ## Status
 
-| Phase | Scope                                                          | Status                |
-| ----- | -------------------------------------------------------------- | --------------------- |
-| 1     | Foundation, design system, top navigation, student homepage    | Complete and approved |
-| 2     | Authentication, student and teacher accounts, class management | Built, in review      |
-| Later | Learning engine, tasks, textbook, rewards, reports             | Planned               |
+| Phase | Scope                                                          | Status                  |
+| ----- | -------------------------------------------------------------- | ----------------------- |
+| 1     | Foundation, design system, top navigation, student homepage    | Complete and approved   |
+| 2     | Authentication, student and teacher accounts, class management | Development preview     |
+| 3     | Guided learning and practice                                   | Started (Year 9 lesson) |
+| Later | Teacher tasks, interactive textbook, rewards, reports          | Planned                 |
 
 - 2.0 is a development preview. Accounts and classes are real (in a local database during
   development); home-page panels for features that aren't built yet are labelled "Sample data",

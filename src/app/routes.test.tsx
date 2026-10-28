@@ -257,8 +257,8 @@ describe('errors', () => {
     renderApp('/student', { state, overrides: { classes: { ...realClasses, listMyClasses } } });
     await screen.findByRole('heading', { level: 1, name: /Mia/ });
 
-    await user.click(screen.getByRole('link', { name: 'Learn' }));
-    expect(await screen.findByRole('heading', { level: 1, name: 'Learn' })).toBeVisible();
+    await user.click(screen.getByRole('link', { name: 'Textbook' }));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Textbook' })).toBeVisible();
     expect(screen.getByRole('navigation', { name: 'Student' })).toBeVisible();
   });
 

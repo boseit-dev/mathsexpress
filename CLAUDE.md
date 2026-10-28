@@ -13,7 +13,8 @@ It overrides habits and defaults. If an instruction from the user conflicts with
   adds the redesigned assignment cards, accounts (email and password with email confirmation,
   password reset, Google sign-in once credentials are configured), student and teacher roles, and
   class management (classes, join codes, joining and leaving, teacher-set year levels).
-- Not built yet: the learning engine, textbook, tasks, reports, teacher home, profile and settings
+- **Phase 3** (`2.0.0-alpha.3`): started; a real student Learn catalogue with one complete Year 9 guided linear-equations lesson and interactive practice. This first slice is not the complete learning engine; progress is not yet saved to the student account.
+- Not built yet: the rest of the learning engine, textbook, tasks, reports, teacher home, profile and settings
   pages, rewards and the coin shop. Their nav destinations show the "planned section" page, and
   home-page panels that still show examples carry a "Sample data" badge (the full route list is in
   `docs/architecture.md`).

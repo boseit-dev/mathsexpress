@@ -1,6 +1,6 @@
 {
   "name": "mathsexpress",
-  "version": "2.0.0-alpha.2",
+  "version": "2.0.0-alpha.3",
   "private": true,
   "description": "MathsExpress 2.0: maths learning platform for NSW students and teachers.",
   "type": "module",

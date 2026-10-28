@@ -4,6 +4,8 @@ import type { AppDependencies } from '@/data/repositories';
 import { createStudentClassAction } from '@/features/student-class/studentClassHandlers';
 import { StudentClassPage } from '@/features/student-class/StudentClassPage';
 import { StudentHomePage } from '@/features/student-home/StudentHomePage';
+import { LearnPage } from '@/features/learning/LearnPage';
+import { GuidedLessonPage } from '@/features/learning/GuidedLessonPage';
 import { createStudentHomeLoader } from '@/features/student-home/studentHomeLoader';
 import { StudentLayout } from '@/layouts/student/StudentLayout';
 import { createStudentLayoutLoader } from '@/layouts/student/studentLayoutLoader';
@@ -26,7 +28,8 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
     shouldRevalidate: ({ currentUrl, nextUrl, defaultShouldRevalidate }) =>
       defaultShouldRevalidate ||
       (currentUrl.pathname !== nextUrl.pathname &&
-        PAGES_SHOWING_CLASSES.includes(nextUrl.pathname)),
+        (PAGES_SHOWING_CLASSES.includes(nextUrl.pathname) ||
+          nextUrl.pathname.startsWith(paths.student.learn))),
     element: <StudentLayout />,
     children: [
       {
@@ -40,10 +43,11 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
           },
           {
             path: paths.student.learn,
-            element: planned(
-              'Learn',
-              'Practise NSW curriculum skills for your year level, with questions that adapt as you improve.',
-            ),
+            element: <LearnPage />,
+          },
+          {
+            path: `${paths.student.learn}/:lessonId`,
+            element: <GuidedLessonPage />,
           },
           {
             path: paths.student.textbook,
