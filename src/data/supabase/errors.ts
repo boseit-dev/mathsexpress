@@ -28,12 +28,11 @@ interface ErrorLike {
 }
 
 function isNetworkFailure(error: ErrorLike): boolean {
-  return (
-    error.name === 'AuthRetryableFetchError' ||
-    (error.name === 'TypeError' &&
-      typeof error.message === 'string' &&
-      /fetch/i.test(error.message))
-  );
+  if (error.name === 'AuthRetryableFetchError' || error.name === 'TimeoutError') return true;
+  if (typeof error.message !== 'string') return false;
+  if (error.name === 'TypeError' && /fetch/i.test(error.message)) return true;
+  // The database client reports a failed request as "<error name>: <message>", without a name.
+  return error.message.startsWith('TimeoutError:') || /^TypeError:.*fetch/i.test(error.message);
 }
 
 /**

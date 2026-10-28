@@ -28,4 +28,13 @@ describe('toAppError', () => {
     expect(toAppError({ status: 429 }).code).toBe('rate_limited');
     expect(toAppError(new TypeError('Failed to fetch')).code).toBe('network');
   });
+
+  it('treats requests that ran out of time as network failures', () => {
+    expect(toAppError(new DOMException('signal timed out', 'TimeoutError')).code).toBe('network');
+    // How the database client reports a failed request.
+    expect(toAppError({ code: '', message: 'TimeoutError: signal timed out' }).code).toBe(
+      'network',
+    );
+    expect(toAppError({ code: '', message: 'TypeError: Failed to fetch' }).code).toBe('network');
+  });
 });

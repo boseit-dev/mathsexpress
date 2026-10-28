@@ -3,7 +3,7 @@ import type { SupabaseConfig } from '@/config/env';
 import { isAccountRole, type AuthUser } from '@/domain/account';
 import { cleanText } from '@/domain/validation';
 import type { AuthService } from '../repositories';
-import { AUTH_STORAGE_KEY, type MathsExpressClient } from './client';
+import { AUTH_STORAGE_KEY, fetchWithTimeout, type MathsExpressClient } from './client';
 import { throwIfError, toAppError } from './errors';
 
 function readString(value: unknown): string | undefined {
@@ -89,7 +89,7 @@ export function createSupabaseAuthService(
 
     async isGoogleSignInAvailable() {
       try {
-        const response = await fetch(`${config.url}/auth/v1/settings`, {
+        const response = await fetchWithTimeout(`${config.url}/auth/v1/settings`, {
           headers: { apikey: config.publishableKey },
         });
         if (!response.ok) return false;
