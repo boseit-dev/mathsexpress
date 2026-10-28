@@ -55,6 +55,34 @@ Use made-up addresses ending in `example.test` and throwaway passwords for local
 - `npm run db:types` regenerates `src/data/supabase/database.types.ts`; CI fails if it is out of date.
 - `npm run test:db` runs the database and authentication tests against the local stack.
 
+## Sending real email
+
+Every email stays in the test mailbox by default, which is what you want: `npm run test:db` and CI
+read confirmation and password-reset links straight out of it, and nothing can reach a real person
+by accident.
+
+To send real email instead, for example to read it on a phone or to check how it renders in Gmail:
+
+1. Create an API key at https://resend.com/api-keys (sending access is enough).
+2. Put it in an untracked `supabase/.env` file:
+
+   ```sh
+   RESEND_API_KEY=your-api-key
+   ```
+
+3. Uncomment the `[auth.email.smtp]` block in `supabase/config.toml`.
+4. Restart the stack: `supabase stop && supabase start`.
+
+Leave that block commented out in anything you commit. With it on there is no mailbox to read, so
+the database tests and CI fail, and CI has no key in any case.
+
+While it is on, the test mailbox stays empty and Resend delivers only to the address your Resend
+account is registered with until you verify a domain at https://resend.com/domains. Register test
+accounts with that address rather than the `example.test` ones used elsewhere in this guide, or
+Resend rejects them.
+
+Never commit the key; `supabase/.env` is ignored by Git.
+
 ## Google sign-in
 
 Google sign-in needs an OAuth client from Google Cloud; it is the only part that cannot be tested
