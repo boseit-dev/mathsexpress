@@ -38,6 +38,11 @@ Phase 3 first learning slice (in development).
 
 ### Changed
 
+- Brightened the textbook library with five distinctive book-cover treatments using the
+  existing MathsExpress navy, blue, lavender and muted-blue palette. Added colourful but
+  readable library and chapter headers, stronger chapter navigation, and exercise accents,
+  without changing any textbook content or answers.
+
 - Redesigned the student homepage as the original MathsExpress **Learning Desk**: a compact
   welcome card alongside learning progress, a separate practice-and-assignments workbench,
   and classroom/reward panels grouped along the bottom instead of a copycat dashboard sidebar.

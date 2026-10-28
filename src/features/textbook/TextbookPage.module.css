@@ -12,7 +12,27 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-6);
-  padding-block: var(--space-6);
+  padding: var(--space-8);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(
+    115deg,
+    var(--color-brand-secondary),
+    var(--color-brand-soft) 55%,
+    var(--color-brand-pale)
+  );
+  box-shadow: var(--shadow-md);
+}
+
+/* Dark lettering remains readable on the brighter blue and lavender gradients. */
+.libraryHeader p,
+.bookIntroText p {
+  color: var(--color-text);
+}
+
+.libraryHeader .kicker,
+.bookIntroText .kicker {
+  color: var(--color-text) !important;
 }
 
 .libraryHeader > div,
@@ -43,15 +63,23 @@
 }
 
 .libraryIcon {
+  flex: 0 0 auto;
   inline-size: 4rem;
   block-size: 4rem;
-  color: var(--color-brand-primary);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--color-brand-pale);
+  color: var(--color-brand-primary-active);
 }
 
 .note,
 .libraryNote {
-  max-inline-size: 48rem;
-  font-size: var(--font-size-sm);
+  padding: var(--space-5);
+  border: 1px solid var(--color-brand-soft);
+  border-inline-start: var(--space-2) solid var(--color-brand-secondary);
+  border-radius: var(--radius-lg);
+  background: var(--color-brand-pale);
+  color: var(--color-text-secondary);
 }
 
 .searchLabel {
@@ -79,14 +107,23 @@
 .contents,
 .chapterBody,
 .lessonBlock {
-  display: grid;
-  gap: var(--space-5);
+  padding: var(--space-6);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
 }
 
 .libraryGroup h2,
 .contents h2,
 .lessonBlock h2 {
   font-size: var(--font-size-xl);
+  color: var(--color-text-brand);
+}
+
+.libraryGroup h2 {
+  padding-inline-start: var(--space-3);
+  border-inline-start: var(--space-2) solid var(--color-brand-secondary);
 }
 
 .bookGrid {
@@ -101,10 +138,14 @@
   gap: var(--space-2);
   min-inline-size: 0;
   padding: var(--space-3);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-brand-soft);
   border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(
+    180deg,
+    var(--color-surface),
+    var(--color-brand-pale)
+  );
+  box-shadow: var(--shadow-md);
   color: var(--color-text);
   text-decoration: none;
 }
@@ -115,18 +156,73 @@
 }
 
 .cover {
+  --cover-top: var(--color-brand-primary);
+  --cover-bottom: var(--color-brand-primary-active);
+  --cover-ink: var(--color-text-inverse);
+  --cover-spine: var(--color-brand-primary-active);
+  --cover-decor: var(--color-on-brand-track);
+
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: var(--space-2);
   aspect-ratio: 3 / 4;
   padding: var(--space-4);
-  border-inline-start: var(--space-2) solid var(--color-brand-primary-active);
+  overflow: hidden;
+  border-inline-start: var(--space-2) solid var(--cover-spine);
   border-radius: var(--radius-sm);
-  background: var(--color-brand-pale);
-  color: var(--color-text-brand);
+  background: linear-gradient(155deg, var(--cover-top), var(--cover-bottom));
+  box-shadow: var(--shadow-md);
+  color: var(--cover-ink);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
+}
+
+.cover[data-palette='1'] {
+  --cover-top: var(--color-brand-secondary);
+  --cover-bottom: var(--color-brand-soft);
+  --cover-ink: var(--color-text);
+  --cover-spine: var(--color-brand-primary);
+  --cover-decor: var(--color-brand-pale);
+}
+
+.cover[data-palette='2'] {
+  --cover-top: var(--color-brand-muted);
+  --cover-bottom: var(--color-brand-soft);
+  --cover-ink: var(--color-text);
+  --cover-spine: var(--color-brand-primary-active);
+  --cover-decor: var(--color-brand-pale);
+}
+
+.cover[data-palette='3'] {
+  --cover-top: var(--color-brand-soft);
+  --cover-bottom: var(--color-brand-pale);
+  --cover-ink: var(--color-text);
+  --cover-spine: var(--color-brand-muted);
+  --cover-decor: var(--color-brand-secondary);
+}
+
+.cover[data-palette='4'] {
+  --cover-top: var(--color-brand-pale);
+  --cover-bottom: var(--color-brand-muted);
+  --cover-ink: var(--color-text);
+  --cover-spine: var(--color-brand-primary);
+  --cover-decor: var(--color-brand-soft);
+}
+
+.cover::after {
+  position: absolute;
+  z-index: -1;
+  inset-inline-end: -2.5rem;
+  inset-block-end: 18%;
+  inline-size: 9rem;
+  block-size: 9rem;
+  border: 1.4rem solid var(--cover-decor);
+  border-radius: var(--radius-full);
+  content: '';
+  pointer-events: none;
 }
 
 .coverYear {
@@ -188,8 +284,30 @@
 .bookIntro {
   display: grid;
   grid-template-columns: minmax(8rem, 14rem) minmax(0, 1fr);
-  align-items: start;
+  align-items: center;
   gap: var(--space-6);
+  padding: var(--space-6);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(120deg, var(--color-brand-pale), var(--color-brand-soft));
+}
+
+.bookIntroText a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-brand-primary);
+  color: var(--color-text-inverse);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.bookIntroText a:hover {
+  background: var(--color-brand-primary-hover);
 }
 
 .contents {
@@ -210,10 +328,14 @@
   gap: var(--space-4);
   min-block-size: var(--size-button-lg);
   padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-brand-soft);
   border-radius: var(--radius-md);
   background: var(--color-surface);
   text-decoration: none;
+}
+
+.chapterList li:nth-child(even) .chapterLink {
+  background: var(--color-brand-pale);
 }
 
 .chapterLink:hover {
@@ -221,8 +343,16 @@
 }
 
 .chapterNumber {
-  color: var(--color-text-secondary);
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--size-tile-sm);
+  inline-size: var(--size-tile-sm);
+  block-size: var(--size-tile-sm);
+  border-radius: var(--radius-sm);
+  background: var(--color-brand-primary);
+  color: var(--color-text-inverse);
   font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
 }
 
 .chapterName {
@@ -247,8 +377,24 @@
 .chapterIntro {
   display: grid;
   gap: var(--space-3);
-  padding-block-end: var(--space-5);
-  border-block-end: 1px solid var(--color-border);
+  padding: var(--space-8);
+  overflow: hidden;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(
+    125deg,
+    var(--color-brand-primary-active),
+    var(--color-brand-primary) 100%
+  );
+  box-shadow: var(--shadow-md);
+  color: var(--color-text-inverse);
+}
+
+.chapterIntro .kicker {
+  color: var(--color-text-inverse) !important;
+}
+
+.chapterIntro p {
+  color: var(--color-text-inverse);
 }
 
 .lessonBlock {
@@ -266,9 +412,9 @@
   display: grid;
   gap: var(--space-3);
   padding: var(--space-5);
-  border-inline-start: var(--space-1) solid var(--color-brand-primary);
-  border-radius: var(--radius-sm);
-  background: var(--color-brand-pale);
+  border-inline-start: var(--space-2) solid var(--color-brand-primary);
+  border-radius: var(--radius-md);
+  background: linear-gradient(115deg, var(--color-brand-soft), var(--color-brand-pale));
 }
 
 .example ol {
@@ -293,6 +439,9 @@
 }
 
 .score {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  background: var(--color-brand-pale);
   color: var(--color-text-brand);
   font-weight: var(--font-weight-semibold);
 }
@@ -306,12 +455,31 @@
   display: grid;
   gap: var(--space-3);
   padding: var(--space-5);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-brand-soft);
+  border-inline-start: var(--space-2) solid var(--color-brand-muted);
   border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.question:nth-child(3n + 2) {
+  border-inline-start-color: var(--color-brand-secondary);
+  background: var(--color-brand-pale);
+}
+
+.question:nth-child(3n + 3) {
+  border-inline-start-color: var(--color-brand-primary);
 }
 
 .questionNumber {
-  color: var(--color-text-secondary);
+  display: grid;
+  place-items: center;
+  min-inline-size: var(--size-tile-sm);
+  min-block-size: var(--size-tile-sm);
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  background: var(--color-brand-primary);
+  color: var(--color-text-inverse);
+  font-weight: var(--font-weight-semibold);
 }
 
 .expression {
@@ -351,6 +519,15 @@
   border-color: var(--color-brand-primary);
   background: var(--color-brand-primary);
   color: var(--color-text-inverse);
+}
+
+.checkButton:not(:disabled):hover {
+  background: var(--color-brand-primary-hover);
+}
+
+.hintButton:hover {
+  background: var(--color-brand-pale);
+  border-color: var(--color-brand-secondary);
 }
 
 .checkButton:disabled {
@@ -406,6 +583,12 @@
 
   .libraryIcon {
     display: none;
+  }
+
+  .libraryHeader,
+  .bookIntro,
+  .chapterIntro {
+    padding: var(--space-5);
   }
 
   .lessonBlock,

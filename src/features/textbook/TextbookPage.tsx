@@ -10,7 +10,11 @@ import styles from './TextbookPage.module.css';
 
 function BookCover({ book }: { book: TextbookBook }) {
   return (
-    <div className={styles.cover} aria-hidden="true">
+    <div
+      className={styles.cover}
+      data-palette={textbookBooks.findIndex((item) => item.id === book.id) % 5}
+      aria-hidden="true"
+    >
       <span>MathsExpress</span>
       <span className={styles.coverYear}>{book.year === 'K' ? 'K' : book.year}</span>
       <span className={styles.coverCourse}>

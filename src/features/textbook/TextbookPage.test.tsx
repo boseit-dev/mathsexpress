@@ -17,6 +17,15 @@ describe('student textbook library', () => {
     ).toBe(true);
   });
 
+  it('uses all five MathsExpress palette treatments for textbook covers', async () => {
+    renderApp('/student/textbook');
+    await screen.findByRole('heading', { level: 1, name: 'Textbook' });
+    const palettes = Array.from(document.querySelectorAll('[data-palette]')).map((element) =>
+      element.getAttribute('data-palette'),
+    );
+    expect(new Set(palettes)).toEqual(new Set(['0', '1', '2', '3', '4']));
+  });
+
   it('opens each Year 12 Standard book independently', async () => {
     renderApp('/student/textbook');
     await screen.findByRole('heading', { level: 1, name: 'Textbook' });
