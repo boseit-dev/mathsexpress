@@ -236,15 +236,21 @@ otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
 
-# Use a production-ready SMTP server
+# Email goes to the local test mailbox, which `npm run test:db` reads to follow confirmation and
+# password-reset links. To send real email through Resend instead, put a key in the untracked
+# supabase/.env, uncomment the block below and restart the stack; see docs/local-development.md.
+# Leave it commented in commits: with it on, the database tests and CI have no mailbox to read.
+# `user` is the literal word "resend" and the API key is the password. Until a sending domain is
+# verified, admin_email must stay onboarding@resend.dev and Resend only delivers to the address
+# the Resend account is registered with, so example.test addresses are rejected.
 # [auth.email.smtp]
 # enabled = true
-# host = "smtp.sendgrid.net"
+# host = "smtp.resend.com"
 # port = 587
-# user = "apikey"
-# pass = "env(SENDGRID_API_KEY)"
-# admin_email = "admin@email.com"
-# sender_name = "Admin"
+# user = "resend"
+# pass = "env(RESEND_API_KEY)"
+# admin_email = "onboarding@resend.dev"
+# sender_name = "MathsExpress"
 
 # MathsExpress email templates. Links return to /auth/confirm with a one-time token hash, which
 # works even when the email is opened in a different browser from the one used to sign up.
