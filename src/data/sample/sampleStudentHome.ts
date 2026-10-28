@@ -2,7 +2,6 @@
 // build and test the interface before real accounts and learning data exist. Dates are relative
 // to "now" so the preview always shows a realistic mix of due, overdue and completed tasks.
 import type { StudentHome } from '@/domain/studentHome';
-import { sampleStudent } from './sampleStudent';
 
 /** An ISO timestamp `days` from today (negative for the past) at the given local time. */
 function daysFromNow(now: Date, days: number, hour: number, minute = 0): string {
@@ -19,7 +18,13 @@ function hoursAgo(now: Date, hours: number): string {
   return new Date(now.getTime() - hours * 60 * 60 * 1000).toISOString();
 }
 
-export function createSampleStudentHome(now: Date): StudentHome {
+/** Who the sample data is shown to: their row on the sample leaderboard is marked "You". */
+export interface SampleViewer {
+  id: string;
+  displayName: string;
+}
+
+export function createSampleStudentHome(now: Date, viewer: SampleViewer): StudentHome {
   return {
     assignments: [
       {
@@ -126,6 +131,7 @@ export function createSampleStudentHome(now: Date): StudentHome {
       bestStreakDays: 11,
     },
     rewards: {
+      coinBalance: 340,
       coinsEarnedThisWeek: 185,
       badgesEarned: 12,
       nextBadge: {
@@ -138,7 +144,7 @@ export function createSampleStudentHome(now: Date): StudentHome {
     leaderboard: [
       { studentId: 'sample-student-leo', displayName: 'Leo M.', coinsThisWeek: 260 },
       { studentId: 'sample-student-ava', displayName: 'Ava T.', coinsThisWeek: 240 },
-      { studentId: sampleStudent.id, displayName: sampleStudent.displayName, coinsThisWeek: 185 },
+      { studentId: viewer.id, displayName: viewer.displayName, coinsThisWeek: 185 },
       { studentId: 'sample-student-noah', displayName: 'Noah K.', coinsThisWeek: 185 },
       { studentId: 'sample-student-zara', displayName: 'Zara P.', coinsThisWeek: 150 },
       { studentId: 'sample-student-isaac', displayName: 'Isaac W.', coinsThisWeek: 120 },

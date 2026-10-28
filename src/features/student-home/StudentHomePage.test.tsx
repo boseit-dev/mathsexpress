@@ -1,10 +1,11 @@
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import type { StudentRepository } from '@/data/repositories';
-import { createSampleStudentRepository } from '@/data/sample/sampleStudentRepository';
+import type { StudentHomeRepository } from '@/data/repositories';
+import { createSampleStudentHomeRepository } from '@/data/sample/sampleStudentHomeRepository';
 import { millisecondsUntilMidnight } from '@/lib/dates';
 import { findAccessibilityProblems } from '@/test/axe';
+import { createFakeState } from '@/test/fakeDependencies';
 import { renderApp, TEST_NOW } from '@/test/renderApp';
 
 // renderApp uses the sample data with "now" fixed at Wednesday 28 October 2026, 3:30 pm.
@@ -25,7 +26,9 @@ describe('student home page', () => {
     expect(banner).toHaveTextContent('Year 9 · 9M2 Mathematics');
     expect(banner).toHaveTextContent('You have 2 tasks to finish, and 1 is overdue.');
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1);
-    expect(document.title).toBe('Home · MathsExpress');
+    await waitFor(() => {
+      expect(document.title).toBe('Home · MathsExpress');
+    });
   });
 
   it('keeps Continue learning prominent and working', async () => {
@@ -54,11 +57,20 @@ describe('student home page', () => {
     const [overdue, inProgress, completed] = cards as [HTMLElement, HTMLElement, HTMLElement];
     expect(overdue).toHaveTextContent('Overdue · was due yesterday');
     expect(overdue).toHaveTextContent('Not started');
+    expect(
+      within(overdue).getByRole('link', { name: 'Start Surface area revision' }),
+    ).toBeVisible();
     expect(inProgress).toHaveTextContent('Due tomorrow');
     expect(inProgress).toHaveTextContent('In progress');
     expect(inProgress).toHaveTextContent('Reward: +60 coins');
+    expect(
+      within(inProgress).getByRole('link', { name: 'Continue Solving linear equations' }),
+    ).toHaveAttribute('href', '/student/learn');
     expect(completed).toHaveTextContent('Completed 27 Oct');
-    expect(completed).toHaveTextContent('Well done! You earned 42 coins.');
+    expect(completed).toHaveTextContent('42 coins earned');
+    expect(
+      within(completed).getByRole('link', { name: 'Review Pythagoras’ theorem quiz' }),
+    ).toBeVisible();
     expect(within(tasks).getByRole('link', { name: 'View all 5 tasks' })).toHaveAttribute(
       'href',
       '/student/class/tasks',
@@ -125,6 +137,42 @@ describe('student home page', () => {
     expect(rewards).toHaveTextContent('Next badge: Algebra Ace');
   });
 
+  it('marks every panel that shows sample data', async () => {
+    await renderHome();
+    for (const name of [
+      'Your assigned tasks',
+      'Your recommended practice',
+      'Your progress',
+      'Class leaderboard',
+      'Coin shop',
+      'Daily challenges',
+      'Your rewards',
+    ]) {
+      expect(section(name)).toHaveTextContent('Sample data');
+    }
+    expect(section('Good afternoon, Mia')).toHaveTextContent('(sample task)');
+    expect(section('Good afternoon, Mia')).toHaveTextContent(
+      'You have 2 tasks to finish, and 1 is overdue. (sample tasks)',
+    );
+  });
+
+  it('shows the student’s real class and teacher-assigned year level', async () => {
+    const state = createFakeState();
+    const membership = state.classes[0]?.students[0];
+    if (membership) membership.yearLevel = 10;
+    renderApp('/student', { state });
+    expect(await screen.findByText('Year 10 · 9M2 Mathematics')).toBeVisible();
+  });
+
+  it('asks a student who has not joined a class to join one', async () => {
+    const state = createFakeState();
+    state.classes[0]?.students.splice(0);
+    renderApp('/student', { state });
+    expect(
+      await screen.findByRole('link', { name: 'You’re not in a class yet · Join a class' }),
+    ).toHaveAttribute('href', '/student/class');
+  });
+
   it('has no detectable accessibility problems', async () => {
     await renderHome();
     expect(await findAccessibilityProblems()).toEqual([]);
@@ -133,11 +181,11 @@ describe('student home page', () => {
 
 describe('keeping the home page current', () => {
   function renderCountingHomeLoads() {
-    const repository = createSampleStudentRepository(() => TEST_NOW);
-    const getStudentHome = vi.fn<StudentRepository['getStudentHome']>((options) =>
-      repository.getStudentHome(options),
+    const repository = createSampleStudentHomeRepository(() => TEST_NOW);
+    const getStudentHome = vi.fn<StudentHomeRepository['getStudentHome']>((student, options) =>
+      repository.getStudentHome(student, options),
     );
-    renderApp('/student', { studentRepository: { ...repository, getStudentHome } });
+    renderApp('/student', { overrides: { studentHome: { getStudentHome } } });
     return getStudentHome;
   }
 

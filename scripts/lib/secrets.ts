@@ -32,10 +32,11 @@ const SECRET_PATTERNS: readonly SecretPattern[] = [
     pattern: /\b[a-z][a-z0-9+.-]*:\/\/[^\s/:@'"]+:(?![$<*])[^\s/@'"]{8,}@/,
   },
   {
-    // apiKey: "…", "client_secret": "…", password = '…' — but not placeholders like CHANGE_ME.
+    // apiKey: "…", "client_secret": "…", password = '…' — but not placeholders like CHANGE_ME,
+    // env(NAME) references, or app paths such as forgotPassword: '/forgot-password'.
     kind: 'credential written into code or config',
     pattern:
-      /(?:service[_-]?role[_-]?key|api[_-]?(?:key|token)|access[_-]?token|client[_-]?secret|secret[_-]?key|webhook[_-]?secret|password)['"]?\s*[:=]\s*['"](?!(?:your|example|placeholder|change[_-]?me|x{4}))[^'"\s]{16,}['"]/i,
+      /(?:service[_-]?role[_-]?key|api[_-]?(?:key|token)|access[_-]?token|client[_-]?secret|secret[_-]?key|webhook[_-]?secret|password)['"]?\s*[:=]\s*['"](?!(?:your|example|placeholder|change[_-]?me|x{4}|env\(|\/))[^'"\s]{16,}['"]/i,
   },
   {
     // .env-style line: CLOUDFLARE_API_TOKEN=… (not a ${VARIABLE} reference or a placeholder)

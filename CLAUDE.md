@@ -9,11 +9,14 @@ It overrides habits and defaults. If an instruction from the user conflicts with
 - **Phase 1** (`2.0.0-alpha.1`): approved and merged into `main`. It covers the project
   foundation, design system, student and teacher layouts with top navigation, and the student
   homepage, all on clearly labelled development sample data.
-- **Phase 2** (in progress): assignment-card redesign, then authentication, student and teacher
-  accounts, and class management.
-- Not built yet: authentication, backend/API, database access, learning engine, textbook,
-  teacher tools, shop purchases. Nav destinations for unbuilt areas show the "planned section" page
-  (the full route list is in `docs/architecture.md`).
+- **Phase 2** (`2.0.0-alpha.2`): built on `mathsexpress-v2` and waiting for the user's review. It
+  adds the redesigned assignment cards, accounts (email and password with email confirmation,
+  password reset, Google sign-in once credentials are configured), student and teacher roles, and
+  class management (classes, join codes, joining and leaving, teacher-set year levels).
+- Not built yet: the learning engine, textbook, tasks, reports, teacher home, profile and settings
+  pages, rewards and the coin shop. Their nav destinations show the "planned section" page, and
+  home-page panels that still show examples carry a "Sample data" badge (the full route list is in
+  `docs/architecture.md`).
 - Never start the next phase until the user has reviewed and approved the current one.
 
 ## Production safety: never break these
@@ -26,6 +29,9 @@ It overrides habits and defaults. If an instruction from the user conflicts with
   approval in the current conversation. Never change the old Worker's routes, domains or secrets.
 - Never touch the production Supabase project `dsjrxkxjcaurrbijihja`: no migrations, writes,
   deletions or exports. Student, teacher and class data must never be removed or exposed.
+- Development uses only the **local** Supabase stack (`supabase start`, in Docker). Never run
+  `supabase link` or `supabase db push`, and never create or change a hosted Supabase project,
+  without the user's explicit approval. There is no hosted 2.0 database yet.
 - Never commit, print or paste passwords, API keys or tokens. Real values belong in untracked
   `.dev.vars` / `.env` files or Cloudflare secrets; only placeholder examples are committed. The
   repository is **public**.
@@ -133,25 +139,29 @@ Co-Authored-By: <trailer provided by the session>
 
 Stack: React 19, TypeScript 6 (strict), Vite 8, React Router 8 (data router), CSS Modules with
 design tokens, Vitest with Testing Library and axe-core, ESLint 9 and Prettier. Hosting: a
-Cloudflare Worker serving the built static files (`wrangler.jsonc`, SPA fallback); API routes will
-be added to that Worker under `/api/*`, with Supabase as the database. `docs/architecture.md`
-explains the data flow, the route list, how to add a feature and how to connect a backend.
+Cloudflare Worker serving the built static files (`wrangler.jsonc`, SPA fallback). Accounts and
+data use Supabase: the browser signs in with Supabase Auth and calls Postgres functions directly
+with the public (publishable) key, so **all security lives in the database**. The build adds the
+Supabase address to the site's Content-Security-Policy (`public/_headers`). `docs/architecture.md`
+explains the data flow, the route list, security and how to add a feature.
 
 ```text
 src/
   app/            router, route table, RootLayout (focus after navigation, scroll restoration),
-                  app-level pages (not found, route errors, planned sections)
+                  auth guards, form helpers, app-level pages (not found, errors, planned sections)
   layouts/        StudentLayout, TeacherLayout, AppHeader, navigation, brand, dev-preview notice
   features/<x>/   one folder per feature: page, route loader, feature components and their tests
   components/ui/  shared design-system primitives (Button, Panel, ProgressBar, ...)
   domain/         types and pure business rules: no React, no I/O
-  data/           repository interfaces and implementations (sample/ now, a real backend later)
+  data/           repository interfaces; supabase/ (accounts, classes) and sample/ (home examples)
   config/         paths, navigation and app settings
   lib/            small generic helpers (formatting, dates, class names)
   hooks/          shared React hooks
   styles/         tokens.css (design tokens) and global.css
-  test/           test setup and helpers
-scripts/          git-hook and CI scripts (TypeScript, run directly by Node 24)
+  test/           test setup, renderApp and in-memory fakes of the services
+supabase/         local stack config, migrations (the only way to change the schema), email templates
+tests/db/         database and auth tests against local Supabase (`npm run test:db`)
+scripts/          git-hook, CI and setup scripts (TypeScript, run directly by Node 24)
 ```
 
 Rules:
@@ -160,12 +170,31 @@ Rules:
   Route loaders call repositories; pages pass typed data down. Business rules (task status, due
   labels, ranking, accuracy) are pure functions in `domain/` or `lib/` with unit tests.
 - **Data access:** repository interfaces live in `src/data/repositories.ts` and reach the app through
-  `AppDependencies` (`src/data/index.ts`). A real backend is added as a new implementation beside
-  `src/data/sample/`; components and pages must not change.
-- **Sample data:** only in `src/data/sample/`, always labelled in the UI by the development preview
-  notice, and never presented as real students or teachers.
-- **Year levels:** teachers set a student's year level when the student joins a class. Students
-  never choose it; never add a year selector for students.
+  `AppDependencies` (`src/data/index.ts`). `src/data/supabase/` implements them and maps database
+  rows to domain types (`mappers.ts`); components never see database shapes.
+- **Sample data:** only the home page's unbuilt panels use it (`src/data/sample/`), each with a
+  "Sample data" badge. Accounts and classes are always real, never sample data.
+- **Year levels:** a student's year level belongs to each class membership. It starts at the class's
+  year level and only that class's teacher can change it. Students never choose it: no year
+  selector for students, and the database refuses the change from a student.
+- **Security and permissions:**
+  - Every permission check happens in the database: row-level security on every table, no direct
+    table access (except reading your own profile), and `SECURITY DEFINER` functions with
+    `search_path = ''` that check the caller's role and class permission. Route guards and hidden
+    buttons only keep the interface tidy; never rely on them.
+  - A new table needs RLS enabled, privileges revoked from `anon` and `authenticated`, access
+    through functions that raise an error code listed in `src/domain/errors.ts`, and tests in
+    `tests/db/` for each rule, including attempts by the wrong role.
+  - Students never see join codes, email addresses or other students. Teachers see only their own
+    classes, and only students' names, year levels and join dates.
+  - Change the schema only with a new migration file, then run `npm run db:types` and commit the
+    regenerated types (CI fails if they differ).
+  - Accounts: an account without a profile can't sign in with a password (the
+    `custom_access_token_hook`), and only a session from an email link (or Google) may create a
+    profile, which the database checks. Never set up a profile from registration details
+    (registering twice keeps the first details and password). Every database function checks the
+    session still exists. Signing out must always clear this device's session.
+  - Lock order in database functions: the class row first, then memberships.
 - **Code style:** small, focused components, one component per file, named exports, files under
   roughly 200 lines. Import with the `@/` alias (`@/` = `src/`). Strong types; no `any`. Comments
   explain why, not what. Handle errors explicitly; never swallow them.
@@ -213,21 +242,30 @@ Rules:
 
 - Unit tests for domain and lib logic; component tests (Testing Library) for rendering, states and
   interactions; axe-core checks for layouts and pages. Tests sit next to the code as `*.test.ts(x)`.
-- Page tests use `renderApp(path)` (`src/test/renderApp.tsx`), which runs the real route table on
-  sample data with the time fixed at `TEST_NOW`; tests run in the Australia/Sydney time zone.
+- Page tests use `renderApp(path, { signedInAs })` (`src/test/renderApp.tsx`), which runs the real
+  route table with in-memory fakes of the auth and class services (`src/test/fakeDependencies.ts`)
+  and the time fixed at `TEST_NOW`; tests run in the Australia/Sydney time zone. The fakes follow
+  the database's rules and error codes; keep them in step when a rule changes.
+- The real rules are tested against local Supabase in `tests/db/` (`npm run test:db`, after
+  `supabase start`). CI runs them on a fresh stack. Test accounts use `example.test` addresses and
+  throwaway passwords that are never printed or committed.
 - Never claim something works without running it. Interactive features count as done only when
   they have been exercised in a test or in the browser.
 
 ## Commands
 
-| Command                  | What it does                                                           |
-| ------------------------ | ---------------------------------------------------------------------- |
-| `npm run dev`            | Development server at http://localhost:5173                            |
-| `npm run check`          | Everything CI runs: format, lint, types, tests, build                  |
-| `npm run check:quick`    | Format, lint and types (also run by the pre-commit hook)               |
-| `npm test`               | Unit and component tests once (`npm run test:watch` to watch)          |
-| `npm run format`         | Apply Prettier formatting                                              |
-| `npm run preview:worker` | Build, then serve `dist/` through Wrangler exactly as Cloudflare would |
+| Command                   | What it does                                                           |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `npm run dev`             | Development server at http://localhost:5173                            |
+| `npm run check`           | Everything CI runs: format, lint, types, tests, build                  |
+| `npm run check:quick`     | Format, lint and types (also run by the pre-commit hook)               |
+| `npm test`                | Unit and component tests once (`npm run test:watch` to watch)          |
+| `npm run format`          | Apply Prettier formatting                                              |
+| `npm run preview:worker`  | Build, then serve `dist/` through Wrangler exactly as Cloudflare would |
+| `supabase start` / `stop` | Start or stop the local database, auth server and test mailbox         |
+| `npm run env:local`       | Write `.env.local` with the local Supabase address and public key      |
+| `npm run test:db`         | Database and auth tests against local Supabase                         |
+| `npm run db:types`        | Regenerate `src/data/supabase/database.types.ts` after a migration     |
 
 ## Reference: the old system
 

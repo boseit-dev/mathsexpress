@@ -10,6 +10,7 @@ const INITIAL_LOCATION_KEY = 'default';
 // Module state, not component state: it must survive layouts unmounting and remounting, such
 // as when moving between the student and teacher areas or out of a full-page error.
 let lastHandledLocationKey: string | null = null;
+let lastHandledPathname: string | null = null;
 let focusRequestedAfterRetry = false;
 
 function focusMainContent() {
@@ -17,14 +18,20 @@ function focusMainContent() {
 }
 
 /**
- * Call after a location has rendered. Focuses <main> once per new location, except for the
- * first page load, where the browser's own focus handling applies.
+ * Call after a location has rendered. Focuses <main> once per new page, except for the first
+ * page load, where the browser's own focus handling applies. Submitting a form on the same page
+ * also creates a new location; the form decides where focus goes then (see useFormState), so the
+ * field that needs fixing can have it. If nothing has focus afterwards (the control that was used
+ * is gone, e.g. replaced by an error page), <main> gets it.
  */
-export function focusMainAfterNavigation(locationKey: string) {
-  const isFirstLoad = lastHandledLocationKey === null || locationKey === INITIAL_LOCATION_KEY;
-  const isNewLocation = locationKey !== lastHandledLocationKey;
-  lastHandledLocationKey = locationKey;
-  if (isNewLocation && !isFirstLoad) focusMainContent();
+export function focusMainAfterNavigation({ key, pathname }: { key: string; pathname: string }) {
+  const isFirstLoad = lastHandledLocationKey === null || key === INITIAL_LOCATION_KEY;
+  const isNewLocation = key !== lastHandledLocationKey;
+  const focusLost = document.activeElement === null || document.activeElement === document.body;
+  const shouldFocus = isNewLocation && (pathname !== lastHandledPathname || focusLost);
+  lastHandledLocationKey = key;
+  lastHandledPathname = pathname;
+  if (shouldFocus && !isFirstLoad) focusMainContent();
 }
 
 /** "Try again" removes the button the user pressed, so focus the reloaded page instead. */

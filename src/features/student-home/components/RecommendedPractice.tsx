@@ -1,6 +1,7 @@
 import { Check, Clock, ListChecks, Sparkles, X } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { Panel } from '@/components/ui/Panel';
+import { SampleDataBadge } from '@/components/ui/SampleDataBadge';
 import { paths } from '@/config/paths';
 import type { PracticeRecommendation } from '@/domain/recommendation';
 import { cx } from '@/lib/cx';
@@ -15,7 +16,7 @@ interface RecommendedPracticeProps {
 /** One suggested topic to practise, beside the recent mistakes it is based on. */
 export function RecommendedPractice({ recommendation }: RecommendedPracticeProps) {
   return (
-    <Panel title="Your recommended practice" icon={Sparkles}>
+    <Panel title="Your recommended practice" badge={<SampleDataBadge />} icon={Sparkles}>
       {recommendation === null ? (
         <p className={styles.empty}>
           Answer a few more questions and MathsExpress will suggest what to practise next.

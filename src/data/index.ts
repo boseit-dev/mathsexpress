@@ -1,15 +1,31 @@
+import type { SupabaseConfig } from '@/config/env';
 import type { AppDependencies } from './repositories';
-import { createSampleStudentRepository } from './sample/sampleStudentRepository';
-import { createSampleTeacherRepository } from './sample/sampleTeacherRepository';
+import { createSampleStudentHomeRepository } from './sample/sampleStudentHomeRepository';
+import { createSupabaseClient } from './supabase/client';
+import { createSupabaseAccountRepository } from './supabase/supabaseAccountRepository';
+import { createSupabaseAuthService } from './supabase/supabaseAuthService';
+import { createSupabaseClassRepository } from './supabase/supabaseClassRepository';
+
+interface DependencyOptions {
+  /** Where the app is served, so sign-in providers can send people back to it. */
+  appOrigin: string;
+  now?: () => Date;
+}
 
 /**
- * Builds the app's data sources. Phase 1 has no backend, so everything comes from development
- * sample data; real repositories will be swapped in here without changing any page.
+ * Builds the app's data sources: real accounts and classes from Supabase, and development sample
+ * data for the parts of the home page that later phases will build.
  */
-export function createAppDependencies(now: () => Date = () => new Date()): AppDependencies {
+export function createAppDependencies(
+  config: SupabaseConfig,
+  { appOrigin, now = () => new Date() }: DependencyOptions,
+): AppDependencies {
+  const client = createSupabaseClient(config);
   return {
-    studentRepository: createSampleStudentRepository(now),
-    teacherRepository: createSampleTeacherRepository(),
+    auth: createSupabaseAuthService(client, config, { appOrigin }),
+    accounts: createSupabaseAccountRepository(client),
+    classes: createSupabaseClassRepository(client),
+    studentHome: createSampleStudentHomeRepository(now),
     now,
   };
 }

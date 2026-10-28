@@ -1,5 +1,7 @@
 import { createBrowserRouter } from 'react-router';
-import { createAppDependencies } from '@/data';
+import type { AppDependencies } from '@/data/repositories';
 import { createRoutes } from './routes';
 
-export const router = createBrowserRouter(createRoutes(createAppDependencies()));
+export function createAppRouter(dependencies: AppDependencies) {
+  return createBrowserRouter(createRoutes(dependencies));
+}

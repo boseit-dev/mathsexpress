@@ -15,4 +15,5 @@ if (typeof window !== 'undefined') {
 
 afterEach(() => {
   cleanup();
+  if (typeof window !== 'undefined') window.sessionStorage.clear();
 });

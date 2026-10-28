@@ -1,5 +1,6 @@
 import { BookCheck, Flame, PenLine, Target, TrendingUp } from 'lucide-react';
 import { Panel } from '@/components/ui/Panel';
+import { SampleDataBadge } from '@/components/ui/SampleDataBadge';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { getAccuracyPercent, type LearningProgress } from '@/domain/progress';
 import { formatYearLevel, type YearLevel } from '@/domain/student';
@@ -9,8 +10,8 @@ import styles from './StudentProgress.module.css';
 
 interface StudentProgressProps {
   progress: LearningProgress;
-  /** The year level the teacher set; the course size depends on it. */
-  yearLevel: YearLevel;
+  /** The year level the teacher set (null before joining a class); the course depends on it. */
+  yearLevel: YearLevel | null;
 }
 
 export function StudentProgress({ progress, yearLevel }: StudentProgressProps) {
@@ -18,7 +19,7 @@ export function StudentProgress({ progress, yearLevel }: StudentProgressProps) {
   const { topicsCompleted, topicsInCourse } = progress;
 
   return (
-    <Panel title="Your progress" icon={TrendingUp}>
+    <Panel title="Your progress" badge={<SampleDataBadge />} icon={TrendingUp}>
       <div className={styles.cards}>
         <ul role="list" className={styles.grid}>
           <li>
@@ -26,7 +27,7 @@ export function StudentProgress({ progress, yearLevel }: StudentProgressProps) {
               icon={BookCheck}
               label="Topics completed"
               value={formatNumber(topicsCompleted)}
-              detail={`of ${formatNumber(topicsInCourse)} in ${formatYearLevel(yearLevel)}`}
+              detail={`of ${formatNumber(topicsInCourse)} in ${yearLevel === null ? 'your course' : formatYearLevel(yearLevel)}`}
             >
               <ProgressBar
                 value={topicsCompleted}

@@ -6,6 +6,7 @@ export interface BadgeProgress {
 }
 
 export interface RewardSummary {
+  coinBalance: number;
   coinsEarnedThisWeek: number;
   badgesEarned: number;
   /** The badge the student is closest to earning, if any. */

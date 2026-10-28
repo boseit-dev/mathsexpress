@@ -8,6 +8,8 @@ interface PanelProps {
   title: string;
   /** Optional icon shown beside the title. */
   icon?: LucideIcon;
+  /** Optional label beside the title, e.g. a "Sample data" badge. */
+  badge?: ReactNode;
   /** Optional content at the end of the header, e.g. a balance or a short status. */
   action?: ReactNode;
   /** Optional centred link at the bottom of the panel, e.g. "View all". */
@@ -17,7 +19,7 @@ interface PanelProps {
 }
 
 /** A white card that groups one section of a page under an h2 heading. */
-export function Panel({ title, icon, action, footer, children, className }: PanelProps) {
+export function Panel({ title, icon, badge, action, footer, children, className }: PanelProps) {
   const headingId = useId();
 
   return (
@@ -28,6 +30,7 @@ export function Panel({ title, icon, action, footer, children, className }: Pane
           <h2 id={headingId} className={styles.title}>
             {title}
           </h2>
+          {badge}
         </div>
         {action}
       </div>

@@ -1,5 +1,7 @@
 import { useLoaderData, type LoaderFunctionArgs } from 'react-router';
+import { requireAccount } from '@/app/auth/guards';
 import type { AppDependencies } from '@/data/repositories';
+import { getShortName } from '@/domain/people';
 import type { StudentHome } from '@/domain/studentHome';
 
 export interface StudentHomeLoaderData {
@@ -8,14 +10,15 @@ export interface StudentHomeLoaderData {
   now: Date;
 }
 
-export function createStudentHomeLoader({
-  studentRepository,
-  now,
-}: Pick<AppDependencies, 'studentRepository' | 'now'>) {
-  return async ({ request }: LoaderFunctionArgs): Promise<StudentHomeLoaderData> => ({
-    home: await studentRepository.getStudentHome({ signal: request.signal }),
-    now: now(),
-  });
+export function createStudentHomeLoader(dependencies: AppDependencies) {
+  return async ({ request }: LoaderFunctionArgs): Promise<StudentHomeLoaderData> => {
+    const { profile } = await requireAccount(dependencies, request, 'student');
+    const home = await dependencies.studentHome.getStudentHome(
+      { id: profile.id, displayName: getShortName(profile) },
+      { signal: request.signal },
+    );
+    return { home, now: dependencies.now() };
+  };
 }
 
 export function useStudentHomeData(): StudentHomeLoaderData {

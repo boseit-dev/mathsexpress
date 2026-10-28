@@ -2,6 +2,7 @@ import { Award, Gift } from 'lucide-react';
 import { CoinAmount } from '@/components/ui/CoinAmount';
 import { IconTile } from '@/components/ui/IconTile';
 import { Panel } from '@/components/ui/Panel';
+import { SampleDataBadge } from '@/components/ui/SampleDataBadge';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import type { RewardSummary } from '@/domain/rewards';
 import { formatNumber } from '@/lib/format';
@@ -12,7 +13,7 @@ export function RewardsSummary({ rewards }: { rewards: RewardSummary }) {
   const { nextBadge } = rewards;
 
   return (
-    <Panel title="Your rewards" icon={Gift}>
+    <Panel title="Your rewards" badge={<SampleDataBadge />} icon={Gift}>
       <dl className={styles.stats}>
         <div className={styles.stat}>
           <dt>Earned this week</dt>

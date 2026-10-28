@@ -1,11 +1,12 @@
 import type { RouteObject } from 'react-router';
 import { paths } from '@/config/paths';
 import type { AppDependencies } from '@/data/repositories';
+import { createStudentClassAction } from '@/features/student-class/studentClassHandlers';
+import { StudentClassPage } from '@/features/student-class/StudentClassPage';
 import { StudentHomePage } from '@/features/student-home/StudentHomePage';
 import { createStudentHomeLoader } from '@/features/student-home/studentHomeLoader';
 import { StudentLayout } from '@/layouts/student/StudentLayout';
 import { createStudentLayoutLoader } from '@/layouts/student/studentLayoutLoader';
-import { LoadingScreen } from './pages/LoadingScreen';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PlannedSectionPage } from './pages/PlannedSectionPage';
 import { RouteErrorPage } from './pages/RouteErrorPage';
@@ -14,13 +15,19 @@ function planned(title: string, summary: string) {
   return <PlannedSectionPage title={title} summary={summary} homePath={paths.student.home} />;
 }
 
+const PAGES_SHOWING_CLASSES: readonly string[] = [paths.student.home, paths.student.class];
+
 export function createStudentRoutes(dependencies: AppDependencies): RouteObject {
-  const { studentRepository } = dependencies;
   return {
     path: paths.student.home,
-    loader: createStudentLayoutLoader(studentRepository),
+    loader: createStudentLayoutLoader(dependencies),
+    // The student's classes reload when opening a page that shows them, so a teacher's changes
+    // (a new year level, a removal) show there at once. Other pages don't wait for them.
+    shouldRevalidate: ({ currentUrl, nextUrl, defaultShouldRevalidate }) =>
+      defaultShouldRevalidate ||
+      (currentUrl.pathname !== nextUrl.pathname &&
+        PAGES_SHOWING_CLASSES.includes(nextUrl.pathname)),
     element: <StudentLayout />,
-    hydrateFallbackElement: <LoadingScreen />,
     children: [
       {
         // Page errors render inside the layout, so the navigation stays usable.
@@ -46,11 +53,10 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
             ),
           },
           {
+            // Uses the student and classes the layout loads.
             path: paths.student.class,
-            element: planned(
-              'Class',
-              'Your class, your teacher’s messages and how the class is going together.',
-            ),
+            action: createStudentClassAction(dependencies),
+            element: <StudentClassPage />,
           },
           {
             path: paths.student.tasks,
