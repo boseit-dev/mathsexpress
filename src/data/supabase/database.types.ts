@@ -223,6 +223,185 @@ export type Database = {
         };
         Relationships: [];
       };
+      shop_catalogue: {
+        Row: {
+          active: boolean;
+          category: string;
+          description: string;
+          id: string;
+          name: string;
+          price: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          active?: boolean;
+          category: string;
+          description: string;
+          id: string;
+          name: string;
+          price: number;
+        };
+        Update: {
+          active?: boolean;
+          category?: string;
+          description?: string;
+          id?: string;
+          name?: string;
+          price?: number;
+        };
+        Relationships: [];
+      };
+      shop_owned: {
+        Row: {
+          item_id: string;
+          purchased_at: string;
+          student_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          item_id: string;
+          purchased_at?: string;
+          student_id: string;
+        };
+        Update: {
+          item_id?: string;
+          purchased_at?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'shop_owned_item_id_fkey';
+            columns: ['item_id'];
+            isOneToOne: false;
+            referencedRelation: 'shop_catalogue';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'shop_owned_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'shop_wallets';
+            referencedColumns: ['student_id'];
+          },
+        ];
+      };
+      shop_question_awards: {
+        Row: {
+          created_at: string;
+          question_id: string;
+          student_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          question_id: string;
+          student_id: string;
+        };
+        Update: {
+          created_at?: string;
+          question_id?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'shop_question_awards_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'shop_wallets';
+            referencedColumns: ['student_id'];
+          },
+        ];
+      };
+      shop_transactions: {
+        Row: {
+          created_at: string;
+          delta: number;
+          id: number;
+          item_id: string | null;
+          reason: string;
+          student_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          delta: number;
+          id?: never;
+          item_id?: string | null;
+          reason: string;
+          student_id: string;
+        };
+        Update: {
+          created_at?: string;
+          delta?: number;
+          id?: never;
+          item_id?: string | null;
+          reason?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'shop_transactions_item_id_fkey';
+            columns: ['item_id'];
+            isOneToOne: false;
+            referencedRelation: 'shop_catalogue';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'shop_transactions_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'shop_wallets';
+            referencedColumns: ['student_id'];
+          },
+        ];
+      };
+      shop_wallets: {
+        Row: {
+          balance: number;
+          created_at: string;
+          equipped_frame: string | null;
+          equipped_theme: string | null;
+          student_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          balance?: number;
+          created_at?: string;
+          equipped_frame?: string | null;
+          equipped_theme?: string | null;
+          student_id: string;
+        };
+        Update: {
+          balance?: number;
+          created_at?: string;
+          equipped_frame?: string | null;
+          equipped_theme?: string | null;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'shop_wallets_equipped_frame_fkey';
+            columns: ['equipped_frame'];
+            isOneToOne: false;
+            referencedRelation: 'shop_catalogue';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'shop_wallets_equipped_theme_fkey';
+            columns: ['equipped_theme'];
+            isOneToOne: false;
+            referencedRelation: 'shop_catalogue';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'shop_wallets_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: true;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       year_level_changes: {
         Row: {
           changed_at: string;
@@ -355,6 +534,7 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      profile_session_is_active: { Args: Record<PropertyKey, never>; Returns: boolean };
       regenerate_join_code: { Args: { class_id: string }; Returns: string };
       remove_student: { Args: { class_id: string; student_id: string }; Returns: undefined };
       set_student_year_level: {
@@ -367,6 +547,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      shop_award_answer: { Args: { answer: string; question_id: string }; Returns: Json };
+      shop_buy: { Args: { item_id: string }; Returns: Json };
+      shop_equip: { Args: { category: string; item_id?: string }; Returns: Json };
+      shop_state: { Args: Record<PropertyKey, never>; Returns: Json };
       teacher_classes: {
         Args: Record<PropertyKey, never>;
         Returns: Database['public']['CompositeTypes']['teacher_class'][];

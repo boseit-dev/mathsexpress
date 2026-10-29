@@ -1,11 +1,21 @@
-import { useState } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, Lightbulb, RotateCcw, Sparkles } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpenCheck,
+  CheckCircle2,
+  Lightbulb,
+  RotateCcw,
+  Sparkles,
+} from 'lucide-react';
 import { Mascot } from '@/components/mascot/Mascot';
 import { useMascotController } from '@/components/mascot/useMascotController';
 import { Link, useParams } from 'react-router';
 import { Button } from '@/components/ui/Button';
 import { paths } from '@/config/paths';
 import { checkNumericalAnswer, publishedLessons } from '@/domain/learning';
+import type { ShopRepository } from '@/data/repositories';
+import { errorCodeOf } from '@/domain/errors';
 import { useRefreshWhenVisible } from '@/hooks/useRefreshWhenVisible';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useCurrentStudent } from '@/layouts/student/useCurrentStudent';
@@ -14,7 +24,7 @@ import styles from './Learning.module.css';
 type Feedback = 'idle' | 'incorrect' | 'correct';
 
 /** Real practice and marking. Account-based progress saving is a separate, upcoming phase. */
-export function GuidedLessonPage() {
+export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
   const { lessonId } = useParams();
   const student = useCurrentStudent();
   const lesson = publishedLessons.find((item) => item.id === lessonId);
@@ -29,6 +39,19 @@ export function GuidedLessonPage() {
   const [complete, setComplete] = useState(false);
   // The mascot reacts to what actually happens in the practice: never mocking, always brief.
   const mascot = useMascotController('idle');
+  const [coinNotice, setCoinNotice] = useState('');
+  // A reward can finish after Next, Restart, or navigation.
+  const rewardRequest = useRef(0);
+  const lastPublishedReward = useRef(0);
+  const mounted = useRef(false);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      rewardRequest.current += 1;
+    };
+  }, []);
 
   if (!lesson || !permitted) {
     return (
@@ -53,6 +76,30 @@ export function GuidedLessonPage() {
       // Solved: no more pondering after the celebration.
       mascot.setRest('idle');
       mascot.play('correct');
+      setCoinNotice('Checking your coin reward…');
+      const request = ++rewardRequest.current;
+      shop
+        .awardAnswer(current.id, answer)
+        .then((state) => {
+          if (!mounted.current) return;
+          // Newer wallet responses must not be overwritten by slower old responses.
+          if (request > lastPublishedReward.current) {
+            lastPublishedReward.current = request;
+            window.dispatchEvent(new CustomEvent('mathsexpress:shop-updated', { detail: state }));
+          }
+          // Only show a question's reward beside the question that earned it.
+          if (request === rewardRequest.current) {
+            setCoinNotice(`+20 coins saved! Your balance is now ${state.balance}.`);
+          }
+        })
+        .catch((reason: unknown) => {
+          if (!mounted.current || request !== rewardRequest.current) return;
+          setCoinNotice(
+            errorCodeOf(reason) === 'shop_already_rewarded'
+              ? 'Already earned your coins for this question.'
+              : 'Your answer is correct, but coins could not be saved. Try again later.',
+          );
+        });
     } else {
       setFeedback('incorrect');
       setMistakes((value) => value + 1);
@@ -62,6 +109,7 @@ export function GuidedLessonPage() {
 
   function nextQuestion() {
     if (feedback !== 'correct') return;
+    rewardRequest.current += 1;
     if (isLast) {
       setComplete(true);
       return;
@@ -71,9 +119,11 @@ export function GuidedLessonPage() {
     setFeedback('idle');
     setHints(0);
     mascot.setRest('idle');
+    setCoinNotice('');
   }
 
   function restart() {
+    rewardRequest.current += 1;
     setIndex(0);
     setAnswer('');
     setFeedback('idle');
@@ -81,6 +131,7 @@ export function GuidedLessonPage() {
     setMistakes(0);
     setComplete(false);
     mascot.setRest('idle');
+    setCoinNotice('');
   }
 
   return (
@@ -93,6 +144,15 @@ export function GuidedLessonPage() {
         <h1>{lesson.title}</h1>
         <p>{lesson.introduction}</p>
       </header>
+      {lesson.yearLevel === 9 && (
+        <Link
+          className={styles.textbookReturn}
+          to={paths.student.textbookChapter('year-9', 'solving-linear-equations')}
+        >
+          <BookOpenCheck size={17} aria-hidden="true" />
+          Read the matching textbook chapter
+        </Link>
+      )}
       <div className={styles.lessonColumns}>
         <section className={styles.teachingPanel} aria-labelledby="learn-concept-heading">
           <div className={styles.stepLabel}>
@@ -225,6 +285,11 @@ export function GuidedLessonPage() {
                     </ol>
                   </div>
                 )}
+                {feedback === 'correct' && coinNotice && (
+                  <p className={styles.note} role="status">
+                    {coinNotice}
+                  </p>
+                )}
                 <div className={styles.actions}>
                   {feedback !== 'correct' && (
                     <Button
@@ -254,8 +319,8 @@ export function GuidedLessonPage() {
                 </div>
               </form>
               <p className={styles.sessionNote}>
-                <Sparkles size={15} aria-hidden="true" /> Practice is interactive. Your progress is
-                not saved to your account in this first build.
+                <Sparkles size={15} aria-hidden="true" /> Your first correct answers earn real
+                coins. Lesson progress is not saved yet.
               </p>
             </>
           )}

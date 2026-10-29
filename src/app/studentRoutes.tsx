@@ -7,6 +7,7 @@ import { StudentHomePage } from '@/features/student-home/StudentHomePage';
 import { LearnPage } from '@/features/learning/LearnPage';
 import { GuidedLessonPage } from '@/features/learning/GuidedLessonPage';
 import { TextbookPage } from '@/features/textbook/TextbookPage';
+import { ShopPage } from '@/features/shop/ShopPage';
 import { createStudentHomeLoader } from '@/features/student-home/studentHomeLoader';
 import { StudentLayout } from '@/layouts/student/StudentLayout';
 import { createStudentLayoutLoader } from '@/layouts/student/studentLayoutLoader';
@@ -31,7 +32,7 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
       (currentUrl.pathname !== nextUrl.pathname &&
         (PAGES_SHOWING_CLASSES.includes(nextUrl.pathname) ||
           nextUrl.pathname.startsWith(paths.student.learn))),
-    element: <StudentLayout />,
+    element: <StudentLayout shop={dependencies.shop} />,
     children: [
       {
         // Page errors render inside the layout, so the navigation stays usable.
@@ -48,7 +49,7 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
           },
           {
             path: `${paths.student.learn}/:lessonId`,
-            element: <GuidedLessonPage />,
+            element: <GuidedLessonPage shop={dependencies.shop} />,
           },
           { path: paths.student.textbook, element: <TextbookPage /> },
           { path: `${paths.student.textbook}/:bookId`, element: <TextbookPage /> },
@@ -68,10 +69,7 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
           },
           {
             path: paths.student.shop,
-            element: planned(
-              'Coin shop',
-              'Spend your coins on themes, avatar frames and power-ups.',
-            ),
+            element: <ShopPage shop={dependencies.shop} />,
           },
           {
             path: paths.student.more,

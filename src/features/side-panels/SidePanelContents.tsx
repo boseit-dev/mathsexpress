@@ -1,4 +1,6 @@
 import { Award, LockKeyhole } from 'lucide-react';
+import type { ShopRepository } from '@/data/repositories';
+import { ShopPreview } from '@/features/shop/ShopPreview';
 import { Link } from 'react-router';
 import { Mascot } from '@/components/mascot/Mascot';
 import { SampleDataBadge } from '@/components/ui/SampleDataBadge';
@@ -9,20 +11,20 @@ import type { CurrentStudent } from '@/domain/student';
 import { ChallengesPanel } from '@/features/student-home/components/ChallengesPanel';
 import { LeaderboardPanel } from '@/features/student-home/components/LeaderboardPanel';
 import { RewardsSummary } from '@/features/student-home/components/RewardsSummary';
-import { ShopPanel } from '@/features/student-home/components/ShopPanel';
 import type { PanelName } from './SidePanelToolbar';
 import styles from './SidePanelContents.module.css';
 
 interface SidePanelContentsProps {
   panel: PanelName;
   student: CurrentStudent;
+  shop: ShopRepository;
 }
 
 /**
  * Scores, coins, badges and challenges do not exist in the V2 database yet.
  * Reuse the existing labelled sample data, never simulate purchases or write data.
  */
-export function SidePanelContents({ panel, student }: SidePanelContentsProps) {
+export function SidePanelContents({ panel, student, shop }: SidePanelContentsProps) {
   const preview = createSampleStudentHome(new Date(), {
     id: student.id,
     displayName: student.displayName,
@@ -39,25 +41,16 @@ export function SidePanelContents({ panel, student }: SidePanelContentsProps) {
 
   return (
     <div className={styles.contents}>
-      <p className={styles.disclaimer}>
-        Preview only. Scores, coins and achievements shown here are examples, not account results.
-      </p>
+      {panel !== 'shop' && (
+        <p className={styles.disclaimer}>
+          Preview only. Scores, challenges and achievements shown here are examples, not account
+          results.
+        </p>
+      )}
       {panel === 'leaderboard' && (
         <LeaderboardPanel entries={preview.leaderboard} currentStudentId={student.id} />
       )}
-      {panel === 'shop' && (
-        <>
-          <ShopPanel items={preview.featuredShopItems} coinBalance={preview.rewards.coinBalance} />
-          <div className={styles.previewShop}>
-            <p>Purchases are not available yet.</p>
-            {preview.featuredShopItems.map((item) => (
-              <button key={item.id} className={styles.disabledAction} type="button" disabled>
-                Buy {item.name} — coming soon
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+      {panel === 'shop' && <ShopPreview shop={shop} />}
       {panel === 'challenges' && (
         <>
           {preview.challenges.some(isChallengeComplete) && (

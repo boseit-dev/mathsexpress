@@ -2,6 +2,7 @@ import { Award, CalendarCheck, Gift, Menu, ShoppingBag, Trophy, X } from 'lucide
 import { useEffect, useId, useRef, useState, type CSSProperties, type MouseEvent } from 'react';
 import { useLocation } from 'react-router';
 import type { CurrentStudent } from '@/domain/student';
+import type { ShopRepository } from '@/data/repositories';
 import { paths } from '@/config/paths';
 import { SidePanelContents } from './SidePanelContents';
 import styles from './SidePanelToolbar.module.css';
@@ -30,7 +31,13 @@ function closeDelay() {
  * The student quick tools: a toolbar on the right edge (a menu on phones) that opens one sliding
  * panel at a time. Inside a panel, the same five tools switch between panels without closing it.
  */
-export function SidePanelToolbar({ student }: { student: CurrentStudent }) {
+export function SidePanelToolbar({
+  student,
+  shop,
+}: {
+  student: CurrentStudent;
+  shop: ShopRepository;
+}) {
   const { pathname } = useLocation();
   const [active, setActive] = useState<PanelName | null>(null);
   // True while the panel slides out; the dialog closes when that has finished.
@@ -80,7 +87,12 @@ export function SidePanelToolbar({ student }: { student: CurrentStudent }) {
   }, [closing]);
 
   // Lesson controls need the right edge; do not cover answer and next-question buttons.
-  if (pathname.startsWith(`${paths.student.learn}/`)) return null;
+  if (
+    pathname.startsWith(`${paths.student.learn}/`) ||
+    pathname === paths.student.textbookChapter('year-9', 'solving-linear-equations')
+  ) {
+    return null;
+  }
 
   function openPanel(id: PanelName, event: MouseEvent<HTMLButtonElement>) {
     triggerRef.current = event.currentTarget;
@@ -187,7 +199,9 @@ export function SidePanelToolbar({ student }: { student: CurrentStudent }) {
             </div>
           </header>
           {/* Keyed by panel, so switching replays the staggered entrance. */}
-          {active && <SidePanelContents key={active} panel={active} student={student} />}
+          {active && (
+            <SidePanelContents key={active} panel={active} student={student} shop={shop} />
+          )}
         </div>
       </dialog>
     </>

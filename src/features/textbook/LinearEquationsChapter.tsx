@@ -68,9 +68,10 @@ export function LinearEquationsChapter() {
                 <div className={styles.answerRow}>
                   <input
                     id={`answer-${exercise.id}`}
-                    type="number"
-                    step="any"
+                    type="text"
                     inputMode="decimal"
+                    autoComplete="off"
+                    placeholder="e.g. −4"
                     value={answer}
                     className={styles.answerInput}
                     onChange={(event) => {

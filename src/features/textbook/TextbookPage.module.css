@@ -597,3 +597,99 @@
     gap: var(--space-2);
   }
 }
+
+/* Find the books with lessons without losing access to every syllabus outline. */
+.libraryFilters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.filterButton,
+.resetFilters {
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.filterButton[aria-pressed='true'],
+.filterButton:hover,
+.resetFilters:hover {
+  border-color: var(--color-brand-primary);
+  background: var(--color-brand-primary);
+  color: var(--color-text-inverse);
+}
+
+.resultsCount {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.emptyResults {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px dashed var(--color-brand-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-brand-pale);
+}
+
+.bookIntroText .startChapter,
+.practiceLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  justify-self: start;
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-brand-primary);
+  color: var(--color-text-inverse);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.bookIntroText .startChapter:hover,
+.practiceLink:hover {
+  background: var(--color-brand-primary-hover);
+  color: var(--color-text-inverse);
+}
+
+.chapterNavigation {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-4);
+  border-block-start: 1px solid var(--color-brand-soft);
+}
+
+.chapterNavigation a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  max-inline-size: 100%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-brand-pale);
+  font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.chapterNavigation a:hover {
+  background: var(--color-brand-soft);
+}
+
+.chapterNavigation svg,
+.practiceLink svg,
+.startChapter svg {
+  inline-size: var(--size-icon-sm);
+  block-size: var(--size-icon-sm);
+}

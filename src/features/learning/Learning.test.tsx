@@ -1,4 +1,6 @@
-import { screen } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
+import { createFakeDependencies } from '@/test/fakeDependencies';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { paths } from '@/config/paths';
@@ -14,6 +16,15 @@ describe('Learn page', () => {
     expect(screen.getByRole('link', { name: 'Start lesson' })).toHaveAttribute(
       'href',
       paths.student.lesson('linear-equations-basics'),
+    );
+  });
+
+  it('links an assigned Year 9 student to the original textbook chapter', async () => {
+    renderApp(paths.student.learn);
+    await screen.findByRole('heading', { level: 1, name: 'Learn' });
+    expect(screen.getByRole('link', { name: /Open Year 9 chapter/ })).toHaveAttribute(
+      'href',
+      paths.student.textbookChapter('year-9', 'solving-linear-equations'),
     );
   });
 
@@ -41,6 +52,14 @@ describe('Learn page', () => {
 });
 
 describe('guided lesson practice', () => {
+  it('lets students return to the corresponding textbook explanation', async () => {
+    renderApp(paths.student.lesson('linear-equations-basics'));
+    await screen.findByRole('heading', { name: 'Solving linear equations', level: 1 });
+    expect(
+      screen.getByRole('link', { name: /Read the matching textbook chapter/ }),
+    ).toHaveAttribute('href', paths.student.textbookChapter('year-9', 'solving-linear-equations'));
+  });
+
   it('checks answers, gives hints and explains the correct answer', async () => {
     const user = userEvent.setup();
     renderApp(paths.student.lesson('linear-equations-basics'));
@@ -128,6 +147,42 @@ describe('guided lesson practice', () => {
       'data-animation',
       'levelUp',
     );
+  });
+
+  it('does not show a delayed reward message on the following question', async () => {
+    const state = createFakeState();
+    const realShop = createFakeDependencies(state).shop;
+    let release: (() => void) | undefined;
+    const whenReleased = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const delayedShop = {
+      ...realShop,
+      awardAnswer: vi.fn(async (questionId: string, answer: string) => {
+        await whenReleased;
+        return realShop.awardAnswer(questionId, answer);
+      }),
+    };
+    const user = userEvent.setup();
+    renderApp(paths.student.lesson('linear-equations-basics'), {
+      state,
+      overrides: { shop: delayedShop },
+    });
+    const input = await screen.findByRole('textbox', { name: 'Your answer' });
+    await user.type(input, '5');
+    await user.click(screen.getByRole('button', { name: /check answer/i }));
+    expect(screen.getByText('Checking your coin reward…')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: /next question/i }));
+    expect(screen.getByText('5x − 7 = 18')).toBeVisible();
+    await act(async () => {
+      release?.();
+      await whenReleased;
+    });
+    expect(screen.queryByText(/20 coins saved/)).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(state.shopWallets.size).toBe(1);
+    });
+    expect([...state.shopWallets.values()][0]?.balance).toBe(120);
   });
 
   it('does not open a lesson outside the assigned year', async () => {

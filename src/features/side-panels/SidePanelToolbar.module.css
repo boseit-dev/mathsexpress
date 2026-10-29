@@ -9,9 +9,9 @@
   gap: var(--space-1);
   padding: var(--space-2);
   transform: translateY(-50%);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-brand-soft);
   border-radius: var(--radius-full);
-  background: var(--color-surface);
+  background: linear-gradient(180deg, var(--color-surface), var(--color-brand-light-blue));
   box-shadow: var(--shadow-md);
   animation: toolbar-in 420ms var(--ease-out-soft) 200ms both;
 }
@@ -138,7 +138,7 @@
   border-inline-start: 1px solid var(--color-border-strong);
   border-start-start-radius: var(--radius-xl);
   border-end-start-radius: var(--radius-xl);
-  background: var(--color-page);
+  background: linear-gradient(160deg, var(--color-surface), var(--color-brand-lavender-wash));
   color: var(--color-text);
   box-shadow: var(--shadow-lg);
 }

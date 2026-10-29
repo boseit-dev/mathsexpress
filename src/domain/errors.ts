@@ -40,6 +40,16 @@ export const errorMessages = {
   leaving_not_allowed:
     'Your teacher has turned off leaving this class. Ask them if you need to leave.',
   student_not_found: 'That student is no longer in this class.',
+  // Real cosmetic shop
+  shop_item_unavailable: 'That shop item is no longer available.',
+  shop_already_owned: 'You already own this item.',
+  shop_not_enough_coins: 'You need more coins to buy this item.',
+  shop_not_owned: 'Buy this cosmetic before equipping it.',
+  shop_invalid_category: 'Choose a valid item category.',
+  shop_lesson_unavailable: 'You need to be assigned this lesson to earn coins.',
+  shop_question_unavailable: 'That question cannot earn coins.',
+  shop_answer_incorrect: 'That answer is not correct yet.',
+  shop_already_rewarded: 'You have already earned coins for this question.',
   // Anything else
   network: 'MathsExpress couldn’t connect. Check your internet connection and try again.',
   unknown: 'Something went wrong. Please try again.',

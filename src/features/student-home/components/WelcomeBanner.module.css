@@ -3,7 +3,16 @@
   display: grid;
   align-items: center;
   gap: var(--space-6);
-  padding-block: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(
+    120deg,
+    var(--color-brand-light-blue),
+    var(--color-brand-lavender-wash) 62%,
+    var(--color-surface)
+  );
+  box-shadow: var(--shadow-sm);
 }
 
 .hello {
@@ -67,9 +76,10 @@
   gap: var(--space-3);
   min-inline-size: 0;
   padding: var(--space-5);
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--color-brand-soft);
+  border-block-start: var(--space-1) solid var(--color-brand-secondary);
   border-radius: var(--radius-lg);
-  background-color: var(--color-surface);
+  background: linear-gradient(175deg, var(--color-surface), var(--color-brand-pale));
 }
 
 .nextUpHeading {

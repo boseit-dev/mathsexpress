@@ -29,18 +29,16 @@ describe('student quick tools', () => {
     }
   });
 
-  it('labels preview content and never enables shop purchases', async () => {
+  it('opens the real wallet preview and links to the working shop', async () => {
     const { user, toolbar } = await openTools();
     await user.click(within(toolbar).getByRole('button', { name: 'Shop' }));
     const dialog = screen.getByRole('dialog', { name: 'Shop' });
-    expect(dialog).toHaveTextContent('Preview only');
-    expect(dialog).toHaveTextContent('Sample data');
-    expect(within(dialog).getAllByRole('button', { name: /coming soon/i }).length).toBeGreaterThan(
-      0,
+    expect(await within(dialog).findByText('100 coins')).toBeVisible();
+    expect(within(dialog).getByRole('link', { name: 'Open the full shop' })).toHaveAttribute(
+      'href',
+      '/student/more/shop',
     );
-    for (const button of within(dialog).getAllByRole('button', { name: /coming soon/i })) {
-      expect(button).toBeDisabled();
-    }
+    expect(dialog).not.toHaveTextContent('Sample data');
   });
 
   it('switches panels inside the open panel without closing it', async () => {
@@ -105,6 +103,12 @@ describe('student quick tools', () => {
   it('does not render floating controls over an active guided lesson', async () => {
     renderApp('/student/learn/sample-unknown-lesson');
     await screen.findByRole('navigation', { name: 'Student' });
+    expect(screen.queryByRole('complementary', { name: 'Student quick tools' })).toBeNull();
+  });
+
+  it('stays out of the way of the interactive textbook practice chapter', async () => {
+    renderApp('/student/textbook/year-9/solving-linear-equations');
+    await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' });
     expect(screen.queryByRole('complementary', { name: 'Student quick tools' })).toBeNull();
   });
 

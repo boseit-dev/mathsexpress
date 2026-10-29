@@ -20,9 +20,9 @@
   min-inline-size: 0;
   min-block-size: 6rem;
   padding: var(--space-4);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-brand-soft);
   border-radius: var(--radius-lg);
-  background-color: var(--color-surface);
+  background: linear-gradient(115deg, var(--color-surface), var(--color-brand-light-blue));
   box-shadow: var(--shadow-sm);
   color: var(--color-text);
   text-decoration: none;
@@ -55,8 +55,8 @@
   inline-size: 3rem;
   block-size: 3rem;
   border-radius: var(--radius-md);
-  background-color: var(--color-brand-pale);
-  color: var(--color-text-brand);
+  background-color: var(--color-brand-soft);
+  color: var(--color-text);
 }
 
 .pathIcon svg {
@@ -97,7 +97,9 @@
   display: grid;
   gap: var(--space-1);
   padding-block-start: var(--space-4);
-  border-block-start: 1px solid var(--color-border-strong);
+  padding-inline-start: var(--space-4);
+  border-block-start: 1px solid var(--color-brand-soft);
+  border-inline-start: var(--space-1) solid var(--color-brand-secondary);
 }
 
 .sectionTitle h2 {
@@ -130,4 +132,13 @@
   .pathArrow {
     margin-inline-start: auto;
   }
+}
+
+/* Brand-coloured shortcuts that keep the original, simple Study Journal layout. */
+.path:nth-child(2) {
+  background: linear-gradient(115deg, var(--color-surface), var(--color-brand-lavender-wash));
+}
+
+.path:nth-child(3) {
+  background: linear-gradient(115deg, var(--color-surface), var(--color-brand-pale));
 }

@@ -25,13 +25,29 @@ function BookCover({ book }: { book: TextbookBook }) {
   );
 }
 
+type LibraryFilter = 'all' | 'my-year' | 'with-lessons';
+
+function hasPublishedMaths(book: TextbookBook): boolean {
+  return book.chapters.some(
+    (chapter) => chapter.status === 'ready' && chapter.id !== 'getting-started',
+  );
+}
+
 function LibraryView() {
   const student = useCurrentStudent();
   const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<LibraryFilter>('all');
   const ownYears = new Set(student.classes.map((membership) => membership.yearLevel));
-  const matching = textbookBooks.filter((book) =>
-    `${book.course} ${book.stage}`.toLowerCase().includes(search.toLowerCase().trim()),
-  );
+  const matching = textbookBooks.filter((book) => {
+    const queryMatches = `${book.course} ${book.stage}`
+      .toLowerCase()
+      .includes(search.toLowerCase().trim());
+    const filterMatches =
+      filter === 'all' ||
+      (filter === 'my-year' && ownYears.has(book.year)) ||
+      (filter === 'with-lessons' && hasPublishedMaths(book));
+    return queryMatches && filterMatches;
+  });
   const groups = [
     {
       title: 'Primary · Kindergarten to Year 6',
@@ -78,7 +94,60 @@ function LibraryView() {
           setSearch(event.target.value);
         }}
       />
-      {matching.length === 0 && <p role="status">No textbooks match that search.</p>}
+      <div className={styles.libraryFilters} role="group" aria-label="Filter textbooks">
+        <button
+          type="button"
+          className={styles.filterButton}
+          aria-pressed={filter === 'all'}
+          onClick={() => {
+            setFilter('all');
+          }}
+        >
+          All books
+        </button>
+        <button
+          type="button"
+          className={styles.filterButton}
+          aria-pressed={filter === 'my-year'}
+          onClick={() => {
+            setFilter('my-year');
+          }}
+        >
+          My year
+        </button>
+        <button
+          type="button"
+          className={styles.filterButton}
+          aria-pressed={filter === 'with-lessons'}
+          onClick={() => {
+            setFilter('with-lessons');
+          }}
+        >
+          Ready to learn
+        </button>
+      </div>
+      <p className={styles.resultsCount} role="status">
+        Showing {matching.length} of {textbookBooks.length} books
+      </p>
+      {matching.length === 0 && (
+        <div className={styles.emptyResults}>
+          <p>
+            {filter === 'my-year' && ownYears.size === 0
+              ? 'Join a class to see your teacher-assigned year.'
+              : 'No books match these filters.'}
+          </p>
+          <button
+            type="button"
+            className={styles.resetFilters}
+            onClick={() => {
+              setSearch('');
+              setFilter('all');
+            }}
+          >
+            Show all books
+          </button>
+        </div>
+      )}
       {groups.map((group) =>
         group.list.length > 0 ? (
           <section key={group.title} className={styles.libraryGroup} aria-label={group.title}>
@@ -97,8 +166,9 @@ function LibraryView() {
                     {book.syllabus.includes('2022') ? '2022 syllabus' : '2024 syllabus'}
                   </span>
                   <span className={styles.bookStatus}>
-                    {ownYears.has(book.year) ? 'Your assigned year · ' : ''}Open book{' '}
-                    <ChevronRight aria-hidden="true" />
+                    {ownYears.has(book.year) ? 'Your assigned year · ' : ''}
+                    {hasPublishedMaths(book) ? 'Lesson available · ' : 'Outline only · '}
+                    Open book <ChevronRight aria-hidden="true" />
                   </span>
                 </Link>
               ))}
@@ -115,6 +185,9 @@ function LibraryView() {
 }
 
 function BookDetail({ book }: { book: TextbookBook }) {
+  const published = book.chapters.filter(
+    (chapter) => chapter.status === 'ready' && chapter.id !== 'getting-started',
+  );
   return (
     <div className={styles.page}>
       <Link className={styles.backLink} to={paths.student.textbook}>
@@ -129,9 +202,18 @@ function BookDetail({ book }: { book: TextbookBook }) {
             {book.stage} · {book.syllabus}
           </p>
           <p>
-            Every chapter is written for MathsExpress. Published content includes explanations,
-            worked examples and practice exercises. Other chapters are still being prepared.
+            {published.length === 0
+              ? 'This book has an outline and a getting-started guide. Its maths lessons are still in preparation.'
+              : `${published.length} maths ${published.length === 1 ? 'chapter is' : 'chapters are'} ready. Other chapters are still in preparation.`}
           </p>
+          {published[0] && (
+            <Link
+              className={styles.startChapter}
+              to={paths.student.textbookChapter(book.id, published[0].id)}
+            >
+              Start reading {published[0].title} <ChevronRight aria-hidden="true" />
+            </Link>
+          )}
           <a href={book.syllabusUrl} target="_blank" rel="noopener noreferrer">
             View the official NSW syllabus
           </a>
@@ -162,8 +244,13 @@ function BookDetail({ book }: { book: TextbookBook }) {
 }
 
 function ChapterView({ book, chapterId }: { book: TextbookBook; chapterId: string }) {
+  const student = useCurrentStudent();
   const chapter = findTextbookChapter(book, chapterId);
   if (!chapter) return <MissingBook />;
+  const index = book.chapters.findIndex((item) => item.id === chapterId);
+  const previous = book.chapters[index - 1];
+  const next = book.chapters[index + 1];
+  const canPractiseYearNine = student.classes.some((membership) => membership.yearLevel === 9);
   return (
     <div className={styles.page}>
       <Link className={styles.backLink} to={paths.student.textbookBook(book.id)}>
@@ -204,6 +291,25 @@ function ChapterView({ book, chapterId }: { book: TextbookBook; chapterId: strin
           <Link to={paths.student.textbookBook(book.id)}>Return to the contents</Link>
         </section>
       )}
+      {book.id === 'year-9' && chapter.id === 'solving-linear-equations' && canPractiseYearNine && (
+        <Link className={styles.practiceLink} to={paths.student.lesson('linear-equations-basics')}>
+          Practise this topic in Learn <ChevronRight aria-hidden="true" />
+        </Link>
+      )}
+      <nav className={styles.chapterNavigation} aria-label="Move between chapters">
+        {previous ? (
+          <Link to={paths.student.textbookChapter(book.id, previous.id)}>
+            <ChevronLeft aria-hidden="true" /> Previous: {previous.title}
+          </Link>
+        ) : (
+          <span />
+        )}
+        {next && (
+          <Link to={paths.student.textbookChapter(book.id, next.id)}>
+            Next: {next.title} <ChevronRight aria-hidden="true" />
+          </Link>
+        )}
+      </nav>
     </div>
   );
 }

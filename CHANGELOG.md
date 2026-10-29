@@ -24,6 +24,23 @@ Phase 3 first learning slice (in development).
 - Added the `/mascot` workshop page to review every view, pose and animation, transparent SVG
   and PNG exports in `src/assets/mascot/`, `npm run mascot:export` and mascot documentation.
 
+- Built the first real account-backed Coin Shop with an original catalogue of eight
+  permanent themes and avatar frames, a starter wallet, secure transactional buying,
+  owned-item locker, equip/unequip controls, and recent purchase history.
+- Added server-verified, once-per-question coin earnings for the published Year 9
+  guided lesson, with database protection against forging rewards or overspending.
+- Replaced the fake shop side-panel contents with the student's real coin balance
+  and a working link to the full Shop page. No real-money payments or chance items.
+
+- Improved the existing textbook library with All books, My year, and Ready to learn filters,
+  visible result counts and an easy reset when a search returns no matching books.
+- Clarified that books without a maths lesson contain only a syllabus outline and introduction.
+  Added direct links into ready chapters and previous/next chapter navigation.
+- Connected the original Year 9 equations textbook to the existing guided Learn lesson in both
+  directions, only offering practice when the student's teacher-assigned year permits it.
+- Unified textbook numeric checking with Learn's strict parser (including typed negative signs)
+  and kept the floating quick tools clear of the interactive textbook exercise page.
+
 - Introduced an original MathsExpress textbook library with 25 separate books for K–10,
   secondary Life Skills and the distinct Year 11–12 mathematics courses. All books open
   through their own links, with chapter contents, a getting-started chapter and syllabus links.
@@ -54,6 +71,12 @@ Phase 3 first learning slice (in development).
 
 - The lesson-completion burst of shapes is replaced by the mascot's own celebration, so there
   is one celebration instead of two.
+
+- Extended the official MathsExpress blue/lavender palette across the 2.0 site:
+  softly colourful page backgrounds, navigation, active tabs, buttons, Study Journal
+  shortcuts, progress and practice cards, guided lessons, class cards, teacher empty
+  states, sign-in panels, quick tools and error screens. Kept dark, readable text,
+  existing layouts, reduced-motion support and all current functionality.
 
 - Brightened the textbook library with five distinctive book-cover treatments using the
   existing MathsExpress navy, blue, lavender and muted-blue palette. Added colourful but

@@ -55,6 +55,17 @@ export function LearnPage() {
               <BookOpenCheck size={28} aria-hidden="true" />
             </div>
           </section>
+          {assignedYears.includes(9) && (
+            <div className={styles.textbookBridge}>
+              <div>
+                <strong>Read it in your textbook</strong>
+                <p>Revise linear equations with worked examples before practising.</p>
+              </div>
+              <Link to={paths.student.textbookChapter('year-9', 'solving-linear-equations')}>
+                Open Year 9 chapter <ArrowRight size={17} aria-hidden="true" />
+              </Link>
+            </div>
+          )}
           <section aria-labelledby="topics-heading">
             <div className={styles.sectionHeader}>
               <div>
