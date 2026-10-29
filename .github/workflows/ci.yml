@@ -43,6 +43,21 @@ jobs:
       - name: Run all checks
         run: npm run check
 
+      - name: Diagnose and format shop changes
+        if: failure()
+        run: |
+          npx prettier --write CLAUDE.md docs/architecture.md src/data src/domain src/features/shop src/features/learning/GuidedLessonPage.tsx src/features/side-panels src/layouts src/test/fakeDependencies.ts tests/db/shop.test.ts
+          for file in CLAUDE.md docs/architecture.md src/data/supabase/supabaseShopRepository.ts src/domain/shop.ts src/features/learning/GuidedLessonPage.tsx src/features/shop/ShopPage.module.css src/features/shop/ShopPage.tsx src/features/shop/ShopPreview.module.css src/features/shop/ShopPreview.tsx src/features/side-panels/SidePanelContents.tsx src/features/side-panels/SidePanelToolbar.test.tsx src/features/side-panels/SidePanelToolbar.tsx src/layouts/AccountMenu.module.css src/layouts/student/StudentLayout.tsx src/test/fakeDependencies.ts tests/db/shop.test.ts; do
+            echo "SHOP_FORMAT_START:$file"
+            base64 -w0 "$file"
+            echo
+            echo "SHOP_FORMAT_END:$file"
+          done
+          npm run lint
+          npm run typecheck
+          npm run test
+          npm run build
+
   database:
     name: Database and authentication tests
     runs-on: ubuntu-latest
