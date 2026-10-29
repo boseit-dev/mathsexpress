@@ -81,7 +81,8 @@ export function createSupabaseShopRepository(client: MathsExpressClient): ShopRe
       return decodeShopState(unwrap(await client.rpc('shop_buy', { item_id: itemId })));
     },
     async equip(category, itemId) {
-      return decodeShopState(unwrap(await client.rpc('shop_equip', { category, item_id: itemId })));
+      const args = itemId === null ? { category } : { category, item_id: itemId };
+      return decodeShopState(unwrap(await client.rpc('shop_equip', args)));
     },
     async awardAnswer(questionId, answer) {
       return decodeShopState(
