@@ -41,7 +41,7 @@ describe('real student coin shop', () => {
     expect(screen.getByRole('heading', { name: 'Ocean Blue' })).toBeVisible();
     expect(screen.queryByRole('heading', { name: 'Sunset Glow' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Coin history' }));
-    expect(screen.getByText('−40 coins')).toBeVisible();
+    expect(screen.getByText('-40 coins')).toBeVisible();
     expect(state.shopWallets.size).toBe(1);
   });
 
