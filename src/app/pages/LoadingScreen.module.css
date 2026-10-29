@@ -9,8 +9,7 @@
 }
 
 .mark {
-  inline-size: var(--size-tile-lg);
-  block-size: auto;
+  margin-block-end: var(--space-2);
 }
 
 .slow {

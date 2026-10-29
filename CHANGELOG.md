@@ -10,6 +10,20 @@ Phase 3 first learning slice (in development).
 
 ### Added
 
+- Introduced the official MathsExpress capybara mascot: a flat, mouthless 2D character drawn
+  once as a layered SVG rig, so all eight views (front, back, both sides and four
+  three-quarter views), 29 poses and 16 eyes-and-eyebrows expressions keep identical colours
+  and proportions.
+- Added 24 smooth mascot animations (movement, learning, feedback and rewards) and an
+  animation controller that eases between a resting state and short reactions to real events.
+- The mascot now responds around the site: it waves when a student arrives, reads and points
+  at lessons on Learn, reacts kindly to wrong answers, lights a bulb for hints, celebrates
+  correct answers and finished lessons (a special level-up for a perfect run), walks on the
+  loading screen, and appears in empty states, the achievements and challenges panels and the
+  teacher home page. Reduced-motion visitors see still poses.
+- Added the `/mascot` workshop page to review every view, pose and animation, transparent SVG
+  and PNG exports in `src/assets/mascot/`, `npm run mascot:export` and mascot documentation.
+
 - Introduced an original MathsExpress textbook library with 25 separate books for K–10,
   secondary Life Skills and the distinct Year 11–12 mathematics courses. All books open
   through their own links, with chapter contents, a getting-started chapter and syllabus links.
@@ -37,6 +51,9 @@ Phase 3 first learning slice (in development).
   complete lesson flow.
 
 ### Changed
+
+- The lesson-completion burst of shapes is replaced by the mascot's own celebration, so there
+  is one celebration instead of two.
 
 - Brightened the textbook library with five distinctive book-cover treatments using the
   existing MathsExpress navy, blue, lavender and muted-blue palette. Added colourful but

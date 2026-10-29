@@ -1,5 +1,4 @@
-import { School } from 'lucide-react';
-import { IconTile } from '@/components/ui/IconTile';
+import { Mascot } from '@/components/mascot/Mascot';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { CreateClassPanel } from './components/CreateClassPanel';
@@ -28,7 +27,7 @@ export function TeacherClassesPage() {
           </h2>
           {classes.length === 0 ? (
             <div className={styles.empty}>
-              <IconTile icon={School} size="large" />
+              <Mascot pose="certificate" size={120} />
               <div className={styles.emptyText}>
                 <p className={styles.emptyTitle}>You haven’t created a class yet</p>
                 <p>

@@ -105,13 +105,30 @@
 }
 .cardArt {
   position: relative;
-  height: 9rem;
+  /* Tall enough for the mascot to stand below the "x = ?" circle text. */
+  height: 10.5rem;
   display: flex;
   align-items: center;
   padding: var(--space-6);
   background: linear-gradient(120deg, var(--color-brand-primary), var(--color-brand-secondary));
   color: var(--color-text-inverse);
   overflow: hidden;
+}
+.cardMascot {
+  position: absolute;
+  z-index: 1;
+  inset-inline-end: var(--space-2);
+  inset-block-end: calc(-1 * var(--space-1));
+  transition: opacity var(--duration-panel) var(--ease-out-soft);
+}
+.cardMascotPointing,
+.lessonCard:hover .cardMascot:not(.cardMascotPointing),
+.lessonCard:focus-within .cardMascot:not(.cardMascotPointing) {
+  opacity: 0;
+}
+.lessonCard:hover .cardMascotPointing,
+.lessonCard:focus-within .cardMascotPointing {
+  opacity: 1;
 }
 .equationArt {
   font-size: var(--font-size-2xl);
@@ -387,8 +404,20 @@
   justify-items: start;
   gap: var(--space-3);
 }
-.successIcon {
-  color: var(--color-success);
+.summaryMascot {
+  justify-self: center;
+}
+.askRow {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+/* Sized for the panel; it reacts to answers and hints. */
+.askRow .lessonMascot {
+  flex: none;
+  block-size: clamp(5rem, 3.6rem + 4vw, 7.5rem);
+  margin-block: calc(-1 * var(--space-4)) calc(-1 * var(--space-2));
 }
 .note {
   background: var(--color-surface-subtle);

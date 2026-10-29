@@ -17,7 +17,15 @@ import { RouteErrorPage } from './pages/RouteErrorPage';
 
 function planned(title: string, summary: string, { isHome = false } = {}) {
   const homePath = isHome ? undefined : paths.teacher.home;
-  return <PlannedSectionPage title={title} summary={summary} homePath={homePath} />;
+  return (
+    <PlannedSectionPage
+      title={title}
+      summary={summary}
+      homePath={homePath}
+      // The teacher's home greets them with the mascot at its whiteboard.
+      mascot={isHome ? 'teaching' : undefined}
+    />
+  );
 }
 
 export function createTeacherRoutes(dependencies: AppDependencies): RouteObject {

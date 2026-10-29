@@ -1,6 +1,7 @@
-import { Celebration } from '@/components/ui/Celebration';
 import { useState } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2, Lightbulb, RotateCcw, Sparkles } from 'lucide-react';
+import { Mascot } from '@/components/mascot/Mascot';
+import { useMascotController } from '@/components/mascot/useMascotController';
 import { Link, useParams } from 'react-router';
 import { Button } from '@/components/ui/Button';
 import { paths } from '@/config/paths';
@@ -26,6 +27,8 @@ export function GuidedLessonPage() {
   const [hints, setHints] = useState(0);
   const [mistakes, setMistakes] = useState(0);
   const [complete, setComplete] = useState(false);
+  // The mascot reacts to what actually happens in the practice: never mocking, always brief.
+  const mascot = useMascotController('idle');
 
   if (!lesson || !permitted) {
     return (
@@ -47,9 +50,13 @@ export function GuidedLessonPage() {
     if (!current || !answer.trim() || feedback === 'correct') return;
     if (checkNumericalAnswer(answer, current.solution)) {
       setFeedback('correct');
+      // Solved: no more pondering after the celebration.
+      mascot.setRest('idle');
+      mascot.play('correct');
     } else {
       setFeedback('incorrect');
       setMistakes((value) => value + 1);
+      mascot.play('incorrect');
     }
   }
 
@@ -63,6 +70,7 @@ export function GuidedLessonPage() {
     setAnswer('');
     setFeedback('idle');
     setHints(0);
+    mascot.setRest('idle');
   }
 
   function restart() {
@@ -72,6 +80,7 @@ export function GuidedLessonPage() {
     setHints(0);
     setMistakes(0);
     setComplete(false);
+    mascot.setRest('idle');
   }
 
   return (
@@ -108,8 +117,13 @@ export function GuidedLessonPage() {
         <section className={styles.practicePanel} aria-labelledby="try-it-heading">
           {complete ? (
             <div className={styles.summary} aria-live="polite">
-              <Celebration />
-              <CheckCircle2 size={42} aria-hidden="true" className={styles.successIcon} />
+              <Mascot
+                // A perfect run (no wrong answers) earns the special level-up celebration.
+                animation={mistakes === 0 ? 'levelUp' : 'lessonComplete'}
+                size={200}
+                cycles={2}
+                className={styles.summaryMascot}
+              />
               <h2 id="try-it-heading">Lesson completed!</h2>
               <p>You solved all {lesson.questions.length} questions.</p>
               <p className={styles.muted}>
@@ -150,7 +164,10 @@ export function GuidedLessonPage() {
               >
                 <div style={{ width: `${(index / lesson.questions.length) * 100}%` }} />
               </div>
-              <h2 id="try-it-heading">Find the value of x</h2>
+              <div className={styles.askRow}>
+                <h2 id="try-it-heading">Find the value of x</h2>
+                <Mascot {...mascot.bind} className={styles.lessonMascot} />
+              </div>
               <div
                 key={index}
                 className={styles.question}
@@ -215,6 +232,9 @@ export function GuidedLessonPage() {
                       disabled={hints === 2}
                       onClick={() => {
                         setHints((value) => Math.min(value + 1, 2));
+                        // A lightbulb moment, then a thoughtful pose while the hint is read.
+                        mascot.play('idea');
+                        mascot.setRest('thinking', { cycles: 2 });
                       }}
                     >
                       <Lightbulb size={17} aria-hidden="true" />{' '}

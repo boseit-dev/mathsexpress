@@ -39,7 +39,8 @@ continued to sign-in instead of hanging. Google sign-in then showed "isn't avail
 
 - Keep the Study Journal home page as it is. Don't copy anything from Mathspace: no layouts,
   illustrations, mascot, backgrounds, task cards or distinctive animations.
-- No mascot or placeholder animal. The official capybara comes later.
+- The official capybara mascot now exists. Use `<Mascot />` from `src/components/mascot/`
+  (see `src/assets/mascot/README.md`); never add a different or placeholder animal.
 - Don't add fake features:
   - There is **no coins, shop, leaderboard score, challenge or achievement data in the
     database** yet. The only real data is accounts, classes and class members.

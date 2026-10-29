@@ -61,5 +61,8 @@ export default defineConfig(({ mode }) => ({
     // Dates are shown in the student's local time; pin the zone so tests behave the same on every machine.
     env: { TZ: 'Australia/Sydney' },
     restoreMocks: true,
+    // Stylesheets are stubbed in tests, except the mascot's: its tests check that every
+    // animation has keyframes and that reduced motion turns them all off.
+    css: { include: [/src\/components\/mascot\/Mascot\.module\.css/] },
   },
 }));

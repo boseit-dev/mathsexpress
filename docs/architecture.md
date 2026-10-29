@@ -49,6 +49,7 @@ URL ──▶ React Router (src/app/routes.tsx)
 | `/auth/callback`                       | Where Google sign-in returns                          | Built        |
 | `/welcome`                             | Choose a role and name (accounts without a profile)   | Built        |
 | `/sign-out`                            | Sign out (form action only)                           | Built        |
+| `/mascot`                              | Mascot workshop: every view, pose and animation       | Built        |
 | `/student`                             | Student home (tasks and side panels are sample data)  | Built        |
 | `/student/class`                       | Classes, teachers, year levels; join or leave a class | Built        |
 | `/student/learn`                       | Learn                                                 | Planned page |

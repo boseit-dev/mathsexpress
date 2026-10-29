@@ -20,6 +20,7 @@
     "test:watch": "vitest",
     "test:db": "node scripts/test-db.ts",
     "env:local": "node scripts/write-local-env.ts",
+    "mascot:export": "node scripts/export-mascot.ts",
     "db:types": "supabase gen types typescript --local > src/data/supabase/database.types.ts && prettier --write src/data/supabase/database.types.ts",
     "check:quick": "npm run format:check && npm run lint && npm run typecheck",
     "check": "npm run check:quick && npm run test && npm run build",

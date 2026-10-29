@@ -1,4 +1,5 @@
 import { ClipboardList } from 'lucide-react';
+import { Mascot } from '@/components/mascot/Mascot';
 import { ArrowLink } from '@/components/ui/ArrowLink';
 import { Panel } from '@/components/ui/Panel';
 import { SampleDataBadge } from '@/components/ui/SampleDataBadge';
@@ -33,9 +34,12 @@ export function AssignmentSection({ assignments, now }: AssignmentSectionProps) 
       }
     >
       {shown.length === 0 ? (
-        <p className={styles.empty}>
-          Your teacher hasn’t set any tasks yet. They’ll appear here when they do.
-        </p>
+        <div className={styles.emptyState}>
+          <Mascot animation="reading" size={96} cycles={1} />
+          <p className={styles.empty}>
+            Your teacher hasn’t set any tasks yet. They’ll appear here when they do.
+          </p>
+        </div>
       ) : (
         <ul role="list" className={styles.list}>
           {shown.map((assignment) => (

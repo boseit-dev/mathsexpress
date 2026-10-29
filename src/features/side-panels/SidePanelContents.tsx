@@ -1,8 +1,10 @@
 import { Award, LockKeyhole } from 'lucide-react';
 import { Link } from 'react-router';
+import { Mascot } from '@/components/mascot/Mascot';
 import { SampleDataBadge } from '@/components/ui/SampleDataBadge';
 import { paths } from '@/config/paths';
 import { createSampleStudentHome } from '@/data/sample/sampleStudentHome';
+import { isChallengeComplete } from '@/domain/rewards';
 import type { CurrentStudent } from '@/domain/student';
 import { ChallengesPanel } from '@/features/student-home/components/ChallengesPanel';
 import { LeaderboardPanel } from '@/features/student-home/components/LeaderboardPanel';
@@ -56,9 +58,17 @@ export function SidePanelContents({ panel, student }: SidePanelContentsProps) {
           </div>
         </>
       )}
-      {panel === 'challenges' && <ChallengesPanel challenges={preview.challenges} />}
+      {panel === 'challenges' && (
+        <>
+          {preview.challenges.some(isChallengeComplete) && (
+            <Mascot animation="clap" size={96} cycles={3} className={styles.mascot} />
+          )}
+          <ChallengesPanel challenges={preview.challenges} />
+        </>
+      )}
       {panel === 'achievements' && (
         <section className={styles.achievements} aria-label="Achievement preview">
+          <Mascot animation="medal" size={110} cycles={1} className={styles.mascot} />
           <div className={styles.previewHeading}>
             <h3>Badge collection</h3>
             <SampleDataBadge />

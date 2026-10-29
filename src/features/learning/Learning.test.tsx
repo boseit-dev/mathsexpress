@@ -86,6 +86,50 @@ describe('guided lesson practice', () => {
     expect(screen.getByText('2x + 4 = 14')).toBeVisible();
   });
 
+  it('has the mascot react to wrong answers, hints, right answers and finishing', async () => {
+    const user = userEvent.setup();
+    const { container } = renderApp(paths.student.lesson('linear-equations-basics'));
+    await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' });
+    const mascot = () => container.querySelector('svg[data-animation]');
+    expect(mascot()).toHaveAttribute('data-animation', 'idle');
+
+    await user.type(screen.getByRole('textbox', { name: 'Your answer' }), '4');
+    await user.click(screen.getByRole('button', { name: /check answer/i }));
+    expect(mascot()).toHaveAttribute('data-animation', 'incorrect');
+
+    await user.click(screen.getByRole('button', { name: 'Get a hint' }));
+    expect(mascot()).toHaveAttribute('data-animation', 'idea');
+
+    await user.clear(screen.getByRole('textbox', { name: 'Your answer' }));
+    await user.type(screen.getByRole('textbox', { name: 'Your answer' }), '5');
+    await user.click(screen.getByRole('button', { name: /check answer/i }));
+    expect(mascot()).toHaveAttribute('data-animation', 'correct');
+
+    await user.click(screen.getByRole('button', { name: /next question/i }));
+    for (const solution of ['5', '-3', '5', '-4']) {
+      await user.type(screen.getByRole('textbox', { name: 'Your answer' }), solution);
+      await user.click(screen.getByRole('button', { name: /check answer/i }));
+      await user.click(screen.getByRole('button', { name: /next question|finish lesson/i }));
+    }
+    // One wrong answer along the way: the lesson celebration, not the perfect-score one.
+    expect(mascot()).toHaveAttribute('data-animation', 'lessonComplete');
+  });
+
+  it('gives a perfect run the special celebration', async () => {
+    const user = userEvent.setup();
+    const { container } = renderApp(paths.student.lesson('linear-equations-basics'));
+    await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' });
+    for (const solution of ['5', '5', '-3', '5', '-4']) {
+      await user.type(screen.getByRole('textbox', { name: 'Your answer' }), solution);
+      await user.click(screen.getByRole('button', { name: /check answer/i }));
+      await user.click(screen.getByRole('button', { name: /next question|finish lesson/i }));
+    }
+    expect(container.querySelector('svg[data-animation]')).toHaveAttribute(
+      'data-animation',
+      'levelUp',
+    );
+  });
+
   it('does not open a lesson outside the assigned year', async () => {
     const state = createFakeState();
     const member = state.classes[0]?.students[0];

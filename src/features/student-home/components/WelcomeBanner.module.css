@@ -6,6 +6,20 @@
   padding-block: var(--space-5);
 }
 
+.hello {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-inline-size: 0;
+}
+
+/* The mascot waves hello on arrival, then just breathes and blinks. */
+.hello .mascot {
+  flex: none;
+  block-size: clamp(5.5rem, 4rem + 6vw, 9.5rem);
+}
+
 .introduction {
   display: flex;
   flex-direction: column;

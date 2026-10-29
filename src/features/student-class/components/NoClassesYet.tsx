@@ -1,11 +1,10 @@
-import { Users } from 'lucide-react';
-import { IconTile } from '@/components/ui/IconTile';
+import { Mascot } from '@/components/mascot/Mascot';
 import styles from './NoClassesYet.module.css';
 
 export function NoClassesYet() {
   return (
     <div className={styles.empty}>
-      <IconTile icon={Users} size="large" />
+      <Mascot animation="peek" size={120} cycles={2} />
       <div className={styles.text}>
         <p className={styles.title}>You’re not in a class yet</p>
         <p>

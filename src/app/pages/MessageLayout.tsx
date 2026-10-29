@@ -6,6 +6,8 @@ import styles from './MessageLayout.module.css';
 
 interface MessageLayoutProps {
   icon: LucideIcon;
+  /** Artwork shown instead of the icon, such as the mascot. */
+  art?: ReactNode;
   eyebrow?: string;
   title: string;
   children: ReactNode;
@@ -13,12 +15,19 @@ interface MessageLayoutProps {
 }
 
 /** A centred card with a heading and short explanation, for status pages like "not found". */
-export function MessageLayout({ icon, eyebrow, title, children, actions }: MessageLayoutProps) {
+export function MessageLayout({
+  icon,
+  art,
+  eyebrow,
+  title,
+  children,
+  actions,
+}: MessageLayoutProps) {
   useDocumentTitle(title);
 
   return (
     <div className={styles.message}>
-      <IconTile icon={icon} size="large" />
+      {art ?? <IconTile icon={icon} size="large" />}
       <div className={styles.text}>
         {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
         <h1 className={styles.title}>{title}</h1>

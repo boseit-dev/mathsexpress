@@ -11,6 +11,8 @@ export const paths = {
   authConfirm: '/auth/confirm',
   /** Where Google sends people back after signing in. */
   authCallback: '/auth/callback',
+  /** The mascot workshop: every view, pose and animation, for review. Not linked anywhere. */
+  mascot: '/mascot',
   student: {
     home: '/student',
     learn: '/student/learn',

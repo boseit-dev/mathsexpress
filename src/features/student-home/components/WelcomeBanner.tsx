@@ -1,6 +1,8 @@
-import { useId } from 'react';
+import { useEffect, useId } from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router';
+import { Mascot } from '@/components/mascot/Mascot';
+import { useMascotController } from '@/components/mascot/useMascotController';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { paths } from '@/config/paths';
@@ -20,6 +22,19 @@ interface WelcomeBannerProps {
   continueAssignment: Assignment | null;
 }
 
+const GREETED_KEY = 'mathsexpress:mascot-greeted';
+
+/** True the first time it is asked in this browser tab, so the mascot waves once, not on every visit. */
+function isFirstArrival(): boolean {
+  try {
+    if (window.sessionStorage.getItem(GREETED_KEY)) return false;
+    window.sessionStorage.setItem(GREETED_KEY, '1');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function describeTasks({ open, overdue }: WelcomeBannerProps['taskCounts']): string {
   if (open === 0) return 'You’re all caught up on your tasks. Nice work!';
   const tasks = formatCount(open, 'task');
@@ -36,26 +51,35 @@ export function WelcomeBanner({
   continueAssignment,
 }: WelcomeBannerProps) {
   const headingId = useId();
+  const mascot = useMascotController('idle');
+  const { play } = mascot;
+
+  useEffect(() => {
+    if (isFirstArrival()) play('wave', { cycles: 2 });
+  }, [play]);
 
   return (
     <section className={styles.banner} aria-labelledby={headingId}>
-      <div className={styles.introduction}>
-        <p className={styles.eyebrow}>YOUR STUDY JOURNAL</p>
-        <h1 id={headingId} className={styles.greeting}>
-          {getGreeting(now)}, {student.firstName}
-        </h1>
-        <p className={styles.summary}>
-          {describeTasks(taskCounts)} <span className={styles.sampleTag}>(sample tasks)</span>
-        </p>
-        {primaryClass ? (
-          <p className={styles.classLabel}>
-            {formatYearLevel(primaryClass.yearLevel)} · {primaryClass.className}
+      <div className={styles.hello}>
+        <div className={styles.introduction}>
+          <p className={styles.eyebrow}>YOUR STUDY JOURNAL</p>
+          <h1 id={headingId} className={styles.greeting}>
+            {getGreeting(now)}, {student.firstName}
+          </h1>
+          <p className={styles.summary}>
+            {describeTasks(taskCounts)} <span className={styles.sampleTag}>(sample tasks)</span>
           </p>
-        ) : (
-          <Link to={paths.student.class} className={styles.classLabel}>
-            You’re not in a class yet · Join a class
-          </Link>
-        )}
+          {primaryClass ? (
+            <p className={styles.classLabel}>
+              {formatYearLevel(primaryClass.yearLevel)} · {primaryClass.className}
+            </p>
+          ) : (
+            <Link to={paths.student.class} className={styles.classLabel}>
+              You’re not in a class yet · Join a class
+            </Link>
+          )}
+        </div>
+        <Mascot {...mascot.bind} className={styles.mascot} />
       </div>
       <div className={styles.nextUp}>
         <p className={styles.nextUpHeading}>Your next step</p>
