@@ -135,7 +135,9 @@ describe('guided lesson practice', () => {
       await whenReleased;
     });
     expect(screen.queryByText(/20 coins saved/)).not.toBeInTheDocument();
-    await waitFor(() => expect(state.shopWallets.size).toBe(1));
+    await waitFor(() => {
+      expect(state.shopWallets.size).toBe(1);
+    });
     expect([...state.shopWallets.values()][0]?.balance).toBe(120);
   });
 
