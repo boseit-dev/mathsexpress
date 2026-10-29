@@ -108,20 +108,16 @@ describe('guided lesson practice', () => {
   it('does not show a delayed reward message on the following question', async () => {
     const state = createFakeState();
     const realShop = createFakeDependencies(state).shop;
-    const pending: Array<() => Promise<void>> = [];
+    let release: (() => void) | undefined;
+    const whenReleased = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     const delayedShop = {
       ...realShop,
-      awardAnswer: vi.fn((questionId: string, answer: string) =>
-        new Promise<Awaited<ReturnType<typeof realShop.awardAnswer>>>((resolve, reject) => {
-          pending.push(async () => {
-            try {
-              resolve(await realShop.awardAnswer(questionId, answer));
-            } catch (error) {
-              reject(error);
-            }
-          });
-        }),
-      ),
+      awardAnswer: vi.fn(async (questionId: string, answer: string) => {
+        await whenReleased;
+        return realShop.awardAnswer(questionId, answer);
+      }),
     };
     const user = userEvent.setup();
     renderApp(paths.student.lesson('linear-equations-basics'), {
@@ -135,7 +131,8 @@ describe('guided lesson practice', () => {
     await user.click(screen.getByRole('button', { name: /next question/i }));
     expect(screen.getByText('5x − 7 = 18')).toBeVisible();
     await act(async () => {
-      await pending[0]?.();
+      release?.();
+      await whenReleased;
     });
     expect(screen.queryByText(/20 coins saved/)).not.toBeInTheDocument();
     await waitFor(() => expect(state.shopWallets.size).toBe(1));
