@@ -317,6 +317,9 @@ export function ShopPage({ shop }: { shop: ShopRepository }) {
               <p>Owned cosmetics stay in your account. Pick one theme and one frame to wear.</p>
             </div>
           )}
+          <h2 className={styles.sectionTitle}>
+            {tab === 'locker' ? 'Your collection' : 'Explore cosmetics'}
+          </h2>
           <div className={styles.grid}>
             {products.map((item) => (
               <ProductCard

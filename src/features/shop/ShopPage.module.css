@@ -337,3 +337,8 @@
     font-size: var(--font-size-sm);
   }
 }
+
+.sectionTitle {
+  font-size: var(--font-size-xl);
+  color: var(--color-text-brand);
+}

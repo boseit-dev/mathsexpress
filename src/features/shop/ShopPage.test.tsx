@@ -10,7 +10,10 @@ describe('real student coin shop', () => {
     renderApp('/student/more/shop');
     expect(await screen.findByRole('heading', { name: 'Coin Shop' })).toBeVisible();
     expect(await screen.findByText('Ocean Blue')).toBeVisible();
-    expect(screen.getByText('100')).toBeVisible();
+    const walletLabel = screen.getByText('Your coin balance');
+    const wallet = walletLabel.parentElement;
+    if (!wallet) throw new Error('Missing shop wallet');
+    expect(within(wallet).getByText('100')).toBeVisible();
     expect(screen.queryByText('Sample data')).not.toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: 'Buy item' }).length).toBeGreaterThan(0);
   });
@@ -25,7 +28,10 @@ describe('real student coin shop', () => {
     await user.click(within(card).getByRole('button', { name: 'Buy item' }));
     await user.click(within(card).getByRole('button', { name: 'Confirm buy' }));
     expect(await screen.findByText(/Purchased Ocean Blue/)).toBeVisible();
-    expect(screen.getByText('60')).toBeVisible();
+    const walletLabel = screen.getByText('Your coin balance');
+    const wallet = walletLabel.parentElement;
+    if (!wallet) throw new Error('Missing shop wallet');
+    expect(within(wallet).getByText('60')).toBeVisible();
     await user.click(within(card).getByRole('button', { name: 'Equip' }));
     await waitFor(() => {
       expect(document.documentElement).toHaveAttribute('data-shop-theme', 'theme-ocean');
