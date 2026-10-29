@@ -43,7 +43,11 @@
 }
 
 .primary {
-  background: linear-gradient(120deg, var(--color-brand-primary), var(--color-brand-primary-active));
+  background: linear-gradient(
+    120deg,
+    var(--color-brand-primary),
+    var(--color-brand-primary-active)
+  );
   color: var(--color-text-inverse);
 }
 

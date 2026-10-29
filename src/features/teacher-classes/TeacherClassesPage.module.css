@@ -35,7 +35,11 @@
   padding: var(--space-6);
   border: 1px dashed var(--color-brand-secondary);
   border-radius: var(--radius-xl);
-  background: linear-gradient(125deg, var(--color-brand-lavender-wash), var(--color-brand-light-blue));
+  background: linear-gradient(
+    125deg,
+    var(--color-brand-lavender-wash),
+    var(--color-brand-light-blue)
+  );
 }
 
 .emptyText {

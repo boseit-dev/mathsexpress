@@ -233,7 +233,11 @@
   font-size: var(--font-size-xl);
 }
 .exampleBox {
-  background: linear-gradient(125deg, var(--color-brand-lavender-wash), var(--color-brand-light-blue));
+  background: linear-gradient(
+    125deg,
+    var(--color-brand-lavender-wash),
+    var(--color-brand-light-blue)
+  );
   border: 1px solid var(--color-brand-soft);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
