@@ -21,6 +21,11 @@ Phase 3 first learning slice (in development).
   correct answers and finished lessons (a special level-up for a perfect run), walks on the
   loading screen, and appears in empty states, the achievements and challenges panels and the
   teacher home page. Reduced-motion visitors see still poses.
+- Upgraded the mascot's animation quality: arms now bend at the elbow, faces move with real
+  eyelids (smiles squeeze, blinks close, brows glide), ears and tuft follow through, every
+  animation uses anticipation, squash and stretch and overshoot, celebrations are bigger (the
+  lesson-complete jump includes a mid-air twirl), changing direction plays a quick turn, and
+  the character has soft volume shading.
 - Added the `/mascot` workshop page to review every view, pose and animation, transparent SVG
   and PNG exports in `src/assets/mascot/`, `npm run mascot:export` and mascot documentation.
 

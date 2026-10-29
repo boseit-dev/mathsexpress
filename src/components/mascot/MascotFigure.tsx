@@ -37,6 +37,7 @@ function Joint({
   turn = 0,
   extra = '',
   local = false,
+  vars,
   children,
 }: {
   part: string;
@@ -45,13 +46,15 @@ function Joint({
   extra?: string;
   /** Children are drawn around (0, 0) instead of in drawing coordinates. */
   local?: boolean;
+  /** CSS custom properties for the keyframes, such as an ear's swing direction. */
+  vars?: CSSProperties;
   children: ReactNode;
 }) {
   const pose = `${extra} rotate(${turn}deg)`.trim();
   return (
     <g transform={`translate(${at.x} ${at.y})`}>
       <g className={styles.pose} style={{ transform: pose }}>
-        <g className={styles.motion} data-p={part}>
+        <g className={styles.motion} data-p={part} style={vars}>
           {local ? children : <g transform={`translate(${-at.x} ${-at.y})`}>{children}</g>}
         </g>
       </g>
@@ -59,56 +62,92 @@ function Joint({
   );
 }
 
-function Eye({ shape, x, y, look }: { shape: EyeShape; x: number; y: number; look: Point }) {
-  const line = {
-    fill: 'none',
-    stroke: m.eye,
-    strokeLinecap: 'round' as const,
-    strokeLinejoin: 'round' as const,
-  };
-  let art: ReactNode;
-  switch (shape) {
-    case 'open':
-      art = <ellipse rx="4.8" ry="6.6" fill={m.eye} />;
-      break;
-    case 'wide':
-      art = (
-        <>
-          <ellipse rx="5.6" ry="7.4" fill={m.eye} />
-          <circle cx="1.7" cy="-2.8" r="1.7" fill={m.highlight} />
-        </>
-      );
-      break;
-    case 'narrow':
-      art = <ellipse rx="4.9" ry="4.3" fill={m.eye} />;
-      break;
-    case 'happy':
-      art = <path d="M-5.2 2.4Q0 -5.2 5.2 2.4" {...line} strokeWidth="2.9" />;
-      break;
-    case 'content':
-      art = <path d="M-5.2 -1.6Q0 4.6 5.2 -1.6" {...line} strokeWidth="2.9" />;
-      break;
-    case 'closed':
-      art = <path d="M-5 0.4Q0 3.6 5 0.4" {...line} strokeWidth="2.5" />;
-      break;
-    case 'half':
-      art = (
-        <>
-          <path d="M-4.8 -0.4A4.8 5.2 0 0 0 4.8 -0.4Z" fill={m.eye} />
-          <path d="M-5.8 -0.8H5.8" {...line} strokeWidth="2.2" />
-        </>
-      );
-      break;
-  }
-  return <g transform={`translate(${x + look.x} ${y + look.y})`}>{art}</g>;
+/**
+ * How each eye shape is made from one eyeball and two eyelids. Expressions only move the lids
+ * and scale the eyeball, so changing expression animates smoothly (a smile squeezes the lower
+ * lid up, a blink drops the upper lid) instead of swapping drawings.
+ */
+const EYE_SHAPES: Record<
+  EyeShape,
+  { top: number; bottom: number; scale: number; lash?: 'flat' | 'smile'; shine?: boolean }
+> = {
+  open: { top: 0, bottom: 0, scale: 1 },
+  wide: { top: 0, bottom: 0, scale: 1.14, shine: true },
+  narrow: { top: 4.5, bottom: 2.5, scale: 1 },
+  happy: { top: 0, bottom: 9.5, scale: 1.06 },
+  content: { top: 14, bottom: 0, scale: 1, lash: 'smile' },
+  closed: { top: 14, bottom: 0, scale: 1, lash: 'flat' },
+  half: { top: 6.5, bottom: 0, scale: 1 },
+};
+
+const LASHES = { flat: 'M-5.4 0.6Q0 3.4 5.4 0.6', smile: 'M-5.4 -1Q0 4.6 5.4 -1' } as const;
+
+function Eye({ shape, x, y, eyeClip }: { shape: EyeShape; x: number; y: number; eyeClip: string }) {
+  const lids = EYE_SHAPES[shape];
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <g clipPath={`url(#${eyeClip})`}>
+        <ellipse
+          className={styles.eyePart}
+          rx="4.8"
+          ry="6.6"
+          fill={m.eye}
+          style={{ transform: `scale(${lids.scale})` }}
+        />
+        <circle
+          className={styles.eyePart}
+          cx="1.8"
+          cy="-2.9"
+          r="1.7"
+          fill={m.highlight}
+          style={{ opacity: lids.shine ? 1 : 0 }}
+        />
+        <g className={styles.eyePart} style={{ transform: `translateY(${-lids.bottom}px)` }}>
+          <path d="M-11 24H11V10Q0 4 -11 10Z" fill={m.body} />
+        </g>
+        <g className={styles.eyePart} style={{ transform: `translateY(${lids.top}px)` }}>
+          <g className={styles.motion} data-p="lid">
+            <path d="M-11 -24H11V-8.5Q0 -5.5 -11 -8.5Z" fill={m.body} />
+          </g>
+        </g>
+      </g>
+      {(['flat', 'smile'] as const).map((lash) => (
+        <path
+          key={lash}
+          className={styles.eyePart}
+          d={LASHES[lash]}
+          fill="none"
+          stroke={m.eye}
+          strokeWidth="2.6"
+          strokeLinecap="round"
+          style={{ opacity: lids.lash === lash ? 1 : 0 }}
+        />
+      ))}
+    </g>
+  );
 }
 
-function Brow({ spec, x, y, mirror }: { spec: BrowSpec; x: number; y: number; mirror: boolean }) {
-  const angle = mirror ? -spec.angle : spec.angle;
+function Brow({
+  spec,
+  x,
+  y,
+  mirror,
+}: {
+  spec: BrowSpec | null;
+  x: number;
+  y: number;
+  mirror: boolean;
+}) {
+  const angle = spec ? (mirror ? -spec.angle : spec.angle) : 0;
+  const lift = spec?.lift ?? 0;
   return (
     <path
+      className={styles.eyePart}
       d="M-5.6 1Q0 -2 5.6 1"
-      transform={`translate(${x} ${y - 12 - spec.lift}) rotate(${angle})`}
+      style={{
+        transform: `translate(${x}px, ${y - 12 - lift}px) rotate(${angle}deg)`,
+        opacity: spec ? 1 : 0,
+      }}
       fill="none"
       stroke={m.brow}
       strokeWidth="2.6"
@@ -117,7 +156,15 @@ function Brow({ spec, x, y, mirror }: { spec: BrowSpec; x: number; y: number; mi
   );
 }
 
-function Face({ rig, expression }: { rig: ViewRig; expression: ExpressionName }) {
+function Face({
+  rig,
+  expression,
+  clipId,
+}: {
+  rig: Pick<ViewRig, 'eyes'>;
+  expression: ExpressionName;
+  clipId: string;
+}) {
   const def = expressions[expression];
   const look = 'look' in def ? def.look : { x: 0, y: 0 };
   if (rig.eyes.length === 0) return null;
@@ -125,26 +172,34 @@ function Face({ rig, expression }: { rig: ViewRig; expression: ExpressionName })
   const eyeCentre = rig.eyes.reduce((sum, eye) => sum + eye.x, 0) / rig.eyes.length;
   return (
     <>
-      <Joint part="eyes" at={{ x: eyeCentre, y: eyeLine }}>
+      <Joint
+        part="eyes"
+        at={{ x: eyeCentre, y: eyeLine }}
+        extra={`translate(${look.x}px, ${look.y}px)`}
+      >
         {rig.eyes.map((eye) => (
-          <Eye key={eye.x} shape={def.eyes} x={eye.x} y={eye.y} look={look} />
+          <Eye key={eye.x} shape={def.eyes} x={eye.x} y={eye.y} eyeClip={`${clipId}-eye`} />
         ))}
       </Joint>
       <g data-p="brows">
-        {def.brow &&
-          rig.eyes.map((eye, i) => {
-            const spec = i === 1 && 'otherBrow' in def ? def.otherBrow : (def.brow as BrowSpec);
-            return <Brow key={eye.x} spec={spec} x={eye.x} y={eye.y} mirror={i === 1} />;
-          })}
+        {rig.eyes.map((eye, i) => {
+          const spec: BrowSpec | null = i === 1 && 'otherBrow' in def ? def.otherBrow : def.brow;
+          return <Brow key={eye.x} spec={spec} x={eye.x} y={eye.y} mirror={i === 1} />;
+        })}
       </g>
     </>
   );
 }
 
+/** Where the paw sits on the forearm, which is drawn hanging from the elbow at (0, 0). */
+const PAW_Y = 12;
+const ELBOW_Y = 17;
+
 /**
- * A stubby arm: drawn hanging down from the shoulder at (0, 0), paw centred at (0, 29).
- * The shoulder itself moves a little with the arm, up and out when it is raised and inwards
- * when it reaches across the body, so raised paws clear the big head and both paws can meet.
+ * An arm with an elbow: the upper arm hangs from the shoulder at (0, 0) and the forearm from
+ * the elbow, so arms bend naturally and paws can wave, clap and hold things. The shoulder
+ * itself moves a little too, up and out when the arm is raised and inwards when it reaches
+ * across the body, so raised paws clear the big head and both paws can meet.
  */
 function Arm({
   side,
@@ -159,13 +214,16 @@ function Arm({
   far: boolean;
   shrug: boolean;
 }) {
-  const turn = side === 'left' ? pose.raise : -pose.raise;
-  const outward = side === 'left' ? -1 : 1;
+  const sign = side === 'left' ? 1 : -1;
+  const turn = sign * pose.raise;
+  const bend = sign * (pose.bend ?? 0);
+  const outward = -sign;
   const up = shrug ? Math.min(Math.max(pose.raise / 140, 0), 1) : 0;
   const across = shrug ? Math.min(Math.max(-pose.raise / 80, 0), 1) : 0;
-  const dx = outward * (6 * up - 11 * across);
+  const dx = outward * (6 * up - 9 * across);
   const dy = -9 * up - 2 * across;
   const held = pose.holds;
+  const fill = far ? m.bodyFar : m.bodyDark;
   return (
     <Joint
       part={`arm-${side}`}
@@ -173,10 +231,50 @@ function Arm({
       turn={turn}
       extra={dx || dy ? `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px)` : ''}
       local
+      // --s turns keyframes written for "raise" into the right direction for each side.
+      vars={{ '--s': sign } as CSSProperties}
     >
-      {held && held !== 'thumb' && <HeldPropArt prop={held} armTurn={turn} />}
-      <rect x="-8.5" y="-8" width="17" height="45" rx="8.5" fill={far ? m.bodyFar : m.bodyDark} />
-      {held === 'thumb' && <HeldPropArt prop={held} armTurn={turn} />}
+      <rect x="-8.5" y="-8" width="17" height="30" rx="8.5" fill={fill} />
+      <Joint
+        part={`forearm-${side}`}
+        at={{ x: 0, y: ELBOW_Y }}
+        turn={bend}
+        local
+        vars={{ '--s': sign } as CSSProperties}
+      >
+        {held && held !== 'thumb' && <HeldPropArt prop={held} armTurn={turn + bend} pawY={PAW_Y} />}
+        <rect x="-8" y="-7" width="16" height="24" rx="8" fill={fill} />
+        <circle cy={PAW_Y + 1} r="8.6" fill={fill} />
+        {held === 'thumb' && <HeldPropArt prop={held} armTurn={turn + bend} pawY={PAW_Y} />}
+      </Joint>
+    </Joint>
+  );
+}
+
+/** The base of the hair tuft, read from the start of its path, so it can bounce on its own. */
+function tuftBase(path: string): Point {
+  const match = /^M(-?[\d.]+) (-?[\d.]+)/.exec(path);
+  return { x: Number(match?.[1] ?? 100) + 5, y: Number(match?.[2] ?? 24) };
+}
+
+function Ear({ ear }: { ear: { cx: number; cy: number; r: number } }) {
+  const outer = ear.cx < 100 ? -1 : 1;
+  return (
+    <Joint
+      part="ear"
+      at={{ x: ear.cx - outer * ear.r * 0.3, y: ear.cy + ear.r * 0.75 }}
+      vars={{ '--ear': outer } as CSSProperties}
+    >
+      <circle cx={ear.cx} cy={ear.cy} r={ear.r} fill={m.bodyDark} />
+      <circle cx={ear.cx - outer * 2} cy={ear.cy + 1} r={ear.r * 0.48} fill={m.earInner} />
+    </Joint>
+  );
+}
+
+function Tuft({ path }: { path: string }) {
+  return (
+    <Joint part="tuft" at={tuftBase(path)}>
+      <path d={path} fill={m.bodyDark} />
     </Joint>
   );
 }
@@ -273,34 +371,29 @@ function StandingFigure({
         <g clipPath={`url(#${clipId})`}>
           {rig.belly && <ellipse {...ellipseProps(rig.belly)} fill={m.belly} />}
           {rig.shade && <ellipse {...ellipseProps(rig.shade)} fill={m.bodyDark} opacity="0.26" />}
+          {/* Soft volume: a darker base and a gentle light from the upper left. */}
+          <ellipse cx="100" cy="206" rx="70" ry="20" fill={m.bodyDark} opacity="0.2" />
+          <path d={rig.body} fill={`url(#${clipId}-soft)`} />
         </g>
         {rig.tail?.layer === 'front' && <ellipse {...ellipseProps(rig.tail)} fill={m.bodyDark} />}
         <Joint part="head" at={rig.neck} turn={pose.head ?? 0}>
           {rig.ears.map((ear) => (
-            <g key={ear.cx}>
-              <circle cx={ear.cx} cy={ear.cy} r={ear.r} fill={m.bodyDark} />
-              <circle
-                cx={ear.cx + (ear.cx < 100 ? 2 : -2)}
-                cy={ear.cy + 1}
-                r={ear.r * 0.48}
-                fill={m.earInner}
-              />
-            </g>
+            <Ear key={ear.cx} ear={ear} />
           ))}
           {rig.snout?.layer === 'back' && <path d={rig.snout.path} fill={m.snout} />}
           <path d={rig.head} fill={m.body} />
-          <path d={rig.tuft} fill={m.bodyDark} />
+          <path d={rig.head} fill={`url(#${clipId}-shine)`} />
+          <Tuft path={rig.tuft} />
           {rig.snout?.layer === 'front' && (
-            <path
-              d={rig.snout.path}
-              fill={m.snout}
-              clipPath={rig.snout.clip ? `url(#${clipId}-head)` : undefined}
-            />
+            <g clipPath={rig.snout.clip ? `url(#${clipId}-head)` : undefined}>
+              <path d={rig.snout.path} fill={m.snout} />
+              <path d={rig.snout.path} fill={`url(#${clipId}-soft)`} />
+            </g>
           )}
           {rig.nostrils.map((nostril) => (
             <ellipse key={nostril.cx} {...ellipseProps(nostril)} fill={m.nostril} />
           ))}
-          <Face rig={rig} expression={pose.expression} />
+          <Face rig={rig} expression={pose.expression} clipId={clipId} />
           {pose.bodyProps?.includes('hat') && <BodyPropArt prop="hat" />}
         </Joint>
         {pose.bodyProps
@@ -324,6 +417,7 @@ function LyingFigure({ pose, clipId }: { pose: PoseDef; clipId: string }) {
         <ellipse {...ellipseProps(r.tail)} fill={m.bodyDark} />
         <ellipse {...ellipseProps(r.backFoot)} fill={m.feetFar} />
         <path d={r.body} fill={m.body} />
+        <path d={r.body} fill={`url(#${clipId}-soft)`} />
         <ellipse
           {...ellipseProps(r.shade)}
           fill={m.bodyDark}
@@ -331,16 +425,16 @@ function LyingFigure({ pose, clipId }: { pose: PoseDef; clipId: string }) {
           clipPath={`url(#${clipId})`}
         />
         <Joint part="head" at={r.neck} turn={pose.head ?? 0}>
-          <circle cx={r.ear.cx} cy={r.ear.cy} r={r.ear.r} fill={m.bodyDark} />
-          <circle cx={r.ear.cx + 1.5} cy={r.ear.cy + 1} r={r.ear.r * 0.48} fill={m.earInner} />
+          <Ear ear={r.ear} />
           <path d={r.head} fill={m.body} />
-          <path d={r.tuft} fill={m.bodyDark} />
-          <path d={r.snout} fill={m.snout} clipPath={`url(#${clipId}-head)`} />
+          <path d={r.head} fill={`url(#${clipId}-shine)`} />
+          <Tuft path={r.tuft} />
+          <g clipPath={`url(#${clipId}-head)`}>
+            <path d={r.snout} fill={m.snout} />
+            <path d={r.snout} fill={`url(#${clipId}-soft)`} />
+          </g>
           <ellipse {...ellipseProps(r.nostril)} fill={m.nostril} />
-          <Face
-            rig={{ ...viewRigs.right, eyes: [r.eye], nostrils: [] }}
-            expression={pose.expression}
-          />
+          <Face rig={{ eyes: [r.eye] }} expression={pose.expression} clipId={clipId} />
         </Joint>
         <ellipse {...ellipseProps(r.frontPaw)} fill={m.feet} />
       </Joint>
@@ -401,6 +495,18 @@ export function MascotFigure({
         <clipPath id={`${clipId}-head`}>
           <path d={lying ? lyingRig.head : rig.head} />
         </clipPath>
+        {/* Each eye's lids only show inside this circle around the eye. */}
+        <clipPath id={`${clipId}-eye`}>
+          <circle r="10" />
+        </clipPath>
+        <radialGradient id={`${clipId}-shine`} cx="0.4" cy="0.1" r="0.26">
+          <stop offset="0" stopColor={m.highlight} stopOpacity="0.38" />
+          <stop offset="1" stopColor={m.highlight} stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id={`${clipId}-soft`} cx="0.3" cy="0.2" r="0.6">
+          <stop offset="0" stopColor={m.highlight} stopOpacity="0.22" />
+          <stop offset="1" stopColor={m.highlight} stopOpacity="0" />
+        </radialGradient>
       </defs>
       <g data-layer="scene-back">
         {inLayer('back').map((prop) => (

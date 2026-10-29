@@ -25,11 +25,19 @@ function starPath(x: number, y: number, r: number): string {
 }
 
 /**
- * Props held in a paw. They are drawn in the arm's own coordinates with the paw at (0, 29) and
+ * Props held in a paw. They are drawn in the forearm's own coordinates with the paw at (0, pawY) and
  * `upright` already undoing the arm's turn, so a calculator or medal stays level.
  */
-export function HeldPropArt({ prop, armTurn }: { prop: HeldProp; armTurn: number }) {
-  const upright = `translate(0 29) rotate(${-armTurn})`;
+export function HeldPropArt({
+  prop,
+  armTurn,
+  pawY,
+}: {
+  prop: HeldProp;
+  armTurn: number;
+  pawY: number;
+}) {
+  const upright = `translate(0 ${pawY}) rotate(${-armTurn})`;
   switch (prop) {
     case 'calculator':
       return (
@@ -61,8 +69,13 @@ export function HeldPropArt({ prop, armTurn }: { prop: HeldProp; armTurn: number
     case 'pointer':
       return (
         <g data-prop="pointer">
-          <path d="M0 22L5 86" stroke={p.ink} strokeWidth="3.6" strokeLinecap="round" />
-          <circle cx="5" cy="86" r="3.8" fill={p.brandSky} />
+          <path
+            d={`M0 ${pawY - 7}L5 ${pawY + 57}`}
+            stroke={p.ink}
+            strokeWidth="3.6"
+            strokeLinecap="round"
+          />
+          <circle cx="5" cy={pawY + 57} r="3.8" fill={p.brandSky} />
         </g>
       );
     case 'pencil':

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pause, Play, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
@@ -89,6 +89,56 @@ function AnimationCard({ name, reduce }: { name: AnimationName; reduce: boolean 
         </Button>
       </div>
     </li>
+  );
+}
+
+/** Steps through a list on a timer, unless reduced motion is on. */
+function useCycle(length: number, everyMs: number, paused: boolean): number {
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    if (paused) return;
+    const timer = setInterval(() => {
+      setIndex((value) => (value + 1) % length);
+    }, everyMs);
+    return () => {
+      clearInterval(timer);
+    };
+  }, [length, everyMs, paused]);
+  return index;
+}
+
+/** Turns all the way round, and glides from face to face, to show both transitions. */
+function MotionDemos({ reduce }: { reduce: boolean }) {
+  const view = mascotViews[useCycle(mascotViews.length, 700, reduce)] ?? 'front';
+  const face = expressionNames[useCycle(expressionNames.length, 1100, reduce)] ?? 'neutral';
+  return (
+    <section className={styles.section} aria-labelledby="transitions-heading">
+      <h2 id="transitions-heading">Transitions</h2>
+      <p className={styles.lead}>
+        Changing direction plays a quick turn, and changing expression moves the eyelids and brows
+        instead of swapping drawings.
+      </p>
+      <div className={styles.cards}>
+        <div className={styles.card}>
+          <div className={styles.stage}>
+            <Mascot pose="standing" view={view} size="large" motion={reduce ? 'reduce' : 'auto'} />
+          </div>
+          <p className={styles.meta}>Turnaround: {VIEW_LABELS[view]}</p>
+        </div>
+        <div className={styles.card}>
+          <div className={styles.stage}>
+            <Mascot
+              pose="standing"
+              view="front"
+              expression={face}
+              size="large"
+              motion={reduce ? 'reduce' : 'auto'}
+            />
+          </div>
+          <p className={styles.meta}>Expression: {expressions[face].label}</p>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -184,6 +234,8 @@ export function MascotPreviewPage() {
           ))}
         </ul>
       </section>
+
+      <MotionDemos reduce={reduce} />
 
       <section className={styles.section} aria-labelledby="expressions-heading">
         <h2 id="expressions-heading">Expressions (no mouth)</h2>

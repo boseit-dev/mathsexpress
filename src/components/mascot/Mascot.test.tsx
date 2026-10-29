@@ -17,8 +17,8 @@ function characterFills(svg: Element): string[] {
     [...part.querySelectorAll('[fill]')]
       .filter((shape) => !shape.closest('[data-prop]'))
       .map((shape) => shape.getAttribute('fill') ?? '')
-      // Eyebrows and closed eyes are strokes with no fill.
-      .filter((fill) => fill !== 'none'),
+      // Eyebrows and closed eyes are strokes with no fill; soft shading is a gradient overlay.
+      .filter((fill) => fill !== 'none' && !fill.startsWith('url(')),
   );
 }
 
@@ -40,6 +40,10 @@ describe('Mascot', () => {
     expect(svg.querySelector('[data-p="head"]')).not.toBeNull();
     expect(svg.querySelector('[data-part="mouth"], [data-p="mouth"]')).toBeNull();
     for (const fill of characterFills(svg)) expect(characterColours).toContain(fill);
+    // The shading gradients only lighten with white, so they never change the palette.
+    for (const stop of svg.querySelectorAll('radialGradient stop')) {
+      expect(stop.getAttribute('stop-color')).toBe(mascotPalette.highlight);
+    }
   });
 
   it.each(mascotViews)('draws the %s view', (view) => {
@@ -59,6 +63,31 @@ describe('Mascot', () => {
     };
     const bodies = new Set(expressionNames.map(shapesFor));
     expect(bodies.size).toBe(1);
+  });
+
+  it('gives each arm an elbow, so arms bend', () => {
+    const { container } = render(<Mascot pose="waving" />);
+    expect(container.querySelector('[data-p="forearm-left"]')).not.toBeNull();
+    expect(container.querySelector('[data-p="forearm-right"]')).not.toBeNull();
+  });
+
+  it('makes expressions by moving the same eyelids, so faces change smoothly', () => {
+    const lids = (expression: 'neutral' | 'happy' | 'sleeping') => {
+      const { container, unmount } = render(<Mascot pose="standing" expression={expression} />);
+      const parts = [...container.querySelectorAll('[data-p="eyes"] [style]')].map(
+        (part) => part.getAttribute('style') ?? '',
+      );
+      unmount();
+      return parts;
+    };
+    const neutral = lids('neutral');
+    const happy = lids('happy');
+    const sleeping = lids('sleeping');
+    // The same pieces are drawn every time; only their positions differ.
+    expect(happy).toHaveLength(neutral.length);
+    expect(sleeping).toHaveLength(neutral.length);
+    expect(happy).not.toEqual(neutral);
+    expect(sleeping).not.toEqual(happy);
   });
 
   it.each(animationNames)('has keyframe rules and a valid pose for the %s animation', (name) => {

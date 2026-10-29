@@ -27,10 +27,11 @@ export const mascotAnimations = {
     label: 'Idle breathing',
     group: 'movement',
     pose: 'standing',
-    cycleMs: 3600,
+    cycleMs: 7200,
     loop: true,
     ambient: true,
-    description: 'Breathes slowly and blinks now and then. The default resting state.',
+    description:
+      'Breathes, blinks, glances around and twitches an ear now and then. The default resting state.',
   },
   blink: {
     label: 'Blinking',

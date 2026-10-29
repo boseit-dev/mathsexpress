@@ -45,6 +45,11 @@ export interface ArmPose {
    * side, 160 is overhead and negative values cross in front of the body.
    */
   raise: number;
+  /**
+   * Elbow bend in degrees, in the same direction as `raise`: positive lifts the forearm further
+   * up or out, negative folds it in towards the body.
+   */
+  bend?: number;
   holds?: HeldProp;
 }
 
@@ -88,7 +93,7 @@ export const SCENE_LAYERS: Record<SceneProp, 'back' | 'front' | 'fx'> = {
   notes: 'fx',
 };
 
-const rest: ArmPose = { raise: 13 };
+const rest: ArmPose = { raise: 13, bend: -8 };
 
 export const poses = {
   standing: {
@@ -103,7 +108,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'happy',
-    arms: { left: rest, right: { raise: 150 } },
+    arms: { left: rest, right: { raise: 112, bend: 50 } },
     head: -4,
   },
   walking: {
@@ -111,7 +116,7 @@ export const poses = {
     view: 'right',
     body: 'stand',
     expression: 'neutral',
-    arms: { left: { raise: 14 }, right: { raise: 14 } },
+    arms: { left: { raise: 14, bend: -14 }, right: { raise: 14, bend: -14 } },
     legs: { left: 16, right: -16 },
   },
   running: {
@@ -119,7 +124,7 @@ export const poses = {
     view: 'right',
     body: 'stand',
     expression: 'determined',
-    arms: { left: { raise: -36 }, right: { raise: 48 } },
+    arms: { left: { raise: -36, bend: -50 }, right: { raise: 48, bend: 55 } },
     legs: { left: 30, right: -34 },
     lean: 9,
     scene: ['speed'],
@@ -129,7 +134,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'excited',
-    arms: { left: { raise: 145 }, right: { raise: 150 } },
+    arms: { left: { raise: 145, bend: 14 }, right: { raise: 150, bend: 14 } },
     legs: { left: -14, right: 14 },
     shift: { y: -22 },
     scene: ['sparkles'],
@@ -161,7 +166,7 @@ export const poses = {
     view: 'front-right',
     body: 'sit',
     expression: 'reading',
-    arms: { left: { raise: -34 }, right: { raise: -14 } },
+    arms: { left: { raise: -16, bend: -42 }, right: { raise: -2, bend: -36 } },
     head: 5,
     bodyProps: ['book'],
   },
@@ -170,7 +175,10 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'focused',
-    arms: { left: { raise: -58 }, right: { raise: -30, holds: 'calculator' } },
+    arms: {
+      left: { raise: -30, bend: -56 },
+      right: { raise: -14, bend: -52, holds: 'calculator' },
+    },
     head: 4,
   },
   pointing: {
@@ -178,7 +186,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'happy',
-    arms: { left: rest, right: { raise: 104, holds: 'pointer' } },
+    arms: { left: rest, right: { raise: 100, bend: -6, holds: 'pointer' } },
     scene: ['sparkles'],
   },
   teaching: {
@@ -186,7 +194,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'happy',
-    arms: { left: rest, right: { raise: 118, holds: 'pointer' } },
+    arms: { left: rest, right: { raise: 112, bend: 4, holds: 'pointer' } },
     scene: ['whiteboard'],
     frame: 'wide',
   },
@@ -195,7 +203,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'thinking',
-    arms: { left: { raise: -30 }, right: { raise: -136 } },
+    arms: { left: { raise: -26, bend: -46 }, right: { raise: -16, bend: -118 } },
     head: 6,
     scene: ['thought'],
   },
@@ -204,7 +212,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'confused',
-    arms: { left: rest, right: { raise: 164 } },
+    arms: { left: rest, right: { raise: 128, bend: 62 } },
     head: -8,
     scene: ['question'],
   },
@@ -213,7 +221,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'excited',
-    arms: { left: rest, right: { raise: 158 } },
+    arms: { left: rest, right: { raise: 150, bend: 18 } },
     scene: ['lightbulb'],
   },
   celebrating: {
@@ -221,7 +229,7 @@ export const poses = {
     view: 'front',
     body: 'stand',
     expression: 'excited',
-    arms: { left: { raise: 150 }, right: { raise: 150 } },
+    arms: { left: { raise: 145, bend: 18 }, right: { raise: 145, bend: 18 } },
     scene: ['confetti', 'stars'],
   },
   clapping: {
@@ -229,7 +237,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'happy',
-    arms: { left: { raise: -84 }, right: { raise: -80 } },
+    arms: { left: { raise: -44, bend: -48 }, right: { raise: -40, bend: -48 } },
     scene: ['sparkles'],
   },
   thumbsUp: {
@@ -237,7 +245,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'happy',
-    arms: { left: rest, right: { raise: 64, holds: 'thumb' } },
+    arms: { left: rest, right: { raise: 36, bend: 64, holds: 'thumb' } },
     scene: ['sparkles'],
   },
   supportive: {
@@ -245,7 +253,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'encouraging',
-    arms: { left: rest, right: { raise: -60 } },
+    arms: { left: rest, right: { raise: -22, bend: -40 } },
     head: 7,
     scene: ['hearts'],
   },
@@ -254,7 +262,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'proud',
-    arms: { left: rest, right: { raise: 132, holds: 'medal' } },
+    arms: { left: rest, right: { raise: 122, bend: 22, holds: 'medal' } },
     scene: ['sparkles'],
   },
   certificate: {
@@ -262,7 +270,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'proud',
-    arms: { left: { raise: -30 }, right: { raise: -12 } },
+    arms: { left: { raise: -18, bend: -40 }, right: { raise: -4, bend: -38 } },
     bodyProps: ['certificate'],
   },
   writing: {
@@ -270,7 +278,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'focused',
-    arms: { left: { raise: -40 }, right: { raise: -30, holds: 'pencil' } },
+    arms: { left: { raise: -26, bend: -40 }, right: { raise: -16, bend: -38, holds: 'pencil' } },
     head: 8,
     scene: ['desk'],
   },
@@ -279,7 +287,7 @@ export const poses = {
     view: 'front-right',
     body: 'sit',
     expression: 'focused',
-    arms: { left: { raise: -46 }, right: { raise: -26 } },
+    arms: { left: { raise: -30, bend: -42 }, right: { raise: -12, bend: -40 } },
     head: 4,
     scene: ['laptop'],
   },
@@ -298,7 +306,7 @@ export const poses = {
     view: 'front-right',
     body: 'stand',
     expression: 'happy',
-    arms: { left: { raise: 128 }, right: { raise: 140 } },
+    arms: { left: { raise: 124, bend: 24 }, right: { raise: 134, bend: 24 } },
     scene: ['stars'],
   },
   waking: {
@@ -313,7 +321,7 @@ export const poses = {
     view: 'front',
     body: 'stand',
     expression: 'happy',
-    arms: { left: { raise: 150 }, right: { raise: 40 } },
+    arms: { left: { raise: 145, bend: 20 }, right: { raise: 40, bend: 56 } },
     legs: { left: -10, right: 0 },
     scene: ['notes'],
   },
@@ -322,7 +330,7 @@ export const poses = {
     view: 'front',
     body: 'stand',
     expression: 'excited',
-    arms: { left: { raise: 150 }, right: { raise: 150 } },
+    arms: { left: { raise: 145, bend: 18 }, right: { raise: 145, bend: 18 } },
     bodyProps: ['hat'],
     scene: ['confetti', 'stars'],
   },
@@ -331,7 +339,7 @@ export const poses = {
     view: 'front',
     body: 'stand',
     expression: 'proud',
-    arms: { left: { raise: 140 }, right: { raise: 140 } },
+    arms: { left: { raise: 132, bend: 28 }, right: { raise: 132, bend: 28 } },
     scene: ['glow', 'stars'],
   },
 } as const satisfies Record<string, PoseDef>;

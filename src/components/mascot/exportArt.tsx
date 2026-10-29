@@ -29,6 +29,7 @@ function cssToSvgTransform(css: string): string {
     .replace(/translateY\((-?[\d.]+)px\)/g, 'translate(0 $1)')
     .replace(/translateX\((-?[\d.]+)px\)/g, 'translate($1 0)')
     .replace(/scale\((-?[\d.]+),\s*(-?[\d.]+)\)/g, 'scale($1 $2)')
+    .replace(/translateY\((-?[\d.]+)\)/g, 'translate(0 $1)')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -39,9 +40,13 @@ function clean(markup: string, viewBox: string, width: number, height: number): 
     .replace(/ (aria-hidden|focusable|role|aria-label|data-view)="[^"]*"/g, '')
     .replace(/ data-p="/g, ' data-part="')
     .replace(/ style="([^"]*)"/g, (_match, style: string) => {
-      const transform = /transform:([^;]+)/.exec(style)?.[1];
-      if (!transform || transform.trim() === 'rotate(0deg)') return '';
-      return ` transform="${cssToSvgTransform(transform)}"`;
+      const transform = /transform:([^;]+)/.exec(style)?.[1]?.trim();
+      const opacity = /opacity:([^;]+)/.exec(style)?.[1]?.trim();
+      const kept =
+        transform && transform !== 'rotate(0deg)'
+          ? ` transform="${cssToSvgTransform(transform)}"`
+          : '';
+      return opacity && opacity !== '1' ? `${kept} opacity="${opacity}"` : kept;
     });
   svg = svg.replace(
     /^<svg[^>]*>/,
