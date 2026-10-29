@@ -16,6 +16,11 @@
   --color-brand-muted: #8697c4;
   --color-brand-soft: #adbbda;
   --color-brand-pale: #ede8f5;
+  /* More expressive surfaces using our existing blue/lavender palette. */
+  --color-brand-light-blue: #e4ebfc;
+  --color-brand-lavender-wash: #f1edfa;
+  --color-wash-blue: rgb(112 145 230 / 0.16);
+  --color-wash-lavender: rgb(173 187 218 / 0.24);
 
   /* Logo colours, taken from the MathsExpress logo artwork. Use for the logo only. */
   --color-logo-blue: #4f6cf2;

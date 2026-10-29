@@ -18,6 +18,10 @@ html {
 body {
   min-block-size: 100vh;
   background-color: var(--color-page);
+  background-image:
+    radial-gradient(ellipse at 8% 12%, var(--color-wash-blue), transparent 48%),
+    radial-gradient(ellipse at 92% 48%, var(--color-wash-lavender), transparent 53%),
+    linear-gradient(180deg, var(--color-page), var(--color-brand-lavender-wash));
   color: var(--color-text);
   font-family: var(--font-family-base);
   font-size: var(--font-size-md);

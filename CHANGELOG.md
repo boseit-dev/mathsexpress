@@ -38,6 +38,12 @@ Phase 3 first learning slice (in development).
 
 ### Changed
 
+- Extended the official MathsExpress blue/lavender palette across the 2.0 site:
+  softly colourful page backgrounds, navigation, active tabs, buttons, Study Journal
+  shortcuts, progress and practice cards, guided lessons, class cards, teacher empty
+  states, sign-in panels, quick tools and error screens. Kept dark, readable text,
+  existing layouts, reduced-motion support and all current functionality.
+
 - Brightened the textbook library with five distinctive book-cover treatments using the
   existing MathsExpress navy, blue, lavender and muted-blue palette. Added colourful but
   readable library and chapter headers, stronger chapter navigation, and exercise accents,
