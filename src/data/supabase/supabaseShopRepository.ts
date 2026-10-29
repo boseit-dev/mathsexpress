@@ -1,5 +1,5 @@
 import type { ShopRepository } from '@/data/repositories';
-import type { CosmeticCategory, ShopProduct, ShopState, ShopTransaction } from '@/domain/shop';
+import type { ShopProduct, ShopState, ShopTransaction } from '@/domain/shop';
 import type { MathsExpressClient } from './client';
 import { unwrap } from './errors';
 
@@ -22,39 +22,53 @@ export function decodeShopState(value: unknown): ShopState {
   const items: ShopProduct[] = raw.items.map((entry: unknown) => {
     const item = object(entry);
     if (
-      typeof item.id !== 'string' || typeof item.name !== 'string' ||
+      typeof item.id !== 'string' ||
+      typeof item.name !== 'string' ||
       typeof item.description !== 'string' ||
       (item.category !== 'theme' && item.category !== 'frame') ||
-      !Number.isSafeInteger(item.price) || (item.price as number) < 0
-    ) throw new Error('Invalid shop item');
+      !Number.isSafeInteger(item.price) ||
+      (item.price as number) < 0
+    )
+      throw new Error('Invalid shop item');
     return {
-      id: item.id, name: item.name, description: item.description,
-      category: item.category as CosmeticCategory, price: item.price as number,
+      id: item.id,
+      name: item.name,
+      description: item.description,
+      category: item.category,
+      price: item.price as number,
     };
   });
   const transactions: ShopTransaction[] = raw.transactions.map((entry: unknown) => {
     const row = object(entry);
     if (
-      !Number.isSafeInteger(row.id) || !Number.isSafeInteger(row.delta) ||
+      !Number.isSafeInteger(row.id) ||
+      !Number.isSafeInteger(row.delta) ||
       typeof row.createdAt !== 'string' ||
       (row.reason !== 'welcome' && row.reason !== 'purchase' && row.reason !== 'correct_answer') ||
       !(row.itemId === null || typeof row.itemId === 'string')
-    ) throw new Error('Invalid shop transaction');
+    )
+      throw new Error('Invalid shop transaction');
     return {
-      id: row.id as number, itemId: row.itemId as string | null,
-      delta: row.delta as number, reason: row.reason, createdAt: row.createdAt,
+      id: row.id as number,
+      itemId: row.itemId,
+      delta: row.delta as number,
+      reason: row.reason,
+      createdAt: row.createdAt,
     };
   });
   if (
     !raw.owned.every((id: unknown) => typeof id === 'string') ||
     !(raw.equippedTheme === null || typeof raw.equippedTheme === 'string') ||
     !(raw.equippedFrame === null || typeof raw.equippedFrame === 'string')
-  ) throw new Error('Invalid shop equipment');
+  )
+    throw new Error('Invalid shop equipment');
   return {
     balance: raw.balance as number,
-    items, owned: raw.owned as string[], transactions,
-    equippedTheme: raw.equippedTheme as string | null,
-    equippedFrame: raw.equippedFrame as string | null,
+    items,
+    owned: raw.owned,
+    transactions,
+    equippedTheme: raw.equippedTheme,
+    equippedFrame: raw.equippedFrame,
   };
 }
 
@@ -67,9 +81,7 @@ export function createSupabaseShopRepository(client: MathsExpressClient): ShopRe
       return decodeShopState(unwrap(await client.rpc('shop_buy', { item_id: itemId })));
     },
     async equip(category, itemId) {
-      return decodeShopState(
-        unwrap(await client.rpc('shop_equip', { category, item_id: itemId })),
-      );
+      return decodeShopState(unwrap(await client.rpc('shop_equip', { category, item_id: itemId })));
     },
     async awardAnswer(questionId, answer) {
       return decodeShopState(

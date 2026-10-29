@@ -7,12 +7,30 @@
   background: linear-gradient(125deg, var(--color-brand-light-blue), var(--color-brand-pale));
 }
 
-.iconRow { display: flex; align-items: center; gap: var(--space-3); }
-.iconRow svg { color: var(--color-text-brand); }
-.iconRow h3 { font-size: var(--font-size-lg); }
-.balance { display: flex; align-items: center; gap: var(--space-2); font-size: var(--font-size-xl); font-weight: var(--font-weight-semibold); }
-.balance svg { color: var(--color-coin-edge); }
-.preview > p { color: var(--color-text-secondary); }
+.iconRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.iconRow svg {
+  color: var(--color-text-brand);
+}
+.iconRow h3 {
+  font-size: var(--font-size-lg);
+}
+.balance {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+}
+.balance svg {
+  color: var(--color-coin-edge);
+}
+.preview > p {
+  color: var(--color-text-secondary);
+}
 .preview a {
   display: inline-flex;
   justify-content: center;
@@ -25,4 +43,6 @@
   font-weight: var(--font-weight-semibold);
   text-decoration: none;
 }
-.preview a:hover { background: var(--color-brand-primary-hover); }
+.preview a:hover {
+  background: var(--color-brand-primary-hover);
+}

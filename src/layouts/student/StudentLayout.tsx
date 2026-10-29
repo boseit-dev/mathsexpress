@@ -17,11 +17,14 @@ export function StudentLayout({ shop }: { shop: ShopRepository }) {
 
   useEffect(() => {
     let alive = true;
-    shop.getState().then((state) => {
-      if (alive) setAppearance(state);
-    }).catch(() => {
-      // The shop should never prevent students from learning or reaching their classes.
-    });
+    shop
+      .getState()
+      .then((state) => {
+        if (alive) setAppearance(state);
+      })
+      .catch(() => {
+        // The shop should never prevent students from learning or reaching their classes.
+      });
     function onUpdate(event: Event) {
       if (event instanceof CustomEvent) setAppearance(event.detail as ShopState);
     }
@@ -49,7 +52,13 @@ export function StudentLayout({ shop }: { shop: ShopRepository }) {
       homePath={paths.student.home}
       navigation={studentNavigation}
       navigationLabel="Student"
-      account={<AccountMenu name={getFullName(student)} roleLabel="Student" frame={appearance?.equippedFrame} />}
+      account={
+        <AccountMenu
+          name={getFullName(student)}
+          roleLabel="Student"
+          frame={appearance?.equippedFrame}
+        />
+      }
     >
       <Outlet context={student} />
       <SidePanelToolbar key={pathname} student={student} shop={shop} />

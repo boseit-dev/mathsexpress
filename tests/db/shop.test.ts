@@ -29,7 +29,8 @@ describe('server-owned shop wallets and purchases', () => {
   it('rejects fake equipment, invalid products and unaffordable purchases', async () => {
     const student = await createStudent();
     const notOwned = await student.client.rpc('shop_equip', {
-      category: 'frame', item_id: 'frame-royal',
+      category: 'frame',
+      item_id: 'frame-royal',
     });
     expect(notOwned.error?.message).toBe('shop_not_owned');
     const invalid = await student.client.rpc('shop_buy', { item_id: 'fake-price-zero' });
@@ -45,12 +46,14 @@ describe('server-owned shop wallets and purchases', () => {
     const student = await createStudent();
     await student.client.rpc('shop_buy', { item_id: 'frame-starlight' });
     const equipped = await student.client.rpc('shop_equip', {
-      category: 'frame', item_id: 'frame-starlight',
+      category: 'frame',
+      item_id: 'frame-starlight',
     });
     expect(equipped.error).toBeNull();
     expect(equipped.data).toMatchObject({ equippedFrame: 'frame-starlight' });
     const wrong = await student.client.rpc('shop_equip', {
-      category: 'theme', item_id: 'frame-starlight',
+      category: 'theme',
+      item_id: 'frame-starlight',
     });
     expect(wrong.error?.message).toBe('shop_not_owned');
     const reset = await student.client.rpc('shop_equip', { category: 'frame', item_id: null });
@@ -69,31 +72,37 @@ describe('server-owned shop wallets and purchases', () => {
   it('awards only verified Year 9 questions, at most once per question', async () => {
     const student = await createStudent();
     const noYear = await student.client.rpc('shop_award_answer', {
-      question_id: 'eq-1', answer: '5',
+      question_id: 'eq-1',
+      answer: '5',
     });
     expect(noYear.error?.message).toBe('shop_lesson_unavailable');
     const teacher = await createTeacher();
     const maths = await createClass(teacher, '9X Maths', 9);
     await student.client.rpc('join_class', { code: maths.join_code });
     const wrong = await student.client.rpc('shop_award_answer', {
-      question_id: 'eq-1', answer: '4',
+      question_id: 'eq-1',
+      answer: '4',
     });
     expect(wrong.error?.message).toBe('shop_answer_incorrect');
     const fake = await student.client.rpc('shop_award_answer', {
-      question_id: 'made-up', answer: '5',
+      question_id: 'made-up',
+      answer: '5',
     });
     expect(fake.error?.message).toBe('shop_question_unavailable');
     const correct = await student.client.rpc('shop_award_answer', {
-      question_id: 'eq-1', answer: '5',
+      question_id: 'eq-1',
+      answer: '5',
     });
     expect(correct.error).toBeNull();
     expect(balance(correct.data)).toBe(120);
     const duplicate = await student.client.rpc('shop_award_answer', {
-      question_id: 'eq-1', answer: '5',
+      question_id: 'eq-1',
+      answer: '5',
     });
     expect(duplicate.error?.message).toBe('shop_already_rewarded');
     const negative = await student.client.rpc('shop_award_answer', {
-      question_id: 'eq-3', answer: '−3',
+      question_id: 'eq-3',
+      answer: '−3',
     });
     expect(negative.error).toBeNull();
     expect(balance(negative.data)).toBe(140);

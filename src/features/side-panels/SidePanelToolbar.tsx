@@ -31,7 +31,13 @@ function closeDelay() {
  * The student quick tools: a toolbar on the right edge (a menu on phones) that opens one sliding
  * panel at a time. Inside a panel, the same five tools switch between panels without closing it.
  */
-export function SidePanelToolbar({ student, shop }: { student: CurrentStudent; shop: ShopRepository }) {
+export function SidePanelToolbar({
+  student,
+  shop,
+}: {
+  student: CurrentStudent;
+  shop: ShopRepository;
+}) {
   const { pathname } = useLocation();
   const [active, setActive] = useState<PanelName | null>(null);
   // True while the panel slides out; the dialog closes when that has finished.
@@ -193,7 +199,9 @@ export function SidePanelToolbar({ student, shop }: { student: CurrentStudent; s
             </div>
           </header>
           {/* Keyed by panel, so switching replays the staggered entrance. */}
-          {active && <SidePanelContents key={active} panel={active} student={student} shop={shop} />}
+          {active && (
+            <SidePanelContents key={active} panel={active} student={student} shop={shop} />
+          )}
         </div>
       </dialog>
     </>

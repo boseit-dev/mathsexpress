@@ -1,12 +1,25 @@
 import { useEffect, useState } from 'react';
 import {
-  ArrowRight, Check, CircleUserRound, Coins, Gift, History, PackageCheck,
-  Palette, ShoppingBag, Sparkles,
+  ArrowRight,
+  Check,
+  CircleUserRound,
+  Coins,
+  Gift,
+  History,
+  PackageCheck,
+  Palette,
+  ShoppingBag,
+  Sparkles,
 } from 'lucide-react';
 import { Link } from 'react-router';
 import type { ShopRepository } from '@/data/repositories';
 import { paths } from '@/config/paths';
-import { shopProductState, type CosmeticCategory, type ShopProduct, type ShopState } from '@/domain/shop';
+import {
+  shopProductState,
+  type CosmeticCategory,
+  type ShopProduct,
+  type ShopState,
+} from '@/domain/shop';
 import { errorCodeOf, errorMessages } from '@/domain/errors';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { formatNumber } from '@/lib/format';
@@ -24,7 +37,13 @@ function publishAppearance(state: ShopState) {
 }
 
 function ProductCard({
-  item, state, busy, confirmId, onConfirm, onBuy, onEquip,
+  item,
+  state,
+  busy,
+  confirmId,
+  onConfirm,
+  onBuy,
+  onEquip,
 }: {
   item: ShopProduct;
   state: ShopState;
@@ -47,21 +66,51 @@ function ProductCard({
         <h3>{item.name}</h3>
         <p>{item.description}</p>
         <div className={styles.cardFooter}>
-          <span className={styles.price}><Coins aria-hidden="true" /> {formatNumber(item.price)}</span>
+          <span className={styles.price}>
+            <Coins aria-hidden="true" /> {formatNumber(item.price)}
+          </span>
           {status === 'equipped' ? (
-            <button className={styles.secondaryButton} disabled={busy} onClick={() => onEquip(item.category, null)} type="button">
+            <button
+              className={styles.secondaryButton}
+              disabled={busy}
+              onClick={() => {
+                onEquip(item.category, null);
+              }}
+              type="button"
+            >
               <Check aria-hidden="true" /> Equipped · Remove
             </button>
           ) : status === 'owned' ? (
-            <button className={styles.primaryButton} disabled={busy} onClick={() => onEquip(item.category, item.id)} type="button">
+            <button
+              className={styles.primaryButton}
+              disabled={busy}
+              onClick={() => {
+                onEquip(item.category, item.id);
+              }}
+              type="button"
+            >
               Equip
             </button>
           ) : confirming ? (
             <div className={styles.confirmRow}>
-              <button type="button" className={styles.primaryButton} disabled={busy} onClick={() => onBuy(item.id)}>
+              <button
+                type="button"
+                className={styles.primaryButton}
+                disabled={busy}
+                onClick={() => {
+                    onBuy(item.id);
+                  }}
+              >
                 Confirm buy
               </button>
-              <button type="button" className={styles.secondaryButton} disabled={busy} onClick={() => onConfirm(null)}>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                disabled={busy}
+                onClick={() => {
+                    onConfirm(null);
+                  }}
+              >
                 Cancel
               </button>
             </div>
@@ -70,7 +119,9 @@ function ProductCard({
               type="button"
               className={styles.primaryButton}
               disabled={busy || status === 'locked'}
-              onClick={() => onConfirm(item.id)}
+              onClick={() => {
+                onConfirm(item.id);
+              }}
             >
               {status === 'locked'
                 ? `Need ${formatNumber(item.price - state.balance)} more`
@@ -97,14 +148,23 @@ export function ShopPage({ shop }: { shop: ShopRepository }) {
 
   useEffect(() => {
     let live = true;
-    shop.getState().then((next) => {
-      if (live) { setState(next); setError(''); }
-    }).catch((reason: unknown) => {
-      if (live) setError(errorMessages[errorCodeOf(reason)]);
-    }).finally(() => {
-      if (live) setLoading(false);
-    });
-    return () => { live = false; };
+    shop
+      .getState()
+      .then((next) => {
+        if (live) {
+          setState(next);
+          setError('');
+        }
+      })
+      .catch((reason: unknown) => {
+        if (live) setError(errorMessages[errorCodeOf(reason)]);
+      })
+      .finally(() => {
+        if (live) setLoading(false);
+      });
+    return () => {
+      live = false;
+    };
   }, [shop]);
 
   async function refresh() {
@@ -156,10 +216,12 @@ export function ShopPage({ shop }: { shop: ShopRepository }) {
     }
   }
 
-  const products = state?.items.filter((item) =>
-    (filter === 'all' || item.category === filter) &&
-    (tab !== 'locker' || state.owned.includes(item.id)),
-  ) ?? [];
+  const products =
+    state?.items.filter(
+      (item) =>
+        (filter === 'all' || item.category === filter) &&
+        (tab !== 'locker' || state.owned.includes(item.id)),
+    ) ?? [];
 
   return (
     <div className={styles.page}>
@@ -167,47 +229,82 @@ export function ShopPage({ shop }: { shop: ShopRepository }) {
         <div>
           <p className={styles.eyebrow}>MATHSEXPRESS · REWARD YOUR PROGRESS</p>
           <h1>Coin Shop</h1>
-          <p>Make your study space your own. Earn coins through maths, then unlock looks you can keep.</p>
+          <p>
+            Make your study space your own. Earn coins through maths, then unlock looks you can
+            keep.
+          </p>
         </div>
         <div className={styles.wallet} aria-live="polite">
           <Coins aria-hidden="true" />
           <span>
             <small>Your coin balance</small>
-            <strong>{state ? formatNumber(state.balance) : loading ? 'Loading…' : 'Unavailable'}</strong>
+            <strong>
+              {state ? formatNumber(state.balance) : loading ? 'Loading…' : 'Unavailable'}
+            </strong>
           </span>
         </div>
       </header>
       <nav className={styles.tabBar} aria-label="Shop sections">
-        {([
-          ['browse', ShoppingBag, 'Shop items'],
-          ['locker', PackageCheck, 'My locker'],
-          ['history', History, 'Coin history'],
-        ] as const).map(([id, Icon, label]) => (
+        {(
+          [
+            ['browse', ShoppingBag, 'Shop items'],
+            ['locker', PackageCheck, 'My locker'],
+            ['history', History, 'Coin history'],
+          ] as const
+        ).map(([id, Icon, label]) => (
           <button
-            key={id} type="button" className={styles.tab}
+            key={id}
+            type="button"
+            className={styles.tab}
             aria-current={tab === id ? 'page' : undefined}
-            onClick={() => { setTab(id); setConfirmId(null); }}
+            onClick={() => {
+              setTab(id);
+              setConfirmId(null);
+            }}
           >
             <Icon aria-hidden="true" /> {label}
           </button>
         ))}
       </nav>
-      {error && <p className={styles.error} role="alert">{error}</p>}
-      {message && <p className={styles.success} role="status">{message}</p>}
+      {error && (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
+      {message && (
+        <p className={styles.success} role="status">
+          {message}
+        </p>
+      )}
       {loading && !state && <p role="status">Loading your shop and purchases…</p>}
       {!state && !loading && (
-        <button className={styles.primaryButton} type="button" onClick={() => { void refresh(); }}>
+        <button
+          className={styles.primaryButton}
+          type="button"
+          onClick={() => {
+            void refresh();
+          }}
+        >
           Try loading the shop again
         </button>
       )}
       {state && tab !== 'history' && (
         <>
           <div className={styles.filters} role="group" aria-label="Filter item categories">
-            {([
-              ['all', 'All items'], ['theme', 'Themes'], ['frame', 'Avatar frames'],
-            ] as const).map(([id, label]) => (
-              <button key={id} className={styles.filter} type="button"
-                aria-pressed={filter === id} onClick={() => setFilter(id)}>
+            {(
+              [
+                ['all', 'All items'],
+                ['theme', 'Themes'],
+                ['frame', 'Avatar frames'],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                className={styles.filter}
+                type="button"
+                aria-pressed={filter === id}
+                onClick={() => setFilter(id)}
+              >
                 {label}
               </button>
             ))}
@@ -220,16 +317,37 @@ export function ShopPage({ shop }: { shop: ShopRepository }) {
           )}
           <div className={styles.grid}>
             {products.map((item) => (
-              <ProductCard key={item.id} item={item} state={state} busy={busy}
-                confirmId={confirmId} onConfirm={setConfirmId} onBuy={(id) => { void buy(id); }}
-                onEquip={(category, id) => { void equip(category, id); }} />
+              <ProductCard
+                key={item.id}
+                item={item}
+                state={state}
+                busy={busy}
+                confirmId={confirmId}
+                onConfirm={setConfirmId}
+                onBuy={(id) => {
+                  void buy(id);
+                }}
+                onEquip={(category, id) => {
+                  void equip(category, id);
+                }}
+              />
             ))}
           </div>
           {products.length === 0 && (
             <div className={styles.empty}>
-              <p>{tab === 'locker' ? 'Your locker is empty. Visit the Shop items tab to unlock your first look.' : 'No items match this filter.'}</p>
-              <button type="button" className={styles.secondaryButton}
-                onClick={() => { setFilter('all'); setTab('browse'); }}>
+              <p>
+                {tab === 'locker'
+                  ? 'Your locker is empty. Visit the Shop items tab to unlock your first look.'
+                  : 'No items match this filter.'}
+              </p>
+              <button
+                type="button"
+                className={styles.secondaryButton}
+                onClick={() => {
+                  setFilter('all');
+                  setTab('browse');
+                }}
+              >
                 Explore the shop <ArrowRight aria-hidden="true" />
               </button>
             </div>
@@ -244,25 +362,45 @@ export function ShopPage({ shop }: { shop: ShopRepository }) {
               <li key={entry.id}>
                 <span>
                   <strong>
-                    {entry.reason === 'welcome' ? 'Welcome gift' :
-                      entry.reason === 'correct_answer' ? 'Correct maths answer' :
-                      state.items.find((item) => item.id === entry.itemId)?.name ?? 'Shop purchase'}
+                    {entry.reason === 'welcome'
+                      ? 'Welcome gift'
+                      : entry.reason === 'correct_answer'
+                        ? 'Correct maths answer'
+                        : (state.items.find((item) => item.id === entry.itemId)?.name ??
+                          'Shop purchase')}
                   </strong>
-                  <small>{new Date(entry.createdAt).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })}</small>
+                  <small>
+                    {new Date(entry.createdAt).toLocaleDateString('en-AU', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                  </small>
                 </span>
-                <b data-positive={entry.delta > 0}>{entry.delta > 0 ? '+' : ''}{entry.delta} coins</b>
+                <b data-positive={entry.delta > 0}>
+                  {entry.delta > 0 ? '+' : ''}
+                  {entry.delta} coins
+                </b>
               </li>
             ))}
           </ul>
-          <p>Showing the latest 20 transactions. Purchases and rewards are saved to your account.</p>
+          <p>
+            Showing the latest 20 transactions. Purchases and rewards are saved to your account.
+          </p>
         </section>
       )}
       <aside className={styles.earn}>
         <Sparkles aria-hidden="true" />
         <div>
           <strong>How do I earn more coins?</strong>
-          <p>Start with 100 welcome coins. Earn 20 coins the first time you correctly solve each published Year 9 guided lesson question. New ways to earn will be added when other lessons are ready.</p>
-          <Link to={paths.student.learn}>Go to Learn <ArrowRight aria-hidden="true" /></Link>
+          <p>
+            Start with 100 welcome coins. Earn 20 coins the first time you correctly solve each
+            published Year 9 guided lesson question. New ways to earn will be added when other
+            lessons are ready.
+          </p>
+          <Link to={paths.student.learn}>
+            Go to Learn <ArrowRight aria-hidden="true" />
+          </Link>
         </div>
       </aside>
     </div>

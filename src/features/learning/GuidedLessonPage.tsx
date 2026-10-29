@@ -59,16 +59,19 @@ export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
     if (checkNumericalAnswer(answer, current.solution)) {
       setFeedback('correct');
       setCoinNotice('Checking your coin reward…');
-      shop.awardAnswer(current.id, answer).then((state) => {
-        setCoinNotice(`+20 coins saved! Your balance is now ${state.balance}.`);
-        window.dispatchEvent(new CustomEvent('mathsexpress:shop-updated', { detail: state }));
-      }).catch((reason: unknown) => {
-        setCoinNotice(
-          errorCodeOf(reason) === 'shop_already_rewarded'
-            ? 'Already earned your coins for this question.'
-            : 'Your answer is correct, but coins could not be saved. Try again later.',
-        );
-      });
+      shop
+        .awardAnswer(current.id, answer)
+        .then((state) => {
+          setCoinNotice(`+20 coins saved! Your balance is now ${state.balance}.`);
+          window.dispatchEvent(new CustomEvent('mathsexpress:shop-updated', { detail: state }));
+        })
+        .catch((reason: unknown) => {
+          setCoinNotice(
+            errorCodeOf(reason) === 'shop_already_rewarded'
+              ? 'Already earned your coins for this question.'
+              : 'Your answer is correct, but coins could not be saved. Try again later.',
+          );
+        });
     } else {
       setFeedback('incorrect');
       setMistakes((value) => value + 1);
@@ -242,7 +245,9 @@ export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
                   </div>
                 )}
                 {feedback === 'correct' && coinNotice && (
-                  <p className={styles.note} role="status">{coinNotice}</p>
+                  <p className={styles.note} role="status">
+                    {coinNotice}
+                  </p>
                 )}
                 <div className={styles.actions}>
                   {feedback !== 'correct' && (
@@ -270,8 +275,8 @@ export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
                 </div>
               </form>
               <p className={styles.sessionNote}>
-                <Sparkles size={15} aria-hidden="true" /> Your first correct answers earn real coins.
-                Lesson progress is not saved yet.
+                <Sparkles size={15} aria-hidden="true" /> Your first correct answers earn real
+                coins. Lesson progress is not saved yet.
               </p>
             </>
           )}

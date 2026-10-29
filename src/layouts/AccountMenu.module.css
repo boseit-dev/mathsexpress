@@ -79,9 +79,13 @@
   box-shadow: 0 0 0 2px var(--color-brand-pale);
 }
 
-.avatarOutline[data-frame='frame-sky'] { border-color: var(--color-brand-primary); }
+.avatarOutline[data-frame='frame-sky'] {
+  border-color: var(--color-brand-primary);
+}
 .avatarOutline[data-frame='frame-royal'] {
   border-color: var(--color-logo-violet);
   box-shadow: 0 0 0 2px var(--color-brand-soft);
 }
-.avatarOutline[data-frame='frame-sunrise'] { border-color: var(--color-coin-edge); }
+.avatarOutline[data-frame='frame-sunrise'] {
+  border-color: var(--color-coin-edge);
+}

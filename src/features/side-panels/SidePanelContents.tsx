@@ -41,7 +41,8 @@ export function SidePanelContents({ panel, student, shop }: SidePanelContentsPro
     <div className={styles.contents}>
       {panel !== 'shop' && (
         <p className={styles.disclaimer}>
-          Preview only. Scores, challenges and achievements shown here are examples, not account results.
+          Preview only. Scores, challenges and achievements shown here are examples, not account
+          results.
         </p>
       )}
       {panel === 'leaderboard' && (

@@ -35,7 +35,8 @@ describe('student quick tools', () => {
     const dialog = screen.getByRole('dialog', { name: 'Shop' });
     expect(await within(dialog).findByText('100 coins')).toBeVisible();
     expect(within(dialog).getByRole('link', { name: 'Open the full shop' })).toHaveAttribute(
-      'href', '/student/more/shop',
+      'href',
+      '/student/more/shop',
     );
     expect(dialog).not.toHaveTextContent('Sample data');
   });

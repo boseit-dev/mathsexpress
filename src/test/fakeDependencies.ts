@@ -420,7 +420,9 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
         if (!state.shopWallets.has(student.id)) {
           state.shopWallets.set(student.id, makeFreshShopState());
         }
-        return structuredClone(state.shopWallets.get(student.id)!);
+        const wallet = state.shopWallets.get(student.id);
+        if (!wallet) throw new AppError('unknown');
+        return structuredClone(wallet);
       },
       async buy(itemId) {
         const student = requireRole('student');
@@ -432,8 +434,11 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
         snapshot.balance -= item.price;
         snapshot.owned.push(itemId);
         snapshot.transactions.unshift({
-          id: snapshot.transactions.length + 1, itemId, delta: -item.price,
-          reason: 'purchase', createdAt: TEST_NOW.toISOString(),
+          id: snapshot.transactions.length + 1,
+          itemId,
+          delta: -item.price,
+          reason: 'purchase',
+          createdAt: TEST_NOW.toISOString(),
         });
         state.shopWallets.set(student.id, snapshot);
         return structuredClone(snapshot);
@@ -441,10 +446,14 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
       async equip(category, itemId) {
         const student = requireRole('student');
         const snapshot = await this.getState();
-        if (category !== 'theme' && category !== 'frame') throw new AppError('shop_invalid_category');
-        if (itemId && !snapshot.items.some((item) =>
-          item.id === itemId && item.category === category && snapshot.owned.includes(itemId)
-        )) throw new AppError('shop_not_owned');
+        if (
+          itemId &&
+          !snapshot.items.some(
+            (item) =>
+              item.id === itemId && item.category === category && snapshot.owned.includes(itemId),
+          )
+        )
+          throw new AppError('shop_not_owned');
         if (category === 'theme') snapshot.equippedTheme = itemId;
         else snapshot.equippedFrame = itemId;
         state.shopWallets.set(student.id, snapshot);
@@ -452,14 +461,24 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
       },
       async awardAnswer(questionId, answer) {
         const student = requireRole('student');
-        if (!state.classes.some((item) =>
-          item.students.some((member) => member.studentId === student.id && member.yearLevel === 9)
-        )) throw new AppError('shop_lesson_unavailable');
+        if (
+          !state.classes.some((item) =>
+            item.students.some(
+              (member) => member.studentId === student.id && member.yearLevel === 9,
+            ),
+          )
+        )
+          throw new AppError('shop_lesson_unavailable');
         const correct: Record<string, number> = {
-          'eq-1': 5, 'eq-2': 5, 'eq-3': -3, 'eq-4': 5, 'eq-5': -4,
+          'eq-1': 5,
+          'eq-2': 5,
+          'eq-3': -3,
+          'eq-4': 5,
+          'eq-5': -4,
         };
-        if (!(questionId in correct)) throw new AppError('shop_question_unavailable');
-        if (!checkNumericalAnswer(answer, correct[questionId]!)) {
+        const expected = correct[questionId];
+        if (expected === undefined) throw new AppError('shop_question_unavailable');
+        if (!checkNumericalAnswer(answer, expected)) {
           throw new AppError('shop_answer_incorrect');
         }
         const awarded = state.rewardedQuestions.get(student.id) ?? new Set<string>();
@@ -469,8 +488,11 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
         const snapshot = await this.getState();
         snapshot.balance += 20;
         snapshot.transactions.unshift({
-          id: snapshot.transactions.length + 1, itemId: null, delta: 20,
-          reason: 'correct_answer', createdAt: TEST_NOW.toISOString(),
+          id: snapshot.transactions.length + 1,
+          itemId: null,
+          delta: 20,
+          reason: 'correct_answer',
+          createdAt: TEST_NOW.toISOString(),
         });
         state.shopWallets.set(student.id, snapshot);
         return structuredClone(snapshot);

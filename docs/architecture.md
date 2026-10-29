@@ -170,6 +170,7 @@ project is created for 2.0:
   production build locally in the Cloudflare runtime.
 
 ## Coin Shop
+
 The Shop page uses the `ShopRepository` abstraction, with a real Supabase
 implementation and in-memory tests. Database RPC functions are the only
 authenticated shop API; new catalogue, wallet, inventory, ledger and answer

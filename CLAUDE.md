@@ -277,6 +277,7 @@ See `docs/rebuild-reference.md` for where the old code, feature inventory and li
 are kept. Use them for reference only; never copy old code in wholesale.
 
 ## Coin Shop (new)
+
 The shop is now a real authenticated student feature at `/student/more/shop`.
 A secure SQL migration creates account wallets, cosmetic inventory and coin
 transactions, plus RPC functions that verify access and handle purchases and
