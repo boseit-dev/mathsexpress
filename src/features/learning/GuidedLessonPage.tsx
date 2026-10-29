@@ -1,5 +1,5 @@
 import { Celebration } from '@/components/ui/Celebration';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -37,6 +37,18 @@ export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
   const [mistakes, setMistakes] = useState(0);
   const [complete, setComplete] = useState(false);
   const [coinNotice, setCoinNotice] = useState('');
+  // A reward can finish after Next, Restart, or navigation.
+  const rewardRequest = useRef(0);
+  const lastPublishedReward = useRef(0);
+  const mounted = useRef(false);
+
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      rewardRequest.current += 1;
+    };
+  }, []);
 
   if (!lesson || !permitted) {
     return (
@@ -59,13 +71,23 @@ export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
     if (checkNumericalAnswer(answer, current.solution)) {
       setFeedback('correct');
       setCoinNotice('Checking your coin reward…');
+      const request = ++rewardRequest.current;
       shop
         .awardAnswer(current.id, answer)
         .then((state) => {
-          setCoinNotice(`+20 coins saved! Your balance is now ${state.balance}.`);
-          window.dispatchEvent(new CustomEvent('mathsexpress:shop-updated', { detail: state }));
+          if (!mounted.current) return;
+          // Newer wallet responses must not be overwritten by slower old responses.
+          if (request > lastPublishedReward.current) {
+            lastPublishedReward.current = request;
+            window.dispatchEvent(new CustomEvent('mathsexpress:shop-updated', { detail: state }));
+          }
+          // Only show a question's reward beside the question that earned it.
+          if (request === rewardRequest.current) {
+            setCoinNotice(`+20 coins saved! Your balance is now ${state.balance}.`);
+          }
         })
         .catch((reason: unknown) => {
+          if (!mounted.current || request !== rewardRequest.current) return;
           setCoinNotice(
             errorCodeOf(reason) === 'shop_already_rewarded'
               ? 'Already earned your coins for this question.'
@@ -80,6 +102,7 @@ export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
 
   function nextQuestion() {
     if (feedback !== 'correct') return;
+    rewardRequest.current += 1;
     if (isLast) {
       setComplete(true);
       return;
@@ -92,6 +115,7 @@ export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
   }
 
   function restart() {
+    rewardRequest.current += 1;
     setIndex(0);
     setAnswer('');
     setFeedback('idle');

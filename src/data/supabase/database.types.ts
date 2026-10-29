@@ -534,6 +534,7 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      profile_session_is_active: { Args: Record<PropertyKey, never>; Returns: boolean };
       regenerate_join_code: { Args: { class_id: string }; Returns: string };
       remove_student: { Args: { class_id: string; student_id: string }; Returns: undefined };
       set_student_year_level: {

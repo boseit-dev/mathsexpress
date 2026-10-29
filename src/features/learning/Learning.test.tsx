@@ -1,4 +1,6 @@
-import { screen } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
+import { createFakeDependencies } from '@/test/fakeDependencies';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { paths } from '@/config/paths';
@@ -101,6 +103,43 @@ describe('guided lesson practice', () => {
     expect(screen.getByText(/not saved to your account yet/i)).toBeVisible();
     await user.click(screen.getByRole('button', { name: /practise again/i }));
     expect(screen.getByText('2x + 4 = 14')).toBeVisible();
+  });
+
+  it('does not show a delayed reward message on the following question', async () => {
+    const state = createFakeState();
+    const realShop = createFakeDependencies(state).shop;
+    const pending: Array<() => Promise<void>> = [];
+    const delayedShop = {
+      ...realShop,
+      awardAnswer: vi.fn((questionId: string, answer: string) =>
+        new Promise<Awaited<ReturnType<typeof realShop.awardAnswer>>>((resolve, reject) => {
+          pending.push(async () => {
+            try {
+              resolve(await realShop.awardAnswer(questionId, answer));
+            } catch (error) {
+              reject(error);
+            }
+          });
+        }),
+      ),
+    };
+    const user = userEvent.setup();
+    renderApp(paths.student.lesson('linear-equations-basics'), {
+      state,
+      overrides: { shop: delayedShop },
+    });
+    const input = await screen.findByRole('textbox', { name: 'Your answer' });
+    await user.type(input, '5');
+    await user.click(screen.getByRole('button', { name: /check answer/i }));
+    expect(screen.getByText('Checking your coin reward…')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: /next question/i }));
+    expect(screen.getByText('5x − 7 = 18')).toBeVisible();
+    await act(async () => {
+      await pending[0]?.();
+    });
+    expect(screen.queryByText(/20 coins saved/)).not.toBeInTheDocument();
+    await waitFor(() => expect(state.shopWallets.size).toBe(1));
+    expect([...state.shopWallets.values()][0]?.balance).toBe(120);
   });
 
   it('does not open a lesson outside the assigned year', async () => {
