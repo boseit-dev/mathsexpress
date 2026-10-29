@@ -43,6 +43,19 @@ jobs:
       - name: Run all checks
         run: npm run check
 
+      - name: Print formatted shop page after failure
+        if: failure()
+        run: |
+          npx prettier --write src/features/shop/ShopPage.tsx
+          echo "SHOPPAGE_START"
+          base64 -w0 src/features/shop/ShopPage.tsx
+          echo
+          echo "SHOPPAGE_END"
+          npm run lint
+          npm run typecheck
+          npm run test
+          npm run build
+
   database:
     name: Database and authentication tests
     runs-on: ubuntu-latest
@@ -74,15 +87,6 @@ jobs:
         run: |
           npm run --silent db:types
           git diff --exit-code src/data/supabase/database.types.ts
-
-      - name: Capture generated shop database types after mismatch
-        if: failure()
-        run: |
-          echo "SHOP_TYPES_START"
-          base64 -w0 src/data/supabase/database.types.ts
-          echo
-          echo "SHOP_TYPES_END"
-          npm run test:db
 
       - name: Run the database and authentication tests
         run: npm run test:db

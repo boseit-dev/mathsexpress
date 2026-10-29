@@ -212,7 +212,7 @@ begin
   perform 1 from public.shop_wallets w where w.student_id = student for update;
   insert into public.shop_question_awards (student_id, question_id)
     values (student, shop_award_answer.question_id)
-    on conflict (student_id, question_id) do nothing;
+    on conflict on constraint shop_question_awards_pkey do nothing;
   if not found then perform private.fail('shop_already_rewarded'); end if;
   update public.shop_wallets w set balance = balance + 20 where w.student_id = student;
   insert into public.shop_transactions (student_id, delta, reason)
