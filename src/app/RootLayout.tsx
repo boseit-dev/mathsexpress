@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   Outlet,
   ScrollRestoration,
@@ -8,6 +8,7 @@ import {
 } from 'react-router';
 import type { AuthService } from '@/data/repositories';
 import { focusMainAfterNavigation, focusMainAfterRetry } from './mainContentFocus';
+import { animatePageEntrance } from './pageTransition';
 import styles from './RootLayout.module.css';
 
 /**
@@ -23,6 +24,14 @@ export function RootLayout({ auth }: { auth: AuthService }) {
   useEffect(() => {
     focusMainAfterNavigation({ key, pathname });
   }, [key, pathname]);
+
+  // A gentle entrance for each new page, not the first one.
+  const previousPathname = useRef(pathname);
+  useEffect(() => {
+    if (previousPathname.current === pathname) return;
+    previousPathname.current = pathname;
+    animatePageEntrance();
+  }, [pathname]);
 
   useEffect(() => {
     if (revalidationState === 'idle') focusMainAfterRetry();

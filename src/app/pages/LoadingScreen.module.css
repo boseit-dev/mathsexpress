@@ -12,3 +12,13 @@
   inline-size: var(--size-tile-lg);
   block-size: auto;
 }
+
+.slow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  max-inline-size: 32rem;
+  padding-inline: var(--space-4);
+  text-align: center;
+}

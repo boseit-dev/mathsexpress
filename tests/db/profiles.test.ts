@@ -89,6 +89,34 @@ describe('profiles', () => {
     expect(callError?.code).toBe('42501');
   });
 
+  it('blocks direct profile reads from a signed-out session with an unexpired token', async () => {
+    const student = await createStudent();
+    const { data: sessionData } = await student.client.auth.getSession();
+    const token = sessionData.session?.access_token;
+    const baseUrl = process.env.TEST_SUPABASE_URL;
+    const apiKey = process.env.TEST_SUPABASE_ANON_KEY;
+    if (!token || !baseUrl || !apiKey) throw new Error('Test credentials are missing');
+    const readWithOldToken = async () => {
+      const response = await fetch(`${baseUrl}/rest/v1/profiles?select=id`, {
+        headers: { apikey: apiKey, Authorization: `Bearer ${token}` },
+      });
+      return { status: response.status, body: await response.json() };
+    };
+    const before = await readWithOldToken();
+    expect(before.status).toBe(200);
+    expect(before.body).toEqual([{ id: student.id }]);
+
+    const { error: signOutError } = await student.client.auth.signOut();
+    expect(signOutError).toBeNull();
+
+    const after = await readWithOldToken();
+    if (after.status === 200) {
+      expect(after.body).toEqual([]);
+    } else {
+      expect([401, 403]).toContain(after.status);
+    }
+  });
+
   it('requires a profile before any class action', async () => {
     const user = await createSignedInUser('no-profile');
     const { error } = await user.client.rpc('my_classes');

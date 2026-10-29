@@ -1,32 +1,144 @@
+/* A quiet study journal, not a game dashboard: no leaderboard/sidebar,
+   decorative scene or coins on the home screen. */
 .page {
+  display: grid;
+  gap: var(--space-8);
+  max-inline-size: 68rem;
+  margin-inline: auto;
+  padding-block-end: var(--space-8);
+}
+
+.paths {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.path {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
+  align-items: center;
+  gap: var(--space-3);
+  min-inline-size: 0;
+  min-block-size: 6rem;
+  padding: var(--space-4);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(115deg, var(--color-surface), var(--color-brand-light-blue));
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text);
+  text-decoration: none;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--duration-quick) var(--ease-out-soft),
+    transform var(--duration-quick) var(--ease-out-soft);
 }
 
-.columns {
-  display: grid;
-  gap: var(--space-6);
+.path:hover,
+.path:focus-visible {
+  border-color: var(--color-brand-primary);
 }
 
-.main,
-.sidebar {
+@media (hover: hover) {
+  .path:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+}
+
+.path:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.pathIcon {
   display: grid;
-  align-content: start;
-  gap: var(--space-6);
+  place-items: center;
+  flex: 0 0 3rem;
+  inline-size: 3rem;
+  block-size: 3rem;
+  border-radius: var(--radius-md);
+  background-color: var(--color-brand-soft);
+  color: var(--color-text);
+}
+
+.pathIcon svg {
+  inline-size: var(--size-icon-lg);
+  block-size: var(--size-icon-lg);
+}
+
+.pathCopy {
+  display: grid;
+  flex: 1;
+  gap: var(--space-1);
   min-inline-size: 0;
 }
 
-@media (min-width: 768px) and (max-width: 1099px) {
-  .sidebar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+.pathCopy strong {
+  font-size: var(--font-size-md);
+}
+
+.pathCopy span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-snug);
+}
+
+.pathArrow {
+  inline-size: var(--size-icon-md);
+  block-size: var(--size-icon-md);
+  color: var(--color-text-brand);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-4);
+  min-inline-size: 0;
+}
+
+.sectionTitle {
+  display: grid;
+  gap: var(--space-1);
+  padding-block-start: var(--space-4);
+  padding-inline-start: var(--space-4);
+  border-block-start: 1px solid var(--color-brand-soft);
+  border-inline-start: var(--space-1) solid var(--color-brand-secondary);
+}
+
+.sectionTitle h2 {
+  font-size: var(--font-size-xl);
+}
+
+.eyebrow {
+  color: var(--color-text-brand);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+}
+
+.footnote {
+  padding-block-start: var(--space-4);
+  border-block-start: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+@media (min-width: 850px) {
+  .paths {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .path {
+    align-items: flex-start;
+  }
+
+  .pathArrow {
+    margin-inline-start: auto;
   }
 }
 
-/* Wide screens: tasks and practice on the left, class and rewards on the right. */
-@media (min-width: 1100px) {
-  .columns {
-    grid-template-columns: minmax(0, 1fr) var(--layout-sidebar-width);
-    align-items: start;
-  }
+/* Brand-coloured shortcuts that keep the original, simple Study Journal layout. */
+.path:nth-child(2) {
+  background: linear-gradient(115deg, var(--color-surface), var(--color-brand-lavender-wash));
+}
+
+.path:nth-child(3) {
+  background: linear-gradient(115deg, var(--color-surface), var(--color-brand-pale));
 }

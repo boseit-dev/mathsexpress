@@ -11,6 +11,22 @@ if (typeof window !== 'undefined') {
     value: () => null,
     writable: true,
   });
+  // jsdom does not implement native modal dialogs. Tests still verify opening,
+  // closing and keyboard-event handling through the same public component API.
+  if (typeof HTMLDialogElement !== 'undefined') {
+    Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+      value(this: HTMLDialogElement) {
+        this.setAttribute('open', '');
+      },
+      configurable: true,
+    });
+    Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+      value(this: HTMLDialogElement) {
+        this.removeAttribute('open');
+      },
+      configurable: true,
+    });
+  }
 }
 
 afterEach(() => {

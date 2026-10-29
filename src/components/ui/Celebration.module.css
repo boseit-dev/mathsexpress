@@ -1,0 +1,59 @@
+.burst {
+  position: absolute;
+  inset-block-start: 1.3rem;
+  inset-inline-start: 1.3rem;
+  pointer-events: none;
+}
+
+.piece {
+  position: absolute;
+  inline-size: 0.6rem;
+  block-size: 0.6rem;
+  opacity: 0;
+  animation: burst 900ms var(--ease-out-soft) var(--delay) both;
+}
+
+.plus,
+.times {
+  background:
+    linear-gradient(currentcolor, currentcolor) center / 100% 2px no-repeat,
+    linear-gradient(currentcolor, currentcolor) center / 2px 100% no-repeat;
+  color: var(--color-brand-secondary);
+}
+
+.times {
+  color: var(--color-logo-violet);
+  rotate: 45deg;
+}
+
+.triangle {
+  background: var(--color-brand-primary);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+.circle {
+  border: 2px solid var(--color-success);
+  border-radius: 50%;
+}
+
+@keyframes burst {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateX(0) scale(0.4);
+  }
+
+  25% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateX(var(--distance)) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .burst {
+    display: none;
+  }
+}

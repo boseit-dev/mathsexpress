@@ -13,10 +13,13 @@ It overrides habits and defaults. If an instruction from the user conflicts with
   adds the redesigned assignment cards, accounts (email and password with email confirmation,
   password reset, Google sign-in once credentials are configured), student and teacher roles, and
   class management (classes, join codes, joining and leaving, teacher-set year levels).
-- Not built yet: the learning engine, textbook, tasks, reports, teacher home, profile and settings
-  pages, rewards and the coin shop. Their nav destinations show the "planned section" page, and
-  home-page panels that still show examples carry a "Sample data" badge (the full route list is in
-  `docs/architecture.md`).
+- **Phase 3** (`2.0.0-alpha.3`): started; a real student Learn catalogue with one complete Year 9 guided linear-equations lesson and interactive practice. This first slice is not the complete learning engine; progress is not yet saved to the student account.
+- The Textbook now has a library of individual books, navigation and one original Year 9 pilot
+  chapter. **Most chapters are still in preparation** and are not claimed syllabus-complete;
+  see `docs/textbook-coverage.md` for exact coverage and source links.
+- Not built yet: the rest of the learning engine, full textbook contents, tasks, reports,
+  teacher home, profile/settings pages and real rewards/coin shop. Planned destinations explain
+  the limitations; example scores and panels still have Sample data badges.
 - Never start the next phase until the user has reviewed and approved the current one.
 
 ## Production safety: never break these
@@ -219,13 +222,14 @@ Rules:
   "Express" violet), drawn in `src/layouts/BrandMark.tsx`. Its colours are the `--color-logo-*`
   tokens and are used for the logo only. It was recreated from a screenshot; if the owner provides
   the original artwork file, replace the drawing with it.
-- Student home layout follows the owner's reference dashboard: a full-width welcome banner, a row
-  of task cards with "View all", recommended practice and progress on the left, and the class
-  leaderboard, coin shop, daily challenges and rewards on the right. Desktop navigation is text
-  links; phones and tablets use icon tabs. All artwork must be original (never copy another
-  product's illustrations, mascots or branding).
-- Card grids size themselves from their panel with container queries, so layouts hold at every
-  width, including just after the sidebar appears.
+- Student home is the owner's original **Study Journal**, not a copy of Mathspace: a compact
+  personal greeting, three study shortcuts, and clearly separated task, progress and practice
+  sections. Do not restore the old banner, right-side dashboard sidebar, decorative backdrop
+  or any competitor-specific layout, illustrations, mascot or task cards.
+- The separate student quick-tools toolbar gives access to Leaderboard, Shop, Daily challenges,
+  Achievements and Rewards. These currently contain labelled preview data, not real scores,
+  coins, purchases or awards. Its panel motion will be added in a separately tested pass.
+- Card layouts must respond to their available width and never overlap lesson controls.
 
 ## Accessibility and quality
 
@@ -271,3 +275,15 @@ Rules:
 
 See `docs/rebuild-reference.md` for where the old code, feature inventory and live-system notes
 are kept. Use them for reference only; never copy old code in wholesale.
+
+## Coin Shop (new)
+
+The shop is now a real authenticated student feature at `/student/more/shop`.
+A secure SQL migration creates account wallets, cosmetic inventory and coin
+transactions, plus RPC functions that verify access and handle purchases and
+lesson rewards atomically. The shop grants 100 once-only welcome coins and
+20 coins for each of the five published Year 9 lesson questions correctly
+solved once. Do not invent coin balances, let the browser set coins, expose
+shop tables directly or imply repeat practice earns infinite coins. Cosmetics
+are permanent; themes affect brand accents and frames outline the account avatar.
+Other rewards in the side panels remain explicitly sample data.

@@ -101,6 +101,7 @@ export function ConfirmAction({
           ref={cancelRef}
           variant="secondary"
           disabled={pending}
+          aria-describedby={messageId}
           onClick={() => {
             setOpenedOn(null);
           }}

@@ -1,0 +1,385 @@
+/* Student quick tools: the right-edge toolbar, the phone menu and the sliding panel. */
+.desktopToolbar {
+  position: fixed;
+  z-index: 30;
+  inset-block-start: 50%;
+  inset-inline-end: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  transform: translateY(-50%);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-full);
+  background: linear-gradient(180deg, var(--color-surface), var(--color-brand-light-blue));
+  box-shadow: var(--shadow-md);
+  animation: toolbar-in 420ms var(--ease-out-soft) 200ms both;
+}
+
+.tool {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-brand);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-quick) var(--ease-out-soft),
+    color var(--duration-quick) var(--ease-out-soft),
+    transform var(--duration-quick) var(--ease-out-soft);
+}
+
+.tool:hover,
+.tool:focus-visible {
+  background: var(--color-brand-pale);
+}
+
+@media (hover: hover) {
+  .tool:hover {
+    transform: translateX(-2px);
+  }
+}
+
+.tool:active {
+  transform: scale(0.9);
+}
+
+/* The open panel's button: filled, with a small lavender marker on its outer edge. */
+.tool[aria-expanded='true'] {
+  background: var(--color-brand-primary);
+  color: var(--color-text-inverse);
+}
+
+.tool::after {
+  position: absolute;
+  inset-block: 30%;
+  inset-inline-end: calc(-1 * var(--space-2) + 1px);
+  inline-size: 3px;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-secondary);
+  content: '';
+  transform: scaleY(0);
+  transition: transform var(--duration-quick) var(--ease-out-soft);
+}
+
+.tool[aria-expanded='true']::after {
+  transform: scaleY(1);
+}
+
+.tool svg,
+.close svg,
+.switch svg,
+.mobileToggle svg {
+  inline-size: var(--size-icon-md);
+  block-size: var(--size-icon-md);
+}
+
+.tooltip {
+  position: absolute;
+  inset-inline-end: calc(100% + var(--space-3));
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-text);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(6px) scale(0.96);
+  transition:
+    opacity var(--duration-quick) var(--ease-out-soft),
+    transform var(--duration-quick) var(--ease-out-soft);
+}
+
+/* A small pointer towards the button. */
+.tooltip::after {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: -4px;
+  inline-size: 8px;
+  block-size: 8px;
+  background: inherit;
+  content: '';
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.tool:hover .tooltip,
+.tool:focus-visible .tooltip {
+  opacity: 1;
+  transform: none;
+  transition-delay: 120ms;
+}
+
+.mobileToolbar {
+  display: none;
+}
+
+.mobileMenu[hidden] {
+  display: none;
+}
+
+/* The panel slides in from the right while the page behind dims. */
+.dialog {
+  position: fixed;
+  inset: 0 0 0 auto;
+  inline-size: min(27rem, 100vw);
+  max-inline-size: none;
+  block-size: 100dvh;
+  max-block-size: none;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  border: 0;
+  border-inline-start: 1px solid var(--color-border-strong);
+  border-start-start-radius: var(--radius-xl);
+  border-end-start-radius: var(--radius-xl);
+  background: linear-gradient(160deg, var(--color-surface), var(--color-brand-lavender-wash));
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
+}
+
+.dialog[open] {
+  animation: panel-in var(--duration-panel) var(--ease-out-soft);
+}
+
+.dialog::backdrop {
+  background: rgb(27 33 66 / 0.38);
+}
+
+.dialog[open]::backdrop {
+  animation: fade-in var(--duration-panel) var(--ease-out-soft);
+}
+
+.dialog[data-closing] {
+  animation: panel-out var(--duration-panel-exit) var(--ease-in-soft) forwards;
+}
+
+.dialog[data-closing]::backdrop {
+  animation: fade-out var(--duration-panel-exit) var(--ease-in-soft) forwards;
+}
+
+.dialogInner {
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+  min-block-size: 100%;
+  padding: var(--space-5);
+}
+
+.dialogHeader {
+  position: sticky;
+  z-index: 2;
+  inset-block-start: calc(-1 * var(--space-5));
+  display: grid;
+  gap: var(--space-3);
+  margin-block-start: calc(-1 * var(--space-5));
+  padding-block: var(--space-5) var(--space-3);
+  border-block-end: 1px solid var(--color-border);
+  background: var(--color-page);
+}
+
+.headingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.heading {
+  font-size: var(--font-size-xl);
+  animation: rise var(--duration-panel) var(--ease-out-soft) 60ms both;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  flex: 0 0 var(--size-touch-target);
+  inline-size: var(--size-touch-target);
+  block-size: var(--size-touch-target);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-quick) var(--ease-out-soft),
+    transform var(--duration-quick) var(--ease-out-soft);
+}
+
+.close:hover {
+  background: var(--color-brand-pale);
+  transform: rotate(90deg);
+}
+
+.close:active {
+  transform: rotate(90deg) scale(0.9);
+}
+
+/* Switches panels without closing: a compact segmented row of the same five tools. */
+.switcher {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-full);
+  background: var(--color-brand-pale);
+  animation: rise var(--duration-panel) var(--ease-out-soft) 100ms both;
+}
+
+.switch {
+  display: grid;
+  place-items: center;
+  min-block-size: var(--size-touch-target);
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-brand);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-quick) var(--ease-out-soft),
+    box-shadow var(--duration-quick) var(--ease-out-soft),
+    transform var(--duration-quick) var(--ease-out-soft);
+}
+
+.switch:hover {
+  background: var(--color-brand-pale-hover);
+}
+
+.switch:active {
+  transform: scale(0.92);
+}
+
+.switch[aria-pressed='true'] {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+@keyframes toolbar-in {
+  from {
+    opacity: 0;
+    transform: translate(12px, -50%);
+  }
+}
+
+@keyframes panel-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes panel-out {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+
+@media (max-width: 767px) {
+  .desktopToolbar {
+    display: none;
+  }
+
+  .mobileToolbar {
+    position: fixed;
+    z-index: 30;
+    inset-inline-end: var(--space-3);
+    inset-block-end: calc(var(--space-4) + env(safe-area-inset-bottom));
+    display: grid;
+    justify-items: end;
+    gap: var(--space-2);
+  }
+
+  /* The menu opens above the button. */
+  .mobileMenu {
+    order: -1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: end;
+    gap: var(--space-1);
+    max-inline-size: calc(100vw - var(--space-6));
+    padding: var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-lg);
+    transform-origin: bottom right;
+    animation: menu-in var(--duration-quick) var(--ease-out-soft);
+  }
+
+  .mobileMenu .tool {
+    animation: rise var(--duration-quick) var(--ease-out-soft) both;
+    animation-delay: calc(var(--i, 0) * 30ms);
+  }
+
+  .mobileMenu .tool::after {
+    display: none;
+  }
+
+  .mobileToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-block-size: var(--size-touch-target);
+    padding: var(--space-3) var(--space-4);
+    border: 0;
+    border-radius: var(--radius-full);
+    background: var(--color-brand-primary);
+    color: var(--color-text-inverse);
+    font-weight: var(--font-weight-semibold);
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    transition: transform var(--duration-quick) var(--ease-out-soft);
+  }
+
+  .mobileToggle:active {
+    transform: scale(0.95);
+  }
+
+  .tooltip {
+    display: none;
+  }
+
+  .dialog {
+    border-radius: 0;
+  }
+
+  .dialogInner {
+    padding: var(--space-4);
+  }
+
+  .dialogHeader {
+    inset-block-start: calc(-1 * var(--space-4));
+    margin-block-start: calc(-1 * var(--space-4));
+    padding-block-start: var(--space-4);
+  }
+}

@@ -11,7 +11,13 @@
   text-decoration: none;
   transition:
     background-color var(--transition-fast),
-    border-color var(--transition-fast);
+    border-color var(--transition-fast),
+    box-shadow var(--duration-quick) var(--ease-out-soft),
+    transform var(--duration-quick) var(--ease-out-soft);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 .button:disabled {
@@ -37,7 +43,11 @@
 }
 
 .primary {
-  background-color: var(--color-brand-primary);
+  background: linear-gradient(
+    120deg,
+    var(--color-brand-primary),
+    var(--color-brand-primary-active)
+  );
   color: var(--color-text-inverse);
 }
 
@@ -51,7 +61,7 @@
 
 .secondary {
   border-color: var(--color-border-strong);
-  background-color: var(--color-surface);
+  background-color: var(--color-brand-lavender-wash);
   color: var(--color-text-brand);
 }
 

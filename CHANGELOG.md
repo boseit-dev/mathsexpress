@@ -4,6 +4,97 @@ All notable changes to MathsExpress 2.0 are recorded here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
 [Semantic Versioning](https://semver.org/). See "Versioning" in CLAUDE.md.
 
+## [2.0.0-alpha.3] - Unreleased
+
+Phase 3 first learning slice (in development).
+
+### Added
+
+- Built the first real account-backed Coin Shop with an original catalogue of eight
+  permanent themes and avatar frames, a starter wallet, secure transactional buying,
+  owned-item locker, equip/unequip controls, and recent purchase history.
+- Added server-verified, once-per-question coin earnings for the published Year 9
+  guided lesson, with database protection against forging rewards or overspending.
+- Replaced the fake shop side-panel contents with the student's real coin balance
+  and a working link to the full Shop page. No real-money payments or chance items.
+
+- Improved the existing textbook library with All books, My year, and Ready to learn filters,
+  visible result counts and an easy reset when a search returns no matching books.
+- Clarified that books without a maths lesson contain only a syllabus outline and introduction.
+  Added direct links into ready chapters and previous/next chapter navigation.
+- Connected the original Year 9 equations textbook to the existing guided Learn lesson in both
+  directions, only offering practice when the student's teacher-assigned year permits it.
+- Unified textbook numeric checking with Learn's strict parser (including typed negative signs)
+  and kept the floating quick tools clear of the interactive textbook exercise page.
+
+- Introduced an original MathsExpress textbook library with 25 separate books for K–10,
+  secondary Life Skills and the distinct Year 11–12 mathematics courses. All books open
+  through their own links, with chapter contents, a getting-started chapter and syllabus links.
+- Added a Year 9 linear-equations textbook pilot with an original worked example, six
+  checkable exercises, hints and retry feedback. Other chapters explicitly say they are in
+  preparation rather than presenting unreviewed content as finished.
+- Added a textbook curriculum coverage record and unit/interface tests for the book
+  routes, course distinctions, chapter navigation and numerical answer checking.
+
+- Added a compact student quick-tools toolbar for Leaderboard, Shop, Daily challenges,
+  Achievements and Rewards, with a mobile Quick tools menu.
+- Each control opens a real, keyboard-accessible modal panel with a close button, native
+  Escape handling, backdrop dismissal and focus restored to the opening control.
+- The panels reuse existing labelled sample content; achievement examples are explicitly
+  previews, shop purchase buttons are disabled, and students without a class get a class link.
+- The quick-tools toolbar stays out of the way on active guided-lesson pages. Animation and
+  visual motion polish are deliberately deferred for a separate Claude pass.
+
+- Replaced the student Learn placeholder with a real topic catalogue. Only published lessons for
+  teacher-assigned year levels appear. Students without a class are prompted to join one.
+- One carefully authored Year 9 algebra lesson: solving linear equations with an explanation,
+  a worked example, five interactive questions, graduated hints and verified numeric marking.
+- Clear correct/incorrect feedback, worked solutions, a completion summary and replay.
+- Unit and interface tests for the published content, answer checking, access by year and the
+  complete lesson flow.
+
+### Changed
+
+- Extended the official MathsExpress blue/lavender palette across the 2.0 site:
+  softly colourful page backgrounds, navigation, active tabs, buttons, Study Journal
+  shortcuts, progress and practice cards, guided lessons, class cards, teacher empty
+  states, sign-in panels, quick tools and error screens. Kept dark, readable text,
+  existing layouts, reduced-motion support and all current functionality.
+
+- Brightened the textbook library with five distinctive book-cover treatments using the
+  existing MathsExpress navy, blue, lavender and muted-blue palette. Added colourful but
+  readable library and chapter headers, stronger chapter navigation, and exercise accents,
+  without changing any textbook content or answers.
+
+- Redesigned the student homepage as the original MathsExpress **Learning Desk**: a compact
+  welcome card alongside learning progress, a separate practice-and-assignments workbench,
+  and classroom/reward panels grouped along the bottom instead of a copycat dashboard sidebar.
+- Kept real student/class details, labelled sample content, learning links, assignment links
+  and existing accessibility labels, while giving the page its own navy/blue visual hierarchy.
+- Deferred mascot artwork and animation integration until the approved character assets are ready.
+
+### Changed
+
+- Rebuilt the student homepage into an original, minimal **Study Journal** instead of a
+  game-like dashboard. The layout now has a plain personal greeting, one clear next step,
+  three study shortcuts, and separate vertical sections for tasks, progress and practice.
+- Removed the old hero illustration, background decoration, leaderboard, shop, challenge and
+  rewards panels from the student homepage. Their underlying data and separate routes are
+  untouched; sample information stays clearly labelled wherever it is shown.
+- Removed the purple development-preview bar from both student and teacher layouts.
+  On the student homepage, a quiet note and individual badges still distinguish sample
+  panels from the real account and class data.
+- Preserved teacher-assigned year levels, existing lesson links, refresh behaviour, keyboard
+  navigation and accessibility labels. Mascot and motion design remain a separate later task.
+
+### Known limitations
+
+- Only one Year 9 lesson has been published so far. Other year levels have honest empty states.
+- Lesson progress and attempts currently stay in the browser session and are **not yet saved to
+  the student's account**. Persistent account-based progress is planned later in Phase 3.
+- No rewards, teacher assignments or adaptive question generation are claimed for this slice.
+- Google sign-in and the remaining Phase 2 security review are still pending.
+
 ## [2.0.0-alpha.2] - Unreleased
 
 Phase 2: authentication, accounts and class management.

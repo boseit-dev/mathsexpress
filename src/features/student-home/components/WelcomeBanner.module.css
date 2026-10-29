@@ -1,24 +1,21 @@
+/* Editorial greeting and a quiet next-step card; no scenic hero or game widgets. */
 .banner {
-  /* White focus ring: the default primary ring would vanish on this background. */
-  --color-focus: var(--color-text-inverse);
-
   display: grid;
   align-items: center;
   gap: var(--space-6);
-  padding: var(--space-6);
-  overflow: hidden;
+  padding: var(--space-5);
+  border: 1px solid var(--color-brand-soft);
   border-radius: var(--radius-xl);
-  background-color: var(--color-brand-primary);
-  /* Graph-paper grid only: white text on it stays above 6:1. */
-  background-image:
-    linear-gradient(var(--color-hero-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--color-hero-grid) 1px, transparent 1px);
-  background-size: var(--size-hero-grid) var(--size-hero-grid);
-  box-shadow: var(--shadow-lg);
-  color: var(--color-text-inverse);
+  background: linear-gradient(
+    120deg,
+    var(--color-brand-light-blue),
+    var(--color-brand-lavender-wash) 62%,
+    var(--color-surface)
+  );
+  box-shadow: var(--shadow-sm);
 }
 
-.content {
+.introduction {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -26,92 +23,87 @@
   min-inline-size: 0;
 }
 
-.classLabel {
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-full);
-  background-color: var(--color-brand-primary-active);
+.eyebrow {
+  color: var(--color-text-brand);
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-}
-
-a.classLabel {
-  color: var(--color-text-inverse);
-  text-decoration: underline;
-  text-underline-offset: 0.2em;
-}
-
-.sampleTag {
-  opacity: 0.85;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.11em;
 }
 
 .greeting {
   font-size: var(--font-size-display);
-  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
 }
 
 .summary {
-  max-inline-size: var(--layout-reading-width);
+  max-inline-size: 37rem;
+  color: var(--color-text-secondary);
 }
 
-.continue {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-4);
-  inline-size: 100%;
-  margin-block-start: var(--space-2);
+.sampleTag {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.classLabel {
+  display: inline-flex;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-brand-pale);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
 }
 
 .nextUp {
   display: flex;
-  flex: 1 1 14rem;
   flex-direction: column;
-  gap: var(--space-2);
-  max-inline-size: 24rem;
-  padding: var(--space-3) var(--space-4);
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-inline-size: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--color-brand-soft);
+  border-block-start: var(--space-1) solid var(--color-brand-secondary);
   border-radius: var(--radius-lg);
-  background-color: var(--color-brand-primary-active);
+  background: linear-gradient(175deg, var(--color-surface), var(--color-brand-pale));
+}
+
+.nextUpHeading {
+  font-weight: var(--font-weight-semibold);
+}
+
+.preview {
+  display: grid;
+  gap: var(--space-2);
+  inline-size: 100%;
 }
 
 .nextUpLabel,
 .nextUpMeta {
+  color: var(--color-text-secondary);
   font-size: var(--font-size-xs);
 }
 
 .nextUpTitle {
   font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-snug);
 }
 
 .continueButton {
   inline-size: 100%;
 }
 
-.illustration {
-  display: none;
+@media (min-width: 760px) {
+  .banner {
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.72fr);
+  }
 }
 
-@media (min-width: 640px) {
-  .banner {
-    grid-template-columns: minmax(0, 1fr) auto;
-    padding: var(--space-8);
-    /* A soft glow behind the artwork, sized to fade out before the text column. */
-    background-image:
-      radial-gradient(circle 14rem at 92% 18%, var(--color-hero-glow), transparent 65%),
-      linear-gradient(var(--color-hero-grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--color-hero-grid) 1px, transparent 1px);
-    background-size:
-      auto,
-      var(--size-hero-grid) var(--size-hero-grid),
-      var(--size-hero-grid) var(--size-hero-grid);
+@media (min-width: 1000px) {
+  .nextUp {
+    padding: var(--space-6);
   }
 
   .continueButton {
     inline-size: auto;
-  }
-
-  .illustration {
-    display: block;
-    inline-size: clamp(13rem, 26vw, 20rem);
   }
 }

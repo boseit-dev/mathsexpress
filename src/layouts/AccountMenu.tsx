@@ -9,13 +9,14 @@ import styles from './AccountMenu.module.css';
 interface AccountMenuProps {
   name: string;
   roleLabel: string;
+  frame?: string | null;
 }
 
 /**
  * The signed-in person's name and a Sign out button, behind a disclosure button. Closes with
  * Escape (returning focus to the button) or a click outside.
  */
-export function AccountMenu({ name, roleLabel }: AccountMenuProps) {
+export function AccountMenu({ name, roleLabel, frame }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
   const panelId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -52,7 +53,9 @@ export function AccountMenu({ name, roleLabel }: AccountMenuProps) {
           setOpen((current) => !current);
         }}
       >
-        <Avatar name={name} decorative />
+        <span className={styles.avatarOutline} data-frame={frame ?? undefined}>
+          <Avatar name={name} decorative />
+        </span>
         <span className={styles.name}>{name}</span>
         <ChevronDown className={styles.chevron} />
       </button>

@@ -1,0 +1,533 @@
+.page {
+  display: grid;
+  align-content: start;
+  gap: var(--space-6);
+  min-width: 0;
+}
+.intro,
+.lessonHeader {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 48rem;
+}
+.intro h1,
+.lessonHeader h1 {
+  font-size: var(--font-size-display);
+  line-height: var(--line-height-tight);
+  letter-spacing: var(--letter-spacing-tight);
+}
+.intro p,
+.lessonHeader p,
+.sectionHeader p,
+.cardBody p,
+.teachingPanel > p,
+.empty p {
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-base);
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-xs);
+}
+.yearPanel {
+  background: linear-gradient(115deg, var(--color-brand-soft), var(--color-brand-pale));
+  border: 1px solid var(--color-brand-muted);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+.miniLabel {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-brand);
+  letter-spacing: 0.04em;
+}
+.yearTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  margin-block: var(--space-2);
+}
+.yearIcon {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  color: var(--color-brand-primary);
+}
+.muted {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+}
+.sectionHeader {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.sectionHeader h2 {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--space-1);
+}
+.count {
+  background: var(--color-surface);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+.lessonGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+}
+.lessonCard,
+.teachingPanel,
+.practicePanel {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-brand-soft);
+  box-shadow: var(--shadow-sm);
+  min-width: 0;
+  overflow: hidden;
+}
+.cardArt {
+  position: relative;
+  height: 9rem;
+  display: flex;
+  align-items: center;
+  padding: var(--space-6);
+  background: linear-gradient(120deg, var(--color-brand-primary), var(--color-brand-secondary));
+  color: var(--color-text-inverse);
+  overflow: hidden;
+}
+.equationArt {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  position: relative;
+  z-index: 1;
+}
+.artCircle {
+  position: absolute;
+  right: -1rem;
+  top: -2rem;
+  border: 0.9rem solid var(--color-on-brand-track);
+  border-radius: var(--radius-full);
+  height: 10rem;
+  width: 10rem;
+  display: grid;
+  place-items: center;
+  transform: rotate(15deg);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xl);
+}
+.cardBody {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-6);
+}
+.cardBody h3 {
+  font-size: var(--font-size-xl);
+}
+.cardFooter {
+  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+.primaryLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-brand-primary);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  min-height: var(--size-touch-target);
+}
+.primaryLink:hover {
+  background: var(--color-brand-primary-hover);
+}
+.primaryLink:focus-visible,
+.backLink:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+.empty {
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-xl);
+  min-height: 15rem;
+  display: grid;
+  justify-items: start;
+  align-content: center;
+  gap: var(--space-3);
+  padding: var(--space-8);
+}
+.empty h2,
+.empty h3 {
+  font-size: var(--font-size-xl);
+}
+.empty > svg {
+  color: var(--color-brand-primary);
+}
+.backLink {
+  color: var(--color-text-brand);
+  text-decoration: none;
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  font-weight: var(--font-weight-medium);
+  justify-self: start;
+  font-size: var(--font-size-sm);
+}
+.lessonColumns {
+  display: grid;
+  gap: var(--space-6);
+  align-items: start;
+}
+.teachingPanel,
+.practicePanel {
+  padding: var(--space-6);
+  display: grid;
+  gap: var(--space-4);
+}
+.stepLabel {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.stepLabel span {
+  background: var(--color-brand-pale);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+}
+.teachingPanel h2,
+.practicePanel h2 {
+  font-size: var(--font-size-xl);
+}
+.exampleBox {
+  background: linear-gradient(
+    125deg,
+    var(--color-brand-lavender-wash),
+    var(--color-brand-light-blue)
+  );
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-3);
+}
+.exampleSteps {
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--space-3);
+}
+.exampleSteps li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+}
+.stepNumber {
+  background: var(--color-surface);
+  flex: 0 0 var(--size-tile-sm);
+  height: var(--size-tile-sm);
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-full);
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-semibold);
+}
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.progressTrack {
+  height: var(--size-progress-md);
+  background: var(--color-brand-pale);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.progressTrack > div {
+  height: 100%;
+  transition: width 500ms var(--ease-out-soft);
+  background: var(--color-brand-primary);
+  border-radius: inherit;
+}
+.question {
+  background: linear-gradient(115deg, var(--color-brand-pale), var(--color-brand-light-blue));
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-lg);
+  display: grid;
+  place-items: center;
+  padding: var(--space-8) var(--space-3);
+  font-size: clamp(1.35rem, 1.1rem + 1.4vw, 2rem);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+}
+.answerLabel {
+  display: block;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-2);
+}
+.answerRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-weight: var(--font-weight-semibold);
+}
+.answerRow input {
+  border: 1px solid var(--color-border-input);
+  color: var(--color-text);
+  border-radius: var(--radius-md);
+  min-width: 0;
+  width: 100%;
+  padding: var(--space-3);
+  min-height: var(--size-touch-target);
+  font: inherit;
+  background: var(--color-surface);
+}
+.answerRow input:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.answerRow input:disabled {
+  background: var(--color-surface-subtle);
+}
+.practicePanel form {
+  display: grid;
+  gap: var(--space-3);
+}
+.actions {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-2);
+}
+.actions button {
+  display: inline-flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: center;
+}
+.correct,
+.incorrect,
+.hint,
+.note {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+}
+.correct {
+  background: var(--color-success-surface);
+  color: var(--color-success);
+}
+.correct > svg {
+  vertical-align: middle;
+  margin-right: var(--space-2);
+}
+.correct ol {
+  padding-left: var(--space-6);
+  margin-top: var(--space-2);
+  display: grid;
+  gap: var(--space-1);
+}
+.incorrect {
+  background: var(--color-warning-surface);
+  color: var(--color-warning);
+}
+.hint {
+  display: flex;
+  align-items: start;
+  gap: var(--space-3);
+  background: var(--color-brand-pale);
+  color: var(--color-text);
+}
+.hint svg {
+  flex-shrink: 0;
+  color: var(--color-brand-primary);
+}
+.sessionNote {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+.summary {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+}
+.successIcon {
+  color: var(--color-success);
+}
+.note {
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+}
+@media (min-width: 900px) {
+  .lessonColumns {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  }
+}
+@media (max-width: 480px) {
+  .teachingPanel,
+  .practicePanel,
+  .cardBody {
+    padding: var(--space-4);
+  }
+  .yearPanel {
+    padding: var(--space-4);
+  }
+  .yearIcon {
+    display: none;
+  }
+  .cardFooter {
+    align-items: stretch;
+  }
+  .cardFooter .primaryLink {
+    width: 100%;
+  }
+}
+
+/* Question feedback: a soft entrance; a small nudge (never a flash) for a wrong answer. */
+.correct,
+.hint {
+  animation: fade-up var(--duration-panel) var(--ease-out-soft);
+}
+
+.incorrect {
+  animation:
+    fade-up var(--duration-panel) var(--ease-out-soft),
+    nudge 280ms var(--ease-out-soft) var(--duration-panel);
+}
+
+.question {
+  animation: pop-in var(--duration-panel) var(--ease-out-soft);
+}
+
+.summary {
+  position: relative;
+  animation: pop-in 400ms var(--ease-out-soft);
+}
+
+.lessonCard {
+  transition:
+    box-shadow var(--duration-quick) var(--ease-out-soft),
+    transform var(--duration-quick) var(--ease-out-soft);
+}
+
+@media (hover: hover) {
+  .lessonCard:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-4px);
+  }
+
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+/* Read before practising: a single route back into our original textbook. */
+.textbookBridge {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-brand-soft);
+  border-inline-start: var(--space-2) solid var(--color-brand-primary);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(120deg, var(--color-brand-light-blue), var(--color-brand-pale));
+}
+
+.textbookBridge > div {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.textbookBridge p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.textbookBridge a,
+.textbookReturn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-brand-primary);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.textbookBridge a:hover,
+.textbookReturn:hover {
+  background: var(--color-brand-pale);
+}

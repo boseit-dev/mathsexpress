@@ -102,52 +102,33 @@ describe('student home page', () => {
     expect(progress).toHaveTextContent('Learning streak6 daysBest: 11 days');
   });
 
-  it('shows the class leaderboard with the student highlighted and ties sharing a rank', async () => {
+  it('offers simple routes into learning, textbook and class', async () => {
     await renderHome();
-    const rows = within(section('Class leaderboard')).getAllByRole('listitem');
-    expect(rows.map((row) => row.textContent)).toEqual([
-      'Rank 1LMLeo M.260 coins',
-      'Rank 2ATAva T.240 coins',
-      'Rank 3MCYou (Mia C.)185 coins',
-      'Rank 3NKNoah K.185 coins',
-      'Rank 5ZPZara P.150 coins',
-    ]);
+    const shortcuts = screen.getByRole('navigation', { name: 'Study shortcuts' });
+    expect(within(shortcuts).getByRole('link', { name: /Learn a topic/ })).toHaveAttribute(
+      'href',
+      '/student/learn',
+    );
+    expect(within(shortcuts).getByRole('link', { name: /Textbook/ })).toHaveAttribute(
+      'href',
+      '/student/textbook',
+    );
+    expect(within(shortcuts).getByRole('link', { name: /My class/ })).toHaveAttribute(
+      'href',
+      '/student/class',
+    );
   });
 
-  it('shows the coin shop, daily challenges and rewards', async () => {
+  it('keeps leaderboards, coins and rewards off the study-journal home', async () => {
     await renderHome();
-    const shop = section('Coin shop');
-    expect(shop).toHaveTextContent('Your balance: 340 coins');
-    expect(shop).toHaveTextContent('Gold avatar frame');
-    expect(shop).toHaveTextContent('60 more needed');
-    expect(within(shop).getByRole('link', { name: 'Go to the shop' })).toHaveAttribute(
-      'href',
-      '/student/more/shop',
-    );
-
-    const challenges = section('Daily challenges');
-    expect(challenges).toHaveTextContent('Resets at midnight');
-    expect(
-      within(challenges).getByRole('progressbar', { name: 'Get 5 correct in a row' }),
-    ).toHaveAttribute('aria-valuetext', '5 of 5');
-
-    const rewards = section('Your rewards');
-    expect(rewards).toHaveTextContent('Earned this week+185 coins');
-    expect(rewards).toHaveTextContent('Badges earned12');
-    expect(rewards).toHaveTextContent('Next badge: Algebra Ace');
+    for (const name of ['Class leaderboard', 'Coin shop', 'Daily challenges', 'Your rewards']) {
+      expect(screen.queryByRole('region', { name })).not.toBeInTheDocument();
+    }
   });
 
   it('marks every panel that shows sample data', async () => {
     await renderHome();
-    for (const name of [
-      'Your assigned tasks',
-      'Your recommended practice',
-      'Your progress',
-      'Class leaderboard',
-      'Coin shop',
-      'Daily challenges',
-      'Your rewards',
-    ]) {
+    for (const name of ['Your assigned tasks', 'Your recommended practice', 'Your progress']) {
       expect(section(name)).toHaveTextContent('Sample data');
     }
     expect(section('Good afternoon, Mia')).toHaveTextContent('(sample task)');

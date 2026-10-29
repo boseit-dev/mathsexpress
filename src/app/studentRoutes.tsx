@@ -4,6 +4,10 @@ import type { AppDependencies } from '@/data/repositories';
 import { createStudentClassAction } from '@/features/student-class/studentClassHandlers';
 import { StudentClassPage } from '@/features/student-class/StudentClassPage';
 import { StudentHomePage } from '@/features/student-home/StudentHomePage';
+import { LearnPage } from '@/features/learning/LearnPage';
+import { GuidedLessonPage } from '@/features/learning/GuidedLessonPage';
+import { TextbookPage } from '@/features/textbook/TextbookPage';
+import { ShopPage } from '@/features/shop/ShopPage';
 import { createStudentHomeLoader } from '@/features/student-home/studentHomeLoader';
 import { StudentLayout } from '@/layouts/student/StudentLayout';
 import { createStudentLayoutLoader } from '@/layouts/student/studentLayoutLoader';
@@ -26,8 +30,9 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
     shouldRevalidate: ({ currentUrl, nextUrl, defaultShouldRevalidate }) =>
       defaultShouldRevalidate ||
       (currentUrl.pathname !== nextUrl.pathname &&
-        PAGES_SHOWING_CLASSES.includes(nextUrl.pathname)),
-    element: <StudentLayout />,
+        (PAGES_SHOWING_CLASSES.includes(nextUrl.pathname) ||
+          nextUrl.pathname.startsWith(paths.student.learn))),
+    element: <StudentLayout shop={dependencies.shop} />,
     children: [
       {
         // Page errors render inside the layout, so the navigation stays usable.
@@ -40,18 +45,15 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
           },
           {
             path: paths.student.learn,
-            element: planned(
-              'Learn',
-              'Practise NSW curriculum skills for your year level, with questions that adapt as you improve.',
-            ),
+            element: <LearnPage />,
           },
           {
-            path: paths.student.textbook,
-            element: planned(
-              'Textbook',
-              'The MathsExpress textbook for your year, with worked examples for every topic.',
-            ),
+            path: `${paths.student.learn}/:lessonId`,
+            element: <GuidedLessonPage shop={dependencies.shop} />,
           },
+          { path: paths.student.textbook, element: <TextbookPage /> },
+          { path: `${paths.student.textbook}/:bookId`, element: <TextbookPage /> },
+          { path: `${paths.student.textbook}/:bookId/:chapterId`, element: <TextbookPage /> },
           {
             // Uses the student and classes the layout loads.
             path: paths.student.class,
@@ -67,10 +69,7 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
           },
           {
             path: paths.student.shop,
-            element: planned(
-              'Coin shop',
-              'Spend your coins on themes, avatar frames and power-ups.',
-            ),
+            element: <ShopPage shop={dependencies.shop} />,
           },
           {
             path: paths.student.more,

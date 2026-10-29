@@ -14,7 +14,11 @@ export const paths = {
   student: {
     home: '/student',
     learn: '/student/learn',
+    lesson: (lessonId: string) => `/student/learn/${encodeURIComponent(lessonId)}`,
     textbook: '/student/textbook',
+    textbookBook: (bookId: string) => `/student/textbook/${encodeURIComponent(bookId)}`,
+    textbookChapter: (bookId: string, chapterId: string) =>
+      `/student/textbook/${encodeURIComponent(bookId)}/${encodeURIComponent(chapterId)}`,
     class: '/student/class',
     tasks: '/student/class/tasks',
     more: '/student/more',

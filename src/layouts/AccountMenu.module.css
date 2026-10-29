@@ -66,3 +66,26 @@
 .signOut {
   inline-size: 100%;
 }
+
+.avatarOutline {
+  display: inline-grid;
+  place-items: center;
+  border: 3px solid transparent;
+  border-radius: var(--radius-full);
+}
+
+.avatarOutline[data-frame='frame-starlight'] {
+  border-color: var(--color-brand-secondary);
+  box-shadow: 0 0 0 2px var(--color-brand-pale);
+}
+
+.avatarOutline[data-frame='frame-sky'] {
+  border-color: var(--color-brand-primary);
+}
+.avatarOutline[data-frame='frame-royal'] {
+  border-color: var(--color-logo-violet);
+  box-shadow: 0 0 0 2px var(--color-brand-soft);
+}
+.avatarOutline[data-frame='frame-sunrise'] {
+  border-color: var(--color-coin-edge);
+}

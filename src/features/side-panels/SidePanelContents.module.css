@@ -1,0 +1,144 @@
+.contents {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-inline-size: 0;
+}
+
+.disclaimer {
+  padding: var(--space-3);
+  border-inline-start: 3px solid var(--color-brand-muted);
+  border-radius: var(--radius-sm);
+  background: var(--color-brand-pale);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-sm);
+}
+
+.previewShop {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.previewShop p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.disabledAction {
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+  text-align: start;
+  cursor: not-allowed;
+}
+
+.achievements {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+}
+
+.achievements > p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.previewHeading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.previewHeading h3 {
+  font-size: var(--font-size-lg);
+}
+
+.badges {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.badges li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.badges svg {
+  inline-size: var(--size-icon-lg);
+  block-size: var(--size-icon-lg);
+  color: var(--color-text-brand);
+}
+
+.badges li > span {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.badges small {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+/* Contents follow the panel in: each block, then each list item, rises with a short stagger. */
+.contents > *,
+.contents li {
+  animation: rise var(--duration-panel) var(--ease-out-soft) both;
+  animation-delay: calc(140ms + var(--i, 0) * var(--motion-stagger));
+}
+
+.contents > :nth-child(2),
+.contents li:nth-child(2) {
+  --i: 1;
+}
+
+.contents > :nth-child(3),
+.contents li:nth-child(3) {
+  --i: 2;
+}
+
+.contents > :nth-child(4),
+.contents li:nth-child(4) {
+  --i: 3;
+}
+
+.contents > :nth-child(5),
+.contents li:nth-child(5) {
+  --i: 4;
+}
+
+.contents > :nth-child(6),
+.contents li:nth-child(6) {
+  --i: 5;
+}
+
+.contents > :nth-child(7),
+.contents li:nth-child(7) {
+  --i: 6;
+}
+
+.contents > :nth-child(8),
+.contents li:nth-child(8) {
+  --i: 7;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
