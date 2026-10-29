@@ -103,7 +103,7 @@ describe('student textbook library', () => {
     const user = userEvent.setup();
     renderApp('/student/textbook/year-9/solving-linear-equations');
     await screen.findByRole('heading', { name: 'Exercise 1A' });
-    const answer = screen.getAllByRole('spinbutton')[0];
+    const answer = screen.getAllByRole('textbox', { name: 'Your answer: x =' })[0];
     const check = screen.getAllByRole('button', { name: 'Check' })[0];
     const hint = screen.getAllByRole('button', { name: 'Hint' })[0];
     if (!answer || !check || !hint) throw new Error('Equation controls not found');

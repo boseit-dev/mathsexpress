@@ -28,7 +28,9 @@ function BookCover({ book }: { book: TextbookBook }) {
 type LibraryFilter = 'all' | 'my-year' | 'with-lessons';
 
 function hasPublishedMaths(book: TextbookBook): boolean {
-  return book.chapters.some((chapter) => chapter.status === 'ready' && chapter.id !== 'getting-started');
+  return book.chapters.some(
+    (chapter) => chapter.status === 'ready' && chapter.id !== 'getting-started',
+  );
 }
 
 function LibraryView() {
@@ -205,7 +207,10 @@ function BookDetail({ book }: { book: TextbookBook }) {
               : `${published.length} maths ${published.length === 1 ? 'chapter is' : 'chapters are'} ready. Other chapters are still in preparation.`}
           </p>
           {published[0] && (
-            <Link className={styles.startChapter} to={paths.student.textbookChapter(book.id, published[0].id)}>
+            <Link
+              className={styles.startChapter}
+              to={paths.student.textbookChapter(book.id, published[0].id)}
+            >
               Start reading {published[0].title} <ChevronRight aria-hidden="true" />
             </Link>
           )}

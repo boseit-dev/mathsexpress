@@ -53,10 +53,9 @@ describe('guided lesson practice', () => {
   it('lets students return to the corresponding textbook explanation', async () => {
     renderApp(paths.student.lesson('linear-equations-basics'));
     await screen.findByRole('heading', { name: 'Solving linear equations', level: 1 });
-    expect(screen.getByRole('link', { name: /Read the matching textbook chapter/ })).toHaveAttribute(
-      'href',
-      paths.student.textbookChapter('year-9', 'solving-linear-equations'),
-    );
+    expect(
+      screen.getByRole('link', { name: /Read the matching textbook chapter/ }),
+    ).toHaveAttribute('href', paths.student.textbookChapter('year-9', 'solving-linear-equations'));
   });
 
   it('checks answers, gives hints and explains the correct answer', async () => {
