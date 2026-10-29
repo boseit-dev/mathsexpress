@@ -98,8 +98,8 @@ function ProductCard({
                 className={styles.primaryButton}
                 disabled={busy}
                 onClick={() => {
-                    onBuy(item.id);
-                  }}
+                  onBuy(item.id);
+                }}
               >
                 Confirm buy
               </button>
@@ -108,8 +108,8 @@ function ProductCard({
                 className={styles.secondaryButton}
                 disabled={busy}
                 onClick={() => {
-                    onConfirm(null);
-                  }}
+                  onConfirm(null);
+                }}
               >
                 Cancel
               </button>
@@ -303,7 +303,9 @@ export function ShopPage({ shop }: { shop: ShopRepository }) {
                 className={styles.filter}
                 type="button"
                 aria-pressed={filter === id}
-                onClick={() => setFilter(id)}
+                onClick={() => {
+                  setFilter(id);
+                }}
               >
                 {label}
               </button>
