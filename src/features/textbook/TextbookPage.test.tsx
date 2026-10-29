@@ -26,6 +26,32 @@ describe('student textbook library', () => {
     expect(new Set(palettes)).toEqual(new Set(['0', '1', '2', '3', '4']));
   });
 
+  it('filters to books with published maths, then resets the library search', async () => {
+    const user = userEvent.setup();
+    renderApp('/student/textbook');
+    await screen.findByRole('heading', { level: 1, name: 'Textbook' });
+    await user.click(screen.getByRole('button', { name: 'Ready to learn' }));
+    expect(screen.getByText('Showing 1 of 25 books')).toBeVisible();
+    expect(screen.getByRole('link', { name: /Year 9 Mathematics/ })).toHaveAttribute(
+      'href',
+      '/student/textbook/year-9',
+    );
+    const search = screen.getByRole('searchbox', { name: 'Find a textbook' });
+    await user.type(search, 'standard 2');
+    expect(screen.getByText('Showing 0 of 25 books')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Show all books' }));
+    expect(search).toHaveValue('');
+    expect(screen.getByText('Showing 25 of 25 books')).toBeVisible();
+  });
+
+  it('shows the teacher-assigned year without changing student permissions', async () => {
+    const user = userEvent.setup();
+    renderApp('/student/textbook');
+    await screen.findByRole('heading', { level: 1, name: 'Textbook' });
+    await user.click(screen.getByRole('button', { name: 'My year' }));
+    expect(screen.getByText('Showing 2 of 25 books')).toBeVisible();
+  });
+
   it('opens each Year 12 Standard book independently', async () => {
     renderApp('/student/textbook');
     await screen.findByRole('heading', { level: 1, name: 'Textbook' });
@@ -52,6 +78,25 @@ describe('student textbook library', () => {
       await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' }),
     ).toBeVisible();
     expect(screen.getByRole('heading', { name: 'Exercise 1A' })).toBeVisible();
+  });
+
+  it('opens a published book chapter directly and links to guided practice', async () => {
+    const user = userEvent.setup();
+    renderApp('/student/textbook/year-9');
+    const start = await screen.findByRole('link', {
+      name: /Start reading Solving linear equations/,
+    });
+    await user.click(start);
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' }),
+    ).toBeVisible();
+    expect(screen.getByRole('link', { name: /Practise this topic in Learn/ })).toHaveAttribute(
+      'href',
+      '/student/learn/linear-equations-basics',
+    );
+    expect(screen.getByRole('navigation', { name: 'Move between chapters' })).toHaveTextContent(
+      'Previous: Getting started with your textbook',
+    );
   });
 
   it('checks a student answer, shows a hint and allows a retry', async () => {

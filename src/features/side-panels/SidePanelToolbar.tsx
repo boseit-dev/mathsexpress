@@ -80,7 +80,12 @@ export function SidePanelToolbar({ student }: { student: CurrentStudent }) {
   }, [closing]);
 
   // Lesson controls need the right edge; do not cover answer and next-question buttons.
-  if (pathname.startsWith(`${paths.student.learn}/`)) return null;
+  if (
+    pathname.startsWith(`${paths.student.learn}/`) ||
+    pathname === paths.student.textbookChapter('year-9', 'solving-linear-equations')
+  ) {
+    return null;
+  }
 
   function openPanel(id: PanelName, event: MouseEvent<HTMLButtonElement>) {
     triggerRef.current = event.currentTarget;

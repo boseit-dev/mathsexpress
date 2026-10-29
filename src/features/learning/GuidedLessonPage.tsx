@@ -1,6 +1,14 @@
 import { Celebration } from '@/components/ui/Celebration';
 import { useState } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, Lightbulb, RotateCcw, Sparkles } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpenCheck,
+  CheckCircle2,
+  Lightbulb,
+  RotateCcw,
+  Sparkles,
+} from 'lucide-react';
 import { Link, useParams } from 'react-router';
 import { Button } from '@/components/ui/Button';
 import { paths } from '@/config/paths';
@@ -84,6 +92,15 @@ export function GuidedLessonPage() {
         <h1>{lesson.title}</h1>
         <p>{lesson.introduction}</p>
       </header>
+      {lesson.yearLevel === 9 && (
+        <Link
+          className={styles.textbookReturn}
+          to={paths.student.textbookChapter('year-9', 'solving-linear-equations')}
+        >
+          <BookOpenCheck size={17} aria-hidden="true" />
+          Read the matching textbook chapter
+        </Link>
+      )}
       <div className={styles.lessonColumns}>
         <section className={styles.teachingPanel} aria-labelledby="learn-concept-heading">
           <div className={styles.stepLabel}>

@@ -108,6 +108,12 @@ describe('student quick tools', () => {
     expect(screen.queryByRole('complementary', { name: 'Student quick tools' })).toBeNull();
   });
 
+  it('stays out of the way of the interactive textbook practice chapter', async () => {
+    renderApp('/student/textbook/year-9/solving-linear-equations');
+    await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' });
+    expect(screen.queryByRole('complementary', { name: 'Student quick tools' })).toBeNull();
+  });
+
   it('has no detectable accessibility issues with a panel open', async () => {
     const { user, toolbar } = await openTools();
     await user.click(within(toolbar).getByRole('button', { name: 'Achievements' }));

@@ -1,3 +1,5 @@
+import { checkNumericalAnswer } from '@/domain/learning';
+
 /** Original, independently checked examples; not copied from any textbook. */
 export interface EquationExercise {
   id: string;
@@ -52,9 +54,7 @@ export const linearEquationExercises: readonly EquationExercise[] = [
   },
 ];
 
-/** Keep answer checking separate from presentation so it can be tested. */
+/** The textbook and guided lessons share exactly the same strict numeric checking. */
 export function isEquationAnswerCorrect(input: string, expected: number): boolean {
-  if (!input.trim()) return false;
-  const value = Number(input);
-  return Number.isFinite(value) && Math.abs(value - expected) < 1e-9;
+  return checkNumericalAnswer(input, expected);
 }

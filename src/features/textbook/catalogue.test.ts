@@ -57,6 +57,9 @@ describe('original Year 9 equation exercises', () => {
     expect(isEquationAnswerCorrect(' ', 8)).toBe(false);
     expect(isEquationAnswerCorrect('not a number', 8)).toBe(false);
     expect(isEquationAnswerCorrect('Infinity', 8)).toBe(false);
+    expect(isEquationAnswerCorrect('0x8', 8)).toBe(false);
+    expect(isEquationAnswerCorrect('8e0', 8)).toBe(false);
+    expect(isEquationAnswerCorrect('−4', -4)).toBe(true);
     expect(isEquationAnswerCorrect('8', 8)).toBe(true);
   });
 });

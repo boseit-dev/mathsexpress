@@ -17,6 +17,15 @@ describe('Learn page', () => {
     );
   });
 
+  it('links an assigned Year 9 student to the original textbook chapter', async () => {
+    renderApp(paths.student.learn);
+    await screen.findByRole('heading', { level: 1, name: 'Learn' });
+    expect(screen.getByRole('link', { name: /Open Year 9 chapter/ })).toHaveAttribute(
+      'href',
+      paths.student.textbookChapter('year-9', 'solving-linear-equations'),
+    );
+  });
+
   it('asks students without a class to join one', async () => {
     const state = createFakeState();
     state.classes[0]?.students.splice(0);
@@ -41,6 +50,15 @@ describe('Learn page', () => {
 });
 
 describe('guided lesson practice', () => {
+  it('lets students return to the corresponding textbook explanation', async () => {
+    renderApp(paths.student.lesson('linear-equations-basics'));
+    await screen.findByRole('heading', { name: 'Solving linear equations', level: 1 });
+    expect(screen.getByRole('link', { name: /Read the matching textbook chapter/ })).toHaveAttribute(
+      'href',
+      paths.student.textbookChapter('year-9', 'solving-linear-equations'),
+    );
+  });
+
   it('checks answers, gives hints and explains the correct answer', async () => {
     const user = userEvent.setup();
     renderApp(paths.student.lesson('linear-equations-basics'));

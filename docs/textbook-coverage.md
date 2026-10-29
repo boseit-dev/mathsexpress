@@ -34,6 +34,12 @@ been written, mapped, audited or approved.
 - One original pilot chapter: Year 9, solving linear equations. Includes a worked example,
   six numerical questions, hints, retry feedback and simple answer checking. Equations
   and answers are verified by unit tests. No user answers or scores are persisted.
+- The library can filter by assigned year and by books with published maths chapters.
+  It reports actual availability: only the Year 9 equations pilot has maths lessons at
+  this stage. The introduction guide is not counted as a complete maths chapter.
+- Readers can move between adjacent chapters and (if teacher-assigned Year 9) navigate
+  between the textbook pilot and the published guided Learn lesson. All answers remain
+  session-only, with no account progress saving.
 
 ## Outstanding before describing any book as syllabus-complete
 

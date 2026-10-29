@@ -10,6 +10,15 @@ Phase 3 first learning slice (in development).
 
 ### Added
 
+- Improved the existing textbook library with All books, My year, and Ready to learn filters,
+  visible result counts and an easy reset when a search returns no matching books.
+- Clarified that books without a maths lesson contain only a syllabus outline and introduction.
+  Added direct links into ready chapters and previous/next chapter navigation.
+- Connected the original Year 9 equations textbook to the existing guided Learn lesson in both
+  directions, only offering practice when the student's teacher-assigned year permits it.
+- Unified textbook numeric checking with Learn's strict parser (including typed negative signs)
+  and kept the floating quick tools clear of the interactive textbook exercise page.
+
 - Introduced an original MathsExpress textbook library with 25 separate books for K–10,
   secondary Life Skills and the distinct Year 11–12 mathematics courses. All books open
   through their own links, with chapter contents, a getting-started chapter and syllabus links.
