@@ -275,3 +275,14 @@ Rules:
 
 See `docs/rebuild-reference.md` for where the old code, feature inventory and live-system notes
 are kept. Use them for reference only; never copy old code in wholesale.
+
+## Coin Shop (new)
+The shop is now a real authenticated student feature at `/student/more/shop`.
+A secure SQL migration creates account wallets, cosmetic inventory and coin
+transactions, plus RPC functions that verify access and handle purchases and
+lesson rewards atomically. The shop grants 100 once-only welcome coins and
+20 coins for each of the five published Year 9 lesson questions correctly
+solved once. Do not invent coin balances, let the browser set coins, expose
+shop tables directly or imply repeat practice earns infinite coins. Cosmetics
+are permanent; themes affect brand accents and frames outline the account avatar.
+Other rewards in the side panels remain explicitly sample data.

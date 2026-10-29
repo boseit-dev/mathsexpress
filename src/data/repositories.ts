@@ -10,6 +10,7 @@ import type {
 } from '@/domain/classes';
 import type { CurrentStudent, YearLevel } from '@/domain/student';
 import type { StudentHome } from '@/domain/studentHome';
+import type { CosmeticCategory, ShopState } from '@/domain/shop';
 
 export interface RequestOptions {
   /** Cancels the request, e.g. when the user navigates away before it finishes. */
@@ -83,12 +84,21 @@ export interface StudentHomeRepository {
   ): Promise<StudentHome>;
 }
 
+/** Account-scoped purchases, inventory, equip state and verified maths-earned coins. */
+export interface ShopRepository {
+  getState(): Promise<ShopState>;
+  buy(itemId: string): Promise<ShopState>;
+  equip(category: CosmeticCategory, itemId: string | null): Promise<ShopState>;
+  awardAnswer(questionId: string, answer: string): Promise<ShopState>;
+}
+
 /** Everything the routes need from the outside world, injected so tests can replace it. */
 export interface AppDependencies {
   auth: AuthService;
   accounts: AccountRepository;
   classes: ClassRepository;
   studentHome: StudentHomeRepository;
+  shop: ShopRepository;
   /** The current time. Injected so date-based logic can be tested. */
   now: () => Date;
 }

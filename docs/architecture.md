@@ -168,3 +168,10 @@ project is created for 2.0:
   `public/_headers` sets the Content-Security-Policy (the build adds the Supabase address) and
   caching. `npm run preview:worker` runs the
   production build locally in the Cloudflare runtime.
+
+## Coin Shop
+The Shop page uses the `ShopRepository` abstraction, with a real Supabase
+implementation and in-memory tests. Database RPC functions are the only
+authenticated shop API; new catalogue, wallet, inventory, ledger and answer
+award tables have RLS enabled and no direct authenticated table grants.
+No real-money payment functionality or random/loot-box products are implemented.

@@ -281,6 +281,10 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      shop_state: { Args: Record<PropertyKey, never>; Returns: Json };
+      shop_buy: { Args: { item_id: string }; Returns: Json };
+      shop_equip: { Args: { category: string; item_id?: string | null }; Returns: Json };
+      shop_award_answer: { Args: { question_id: string; answer: string }; Returns: Json };
       class_students: {
         Args: { class_id: string };
         Returns: Database['public']['CompositeTypes']['class_student'][];

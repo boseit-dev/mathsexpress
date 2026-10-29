@@ -13,6 +13,8 @@ import { Link, useParams } from 'react-router';
 import { Button } from '@/components/ui/Button';
 import { paths } from '@/config/paths';
 import { checkNumericalAnswer, publishedLessons } from '@/domain/learning';
+import type { ShopRepository } from '@/data/repositories';
+import { errorCodeOf } from '@/domain/errors';
 import { useRefreshWhenVisible } from '@/hooks/useRefreshWhenVisible';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useCurrentStudent } from '@/layouts/student/useCurrentStudent';
@@ -21,7 +23,7 @@ import styles from './Learning.module.css';
 type Feedback = 'idle' | 'incorrect' | 'correct';
 
 /** Real practice and marking. Account-based progress saving is a separate, upcoming phase. */
-export function GuidedLessonPage() {
+export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
   const { lessonId } = useParams();
   const student = useCurrentStudent();
   const lesson = publishedLessons.find((item) => item.id === lessonId);
@@ -34,6 +36,7 @@ export function GuidedLessonPage() {
   const [hints, setHints] = useState(0);
   const [mistakes, setMistakes] = useState(0);
   const [complete, setComplete] = useState(false);
+  const [coinNotice, setCoinNotice] = useState('');
 
   if (!lesson || !permitted) {
     return (
@@ -55,6 +58,17 @@ export function GuidedLessonPage() {
     if (!current || !answer.trim() || feedback === 'correct') return;
     if (checkNumericalAnswer(answer, current.solution)) {
       setFeedback('correct');
+      setCoinNotice('Checking your coin reward…');
+      shop.awardAnswer(current.id, answer).then((state) => {
+        setCoinNotice(`+20 coins saved! Your balance is now ${state.balance}.`);
+        window.dispatchEvent(new CustomEvent('mathsexpress:shop-updated', { detail: state }));
+      }).catch((reason: unknown) => {
+        setCoinNotice(
+          errorCodeOf(reason) === 'shop_already_rewarded'
+            ? 'Already earned your coins for this question.'
+            : 'Your answer is correct, but coins could not be saved. Try again later.',
+        );
+      });
     } else {
       setFeedback('incorrect');
       setMistakes((value) => value + 1);
@@ -71,6 +85,7 @@ export function GuidedLessonPage() {
     setAnswer('');
     setFeedback('idle');
     setHints(0);
+    setCoinNotice('');
   }
 
   function restart() {
@@ -80,6 +95,7 @@ export function GuidedLessonPage() {
     setHints(0);
     setMistakes(0);
     setComplete(false);
+    setCoinNotice('');
   }
 
   return (
@@ -225,6 +241,9 @@ export function GuidedLessonPage() {
                     </ol>
                   </div>
                 )}
+                {feedback === 'correct' && coinNotice && (
+                  <p className={styles.note} role="status">{coinNotice}</p>
+                )}
                 <div className={styles.actions}>
                   {feedback !== 'correct' && (
                     <Button
@@ -251,8 +270,8 @@ export function GuidedLessonPage() {
                 </div>
               </form>
               <p className={styles.sessionNote}>
-                <Sparkles size={15} aria-hidden="true" /> Practice is interactive. Your progress is
-                not saved to your account in this first build.
+                <Sparkles size={15} aria-hidden="true" /> Your first correct answers earn real coins.
+                Lesson progress is not saved yet.
               </p>
             </>
           )}

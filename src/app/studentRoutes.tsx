@@ -31,7 +31,7 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
       (currentUrl.pathname !== nextUrl.pathname &&
         (PAGES_SHOWING_CLASSES.includes(nextUrl.pathname) ||
           nextUrl.pathname.startsWith(paths.student.learn))),
-    element: <StudentLayout />,
+    element: <StudentLayout shop={dependencies.shop} />,
     children: [
       {
         // Page errors render inside the layout, so the navigation stays usable.

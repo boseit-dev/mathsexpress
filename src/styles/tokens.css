@@ -185,3 +185,41 @@
   --duration-panel-exit: 240ms;
   --motion-stagger: 45ms;
 }
+
+/* Purchased themes change shared student accents, not learning content or permissions. */
+:root[data-shop-theme='theme-ocean'] {
+  --color-brand-primary: #235d8f;
+  --color-brand-primary-hover: #1d507b;
+  --color-brand-primary-active: #174465;
+  --color-brand-secondary: #729fd1;
+  --color-brand-soft: #b6d1e7;
+  --color-brand-light-blue: #e3f2fa;
+  --color-brand-pale: #e9f3fb;
+}
+:root[data-shop-theme='theme-lavender'] {
+  --color-brand-primary: #62449b;
+  --color-brand-primary-hover: #523983;
+  --color-brand-primary-active: #402c67;
+  --color-brand-secondary: #a08acb;
+  --color-brand-soft: #c8b7e0;
+  --color-brand-light-blue: #eee7fa;
+  --color-brand-pale: #f4effc;
+}
+:root[data-shop-theme='theme-mint'] {
+  --color-brand-primary: #21685f;
+  --color-brand-primary-hover: #195b53;
+  --color-brand-primary-active: #144b43;
+  --color-brand-secondary: #79b6ab;
+  --color-brand-soft: #b2d8cf;
+  --color-brand-light-blue: #e2f5ef;
+  --color-brand-pale: #ebf9f4;
+}
+:root[data-shop-theme='theme-sunset'] {
+  --color-brand-primary: #955038;
+  --color-brand-primary-hover: #7d412e;
+  --color-brand-primary-active: #653323;
+  --color-brand-secondary: #da977c;
+  --color-brand-soft: #e3c1af;
+  --color-brand-light-blue: #fbefe7;
+  --color-brand-pale: #fff4e9;
+}

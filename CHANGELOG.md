@@ -10,6 +10,14 @@ Phase 3 first learning slice (in development).
 
 ### Added
 
+- Built the first real account-backed Coin Shop with an original catalogue of eight
+  permanent themes and avatar frames, a starter wallet, secure transactional buying,
+  owned-item locker, equip/unequip controls, and recent purchase history.
+- Added server-verified, once-per-question coin earnings for the published Year 9
+  guided lesson, with database protection against forging rewards or overspending.
+- Replaced the fake shop side-panel contents with the student's real coin balance
+  and a working link to the full Shop page. No real-money payments or chance items.
+
 - Improved the existing textbook library with All books, My year, and Ready to learn filters,
   visible result counts and an easy reset when a search returns no matching books.
 - Clarified that books without a maths lesson contain only a syllabus outline and introduction.

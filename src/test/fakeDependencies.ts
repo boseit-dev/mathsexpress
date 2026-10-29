@@ -10,6 +10,8 @@ import {
   type TeacherClass,
 } from '@/domain/classes';
 import { AppError } from '@/domain/errors';
+import { checkNumericalAnswer } from '@/domain/learning';
+import { makeFreshShopState, type ShopState } from '@/domain/shop';
 import { getFullName, getShortName } from '@/domain/people';
 import type { YearLevel } from '@/domain/student';
 import { createSampleStudentHomeRepository } from '@/data/sample/sampleStudentHomeRepository';
@@ -51,6 +53,8 @@ export interface FakeState {
   sentEmails: { to: string; type: EmailLinkType }[];
   /** Notified when the session ends elsewhere; see endSessionElsewhere. */
   signedOutListeners: Set<() => void>;
+  shopWallets: Map<string, ShopState>;
+  rewardedQuestions: Map<string, Set<string>>;
 }
 
 export const testStudent = { email: 'mia@example.test', firstName: 'Mia', lastName: 'Chen' };
@@ -109,6 +113,8 @@ export function createFakeState(): FakeState {
     emailLinks: new Map(),
     sentEmails: [],
     signedOutListeners: new Set(),
+    shopWallets: new Map(),
+    rewardedQuestions: new Map(),
   };
 }
 
@@ -407,6 +413,69 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
     },
 
     studentHome: createSampleStudentHomeRepository(() => TEST_NOW),
+    shop: {
+      async getState() {
+        await Promise.resolve();
+        const student = requireRole('student');
+        if (!state.shopWallets.has(student.id)) {
+          state.shopWallets.set(student.id, makeFreshShopState());
+        }
+        return structuredClone(state.shopWallets.get(student.id)!);
+      },
+      async buy(itemId) {
+        const student = requireRole('student');
+        const snapshot = await this.getState();
+        const item = snapshot.items.find((entry) => entry.id === itemId);
+        if (!item) throw new AppError('shop_item_unavailable');
+        if (snapshot.owned.includes(itemId)) throw new AppError('shop_already_owned');
+        if (snapshot.balance < item.price) throw new AppError('shop_not_enough_coins');
+        snapshot.balance -= item.price;
+        snapshot.owned.push(itemId);
+        snapshot.transactions.unshift({
+          id: snapshot.transactions.length + 1, itemId, delta: -item.price,
+          reason: 'purchase', createdAt: TEST_NOW.toISOString(),
+        });
+        state.shopWallets.set(student.id, snapshot);
+        return structuredClone(snapshot);
+      },
+      async equip(category, itemId) {
+        const student = requireRole('student');
+        const snapshot = await this.getState();
+        if (category !== 'theme' && category !== 'frame') throw new AppError('shop_invalid_category');
+        if (itemId && !snapshot.items.some((item) =>
+          item.id === itemId && item.category === category && snapshot.owned.includes(itemId)
+        )) throw new AppError('shop_not_owned');
+        if (category === 'theme') snapshot.equippedTheme = itemId;
+        else snapshot.equippedFrame = itemId;
+        state.shopWallets.set(student.id, snapshot);
+        return structuredClone(snapshot);
+      },
+      async awardAnswer(questionId, answer) {
+        const student = requireRole('student');
+        if (!state.classes.some((item) =>
+          item.students.some((member) => member.studentId === student.id && member.yearLevel === 9)
+        )) throw new AppError('shop_lesson_unavailable');
+        const correct: Record<string, number> = {
+          'eq-1': 5, 'eq-2': 5, 'eq-3': -3, 'eq-4': 5, 'eq-5': -4,
+        };
+        if (!(questionId in correct)) throw new AppError('shop_question_unavailable');
+        if (!checkNumericalAnswer(answer, correct[questionId]!)) {
+          throw new AppError('shop_answer_incorrect');
+        }
+        const awarded = state.rewardedQuestions.get(student.id) ?? new Set<string>();
+        if (awarded.has(questionId)) throw new AppError('shop_already_rewarded');
+        awarded.add(questionId);
+        state.rewardedQuestions.set(student.id, awarded);
+        const snapshot = await this.getState();
+        snapshot.balance += 20;
+        snapshot.transactions.unshift({
+          id: snapshot.transactions.length + 1, itemId: null, delta: 20,
+          reason: 'correct_answer', createdAt: TEST_NOW.toISOString(),
+        });
+        state.shopWallets.set(student.id, snapshot);
+        return structuredClone(snapshot);
+      },
+    },
     now: () => TEST_NOW,
   };
 }
