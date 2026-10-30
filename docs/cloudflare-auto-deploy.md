@@ -9,10 +9,12 @@ The owner approved automatic deployments **only to the separate V2 test Worker**
 1. Create or select the **mathsexpress-v2** Worker in Cloudflare. Keep it separate from the old
    live `mathsexpress` Worker and do not add the old site's custom domain or routes.
 2. In Cloudflare, get your **Account ID** and make a scoped **Workers editing** API token for
-   that account. Never share or commit the token.
-3. Set up a **separate hosted Supabase project** for MathsExpress 2.0. Apply this repository's
-   V2 migrations to the new project, using a reviewed migration process. Do not connect to
-   the old live MathsExpress Supabase database (`dsjrxkxjcaurrbijihja`).
+   that account. Never share or commit the token. A token appeared in a screenshot during
+   setup: revoke it and use a newly rotated token before any public deployment.
+3. The new hosted Supabase project `czvmrksotfpzitjgopnj` has already been created in Sydney,
+   with six migrations applied and no user accounts. Do not connect to the paused legacy
+   database (`dsjrxkxjcaurrbijihja`). See [hosted launch](hosted-launch.md) before accepting
+   real accounts.
 4. Open GitHub **Settings > Secrets and variables > Actions** for `boseit-dev/mathsexpress`.
    Under **Secrets**, create:
    - `CLOUDFLARE_V2_API_TOKEN`: the scoped Cloudflare API token.

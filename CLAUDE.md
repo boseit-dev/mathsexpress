@@ -27,18 +27,22 @@ It overrides habits and defaults. If an instruction from the user conflicts with
 
 ## Production safety: never break these
 
-- The live website is the **old** MathsExpress (v11.5.35) on the Cloudflare Worker `mathsexpress`.
-  Its code is preserved in tag `v11.5.35` and branch `legacy-v11`. It must keep running untouched
-  until the user approves the MathsExpress 2.0 release.
-- This project deploys to a **separate** Worker, `mathsexpress-v2` (`wrangler.jsonc`). Never point
-  it at `mathsexpress`, and the owner approved automatic GitHub Actions deployments **only** to
-  `mathsexpress-v2` on 30 October 2026. Manual deployments and any deployment to the original
-  Worker still need explicit approval. Never change the old Worker's routes, domains or secrets.
-- Never touch the production Supabase project `dsjrxkxjcaurrbijihja`: no migrations, writes,
-  deletions or exports. Student, teacher and class data must never be removed or exposed.
-- Development uses only the **local** Supabase stack (`supabase start`, in Docker). Never run
-  `supabase link` or `supabase db push`, and never create or change a hosted Supabase project,
-  without the user's explicit approval. There is no hosted 2.0 database yet.
+- The owner authorised replacing the old website with MathsExpress 2.0 on 30 October 2026,
+  with **fresh student and teacher accounts**. No old auth accounts or data are migrated.
+  The old code remains backed up in `legacy-v11` and tag `v11.5.35`.
+- The old Cloudflare Worker `mathsexpress` still serves the legacy code until a new-site
+  cutover succeeds. First deploy and verify the separate `mathsexpress-v2` staging Worker;
+  after hosted authentication and smoke tests pass, publish V2 to the legacy Worker name.
+  Never delete the old code backup or deploy to the old Worker without a tested release.
+- The old Supabase project `dsjrxkxjcaurrbijihja` was paused (not deleted) to free the
+  Free plan slot. Never change its schema, data or account records.
+- The owner approved the separate hosted V2 Supabase project `czvmrksotfpzitjgopnj` in
+  Sydney; all six schema migrations were installed there on 30 October 2026. It starts
+  with no auth accounts. Use it only for V2, never the old database.
+- Local development still uses Docker's local Supabase stack. Hosted V2 database changes
+  require reviewed migrations and tests. The hosted migration tool assigned its own migration
+  versions; reconcile history before any future CLI `supabase db push` to avoid reapplying SQL.
+  Follow `docs/hosted-launch.md` for hosted authentication and release requirements.
 - Never commit, print or paste passwords, API keys or tokens. Real values belong in untracked
   `.dev.vars` / `.env` files or Cloudflare secrets; only placeholder examples are committed. The
   repository is **public**.
@@ -93,7 +97,8 @@ and push it. Never push to `main` directly.
 push, GitHub Actions deploys automatically to the **separate** `mathsexpress-v2` Worker if its
 hosting secrets and a separate V2 Supabase project are configured. See
 `docs/cloudflare-auto-deploy.md`. This does not deploy from `main` or touch the old live site.
-Replacing the original v11 website requires separate owner approval.
+The owner has approved the V2 replacement; verify hosted auth and a staging deployment before
+changing the live Worker. No account migration is requested.
 
 ### Commit messages
 

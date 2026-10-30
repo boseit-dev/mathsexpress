@@ -16,11 +16,13 @@ architecture, design system and codebase.
 | 3     | Guided learning and practice                                   | Started (Year 9 lesson) |
 | Later | Teacher tasks, interactive textbook, rewards, reports          | Planned                 |
 
-- 2.0 is a development preview. Accounts and classes are real (in a local database during
-  development); home-page panels for features that aren't built yet are labelled "Sample data",
-  and sections that are not built yet say so.
-- The live website (https://mathsexpress.aarush-sharma6.workers.dev) still runs the original
-  v11.5.35. It is replaced only when 2.0 is complete and the owner approves the release.
+- The teacher workspace, lesson tasks, saved student progress, reports and coin shop are
+  implemented. Other practice content and textbook chapters are still in development.
+- A **new empty hosted V2 database** was created in Sydney, and its six migrations were
+  applied. Every student and teacher must create a **new account**; old accounts are not migrated.
+- The old MathsExpress database is paused and preserved. The existing public Worker still
+  serves v11 until the separate V2 preview passes hosted-authentication and live-site checks.
+  See [hosted launch](docs/hosted-launch.md).
 
 ## Getting started
 
@@ -94,8 +96,9 @@ GitHub Actions deploys **tested pushes to `mathsexpress-v2`** automatically to t
 Cloudflare V2 Worker, once the required hosting settings are configured. Until then, CI prints a
 setup warning and skips deployment. See [Cloudflare setup](docs/cloudflare-auto-deploy.md).
 
-The original live `mathsexpress` Worker remains untouched. Merging into `main` does not trigger a
-new deployment. Replacing the original live site still requires separate approval.
+The original live `mathsexpress` Worker has not yet been replaced. The owner approved a
+fresh-account replacement; proceed only after V2 hosting, sign-in and email links have been
+verified. The old code and paused database remain available for rollback.
 
 ## Quality and contributing
 
