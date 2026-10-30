@@ -16,6 +16,12 @@ Phase 3 first learning slice (in development).
 
 ### Added
 
+- Added gentle background motion in the brand colours: squiggles that sway and bend near the
+  left and right edges, small dots that swell, drift and fade (some in little groups), and a
+  few soft floating shapes. Each area has its own arrangement; lessons and textbook reading
+  stay calm. Decorative only: behind content, not clickable, hidden from screen readers, still
+  for reduced motion, and kept to the very edges on phones.
+
 - Built teacher Reports from saved, server-marked lesson work only: class summaries (active
   students, lessons completed, right-first-time accuracy, tasks completed), per-lesson progress
   bars, a searchable and sortable student table, task completion, and each student's attempts.
@@ -206,6 +212,11 @@ Phase 2: authentication, accounts and class management.
 - The Google button shows that Google sign-in isn't available yet before anyone presses it.
 
 ### Fixed
+
+- Fixed the page jumping sideways and back when moving between pages. The page-entrance
+  animation moved the whole main area down a few pixels, briefly pushing short pages past the
+  window and flashing a scrollbar (and moving the fixed quick-tools bar). Now only the page
+  content animates, and space for the scrollbar is always reserved.
 
 - The site's Content-Security-Policy now allows connections to its Supabase project; before, a
   build served by the Worker could not reach the database.

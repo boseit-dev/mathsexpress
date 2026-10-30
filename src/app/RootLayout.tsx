@@ -6,6 +6,8 @@ import {
   useNavigation,
   useRevalidator,
 } from 'react-router';
+import { decorVariantFor } from '@/components/decor/decorArrangements';
+import { PageDecor } from '@/components/decor/PageDecor';
 import type { AuthService } from '@/data/repositories';
 import { focusMainAfterNavigation, focusMainAfterRetry } from './mainContentFocus';
 import { animatePageEntrance } from './pageTransition';
@@ -50,6 +52,8 @@ export function RootLayout({ auth }: { auth: AuthService }) {
 
   return (
     <>
+      {/* One background layer for every page; its arrangement changes with the area. */}
+      <PageDecor key={decorVariantFor(pathname)} variant={decorVariantFor(pathname)} />
       {isLoading && <div className={styles.loadingBar} aria-hidden="true" />}
       <p aria-live="polite" className={styles.visuallyHidden}>
         {isLoading ? 'Loading…' : ''}

@@ -13,6 +13,18 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /*
+   * Always keep room for the vertical scrollbar. Without this, moving between a short page and a
+   * long one adds or removes the scrollbar and the whole layout jumps sideways by its width.
+   */
+  scrollbar-gutter: stable;
+}
+
+/* Browsers without scrollbar-gutter (older Safari) get a permanent scrollbar instead. */
+@supports not (scrollbar-gutter: stable) {
+  html {
+    overflow-y: scroll;
+  }
 }
 
 body {
