@@ -32,6 +32,10 @@ interface Props {
   chapter: TextbookChapter;
 }
 
+function topicAccessibilityLabel(item: TextbookChapter): string {
+  return item.title + (item.status === 'ready' ? ' — Ready' : ' — In preparation');
+}
+
 export function TextbookReader({ book, chapter }: Props) {
   const student = useCurrentStudent();
   const [search, setSearch] = useState('');
@@ -106,9 +110,7 @@ export function TextbookReader({ book, chapter }: Props) {
                         <Link
                           to={paths.student.textbookChapter(book.id, item.id)}
                           className={styles.topicLink}
-                          aria-label={
-                            item.title + ' — ' + (item.status === 'ready' ? 'Ready' : 'In preparation')
-                          }
+                          aria-label={topicAccessibilityLabel(item)}
                           aria-current={item.id === chapter.id ? 'page' : undefined}
                         >
                           <span className={styles.topicName}>{item.title}</span>
