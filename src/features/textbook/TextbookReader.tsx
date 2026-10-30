@@ -106,6 +106,9 @@ export function TextbookReader({ book, chapter }: Props) {
                         <Link
                           to={paths.student.textbookChapter(book.id, item.id)}
                           className={styles.topicLink}
+                          aria-label={
+                            item.title + ' — ' + (item.status === 'ready' ? 'Ready' : 'In preparation')
+                          }
                           aria-current={item.id === chapter.id ? 'page' : undefined}
                         >
                           <span className={styles.topicName}>{item.title}</span>

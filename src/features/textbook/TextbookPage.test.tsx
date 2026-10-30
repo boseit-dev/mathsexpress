@@ -123,7 +123,7 @@ describe('student textbook library', () => {
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Geometric measure' }),
     ).toBeVisible();
-    expect(screen.getByRole('heading', { name: 'Chapter in preparation' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Lesson in preparation' })).toBeVisible();
   });
 
   it('lets students search topics and switch between lessons and revision', async () => {
@@ -134,8 +134,8 @@ describe('student textbook library', () => {
     ).toBeVisible();
     const topicSearch = screen.getByRole('searchbox', { name: 'Search topics' });
     await user.type(topicSearch, 'linear');
-    expect(screen.getByRole('link', { name: /Solving linear equations Ready/ })).toBeVisible();
-    expect(screen.queryByRole('link', { name: /Probability Planned/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Solving linear equations — Ready/ })).toBeVisible();
+    expect(screen.queryByRole('link', { name: /Probability — In preparation/ })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('tab', { name: 'Questions' }));
     expect(screen.getByRole('heading', { name: 'Exercise 1A' })).toBeVisible();
