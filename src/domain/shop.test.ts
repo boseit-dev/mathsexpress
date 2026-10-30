@@ -127,7 +127,7 @@ describe('browsing', () => {
     expect(found.map((entry) => entry.id)).toEqual(
       expect.arrayContaining(['acc-space-helmet', 'frame-cosmic']),
     );
-    expect(filterShopItems(state, { ...DEFAULT_FILTERS, search: 'frame' }).length).toBe(13);
+    expect(filterShopItems(state, { ...DEFAULT_FILTERS, search: 'frame' }).length).toBe(16);
   });
 
   it('filters by category, rarity and price', () => {
@@ -157,7 +157,7 @@ describe('browsing', () => {
     const byName = filterShopItems(state, { ...DEFAULT_FILTERS, sort: 'name' });
     expect(cheapest[0]?.price).toBe(0);
     expect(priciest[0]?.price).toBe(5000);
-    expect(byName[0]?.name).toBe('Astronaut Capybara');
+    expect(byName[0]?.name).toBe('Algebra Adventurer');
     expect(cheapest.map((entry) => entry.price)).toEqual(
       [...cheapest.map((entry) => entry.price)].sort((a, b) => a - b),
     );

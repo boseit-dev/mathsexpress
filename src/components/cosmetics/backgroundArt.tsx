@@ -399,18 +399,115 @@ const mathsUniverse: Draw = (id) => (
   </g>
 );
 
+const chalkboard: Draw = (id) => (
+  <g>
+    {sky(id, '#2F5D4F', '#244A3F')}
+    <rect x={0} y={90} width={160} height={10} fill="#8B6A4E" />
+    <rect x={0} y={88} width={160} height={3} fill="#A9835F" />
+    <g fill="none" stroke={C.white} strokeWidth={1.2} strokeLinecap="round" opacity={0.85}>
+      <path d="M14 26L34 26M24 16L24 36" />
+      <path d="M118 20Q130 8 142 20T166 20" />
+      <path d="M18 72L40 52L40 72Z" />
+      <circle cx={132} cy={66} r={10} />
+      <path d="M122 66H142" />
+    </g>
+    <g fontFamily="'Comic Sans MS', 'Chalkboard SE', cursive" fill={C.white} opacity={0.85}>
+      <text x={48} y={30} fontSize={9}>
+        2x + 3 = 11
+      </text>
+      <text x={98} y={44} fontSize={8}>
+        a² + b² = c²
+      </text>
+      <text x={54} y={80} fontSize={8}>
+        x = 4 ✓
+      </text>
+    </g>
+    <rect x={128} y={86} width={10} height={3} rx={1} fill={C.white} />
+  </g>
+);
+
+const autumnForest: Draw = (id) => (
+  <g>
+    {sky(id, '#FBD9B0', '#F6EBDD')}
+    {[
+      [16, 0.9, '#C2652A'],
+      [42, 1.1, '#E8843C'],
+      [118, 1.2, '#D9A520'],
+      [146, 0.95, '#B03A2E'],
+    ].map(([x = 0, scale = 1, colour = C.orange]) => (
+      <g key={String(x)} transform={`translate(${Number(x)} 64) scale(${Number(scale)})`}>
+        <rect x={-2.5} y={0} width={5} height={36} fill="#6B4A2E" />
+        <circle cx={0} cy={-8} r={18} fill={String(colour)} />
+        <circle cx={-10} cy={2} r={11} fill={String(colour)} opacity={0.85} />
+        <circle cx={10} cy={2} r={11} fill={String(colour)} opacity={0.85} />
+      </g>
+    ))}
+    <path d="M0 100V86Q80 78 160 86V100Z" fill="#C98B52" />
+    {[30, 64, 90, 104, 130].map((x, index) => (
+      <ellipse
+        key={x}
+        cx={x}
+        cy={90 + (index % 2) * 4}
+        rx={3}
+        ry={1.6}
+        fill={index % 2 ? C.orange : C.red}
+        transform={`rotate(${index * 30} ${x} 90)`}
+      />
+    ))}
+  </g>
+);
+
+const desertDunes: Draw = (id) => (
+  <g>
+    {sky(id, '#7FB6E8', '#F8E1B4')}
+    <circle cx={124} cy={26} r={14} fill="#FFE08A" />
+    <circle cx={124} cy={26} r={20} fill="#FFE08A" opacity={0.3} />
+    <path d="M0 70Q40 54 80 68T160 62V100H0Z" fill="#E9B970" />
+    <path d="M0 84Q60 70 120 82T160 80V100H0Z" fill="#D9A04F" />
+    <path
+      d="M24 82V66M24 72Q18 72 18 66M24 76Q30 76 30 70"
+      stroke={C.greenDark}
+      strokeWidth={3}
+      fill="none"
+      strokeLinecap="round"
+    />
+    <path d="M60 40l6 -2l6 2" stroke={C.navy} strokeWidth={1} fill="none" opacity={0.5} />
+  </g>
+);
+
+const volcanoIsland: Draw = (id) => (
+  <g>
+    {sky(id, '#4A3A7A', '#F29A6B')}
+    <path
+      d="M62 8Q70 0 78 8Q86 2 92 10Q88 18 80 16Q74 24 66 18Q58 18 62 8Z"
+      fill="#7A6F8E"
+      opacity={0.75}
+    />
+    <path d="M40 74L70 28H90L120 74Z" fill="#5A3E3A" />
+    <path d="M70 28H90L84 38L80 34L76 40Z" fill={C.orange} />
+    <path d="M78 34Q76 50 82 62" stroke={C.orange} strokeWidth={3} fill="none" opacity={0.85} />
+    <rect y={72} width={160} height={28} fill="#2E5B9A" />
+    <path d="M10 82H40M100 88H140M50 94H80" stroke={C.white} strokeWidth={1} opacity={0.4} />
+    <path d="M34 74Q80 66 126 74Z" fill="#3F7A4E" />
+  </g>
+);
+
 export const BACKGROUND_ART: Record<string, Draw> = {
   'bg-lavender-hills': lavenderHills,
   'bg-classic-blue': classicBlue,
+  'bg-chalkboard': chalkboard,
   'bg-dreamy-clouds': dreamyClouds,
   'bg-sunset-beach': sunsetBeach,
+  'bg-autumn-forest': autumnForest,
   'bg-rainforest': rainforest,
   'bg-snowy-mountains': snowyMountains,
   'bg-deep-ocean': deepOcean,
   'bg-football-stadium': footballStadium,
+  'bg-desert-dunes': desertDunes,
   'bg-moon-surface': moonSurface,
   'bg-neon-city': neonCity,
   'bg-underwater-kingdom': underwaterKingdom,
+  'bg-volcano-island': volcanoIsland,
   'bg-cyber-grid': cyberGrid,
   'bg-northern-lights': northernLights,
   'bg-cosmic-galaxy': cosmicGalaxy,

@@ -155,6 +155,12 @@ export function TryOnDialog({ item, startWith, onClose }: TryOnDialogProps) {
               <CoinAmount amount={item.price} />
             )}
           </p>
+          {item.category === 'theme' && status !== 'equipped' && (
+            <p className={styles.combo}>
+              The whole page is showing {item.name} while you try it on. Cancel puts your own
+              colours back.
+            </p>
+          )}
           {alsoTrying.length > 0 && (
             <p className={styles.combo}>Also trying on: {alsoTrying.join(', ')}</p>
           )}

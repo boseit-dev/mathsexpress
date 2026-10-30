@@ -230,3 +230,75 @@
   --color-brand-light-blue: #fbefe7;
   --color-brand-pale: #fff4e9;
 }
+:root[data-shop-theme='theme-forest'] {
+  --color-brand-primary: #2d6a3e;
+  --color-brand-primary-hover: #255933;
+  --color-brand-primary-active: #1d4828;
+  --color-brand-secondary: #6fae7f;
+  --color-brand-soft: #b7d9be;
+  --color-brand-light-blue: #e5f3e8;
+  --color-brand-pale: #eef7f0;
+}
+:root[data-shop-theme='theme-cherry'] {
+  --color-brand-primary: #a8325e;
+  --color-brand-primary-hover: #8f2a50;
+  --color-brand-primary-active: #752243;
+  --color-brand-secondary: #e08aab;
+  --color-brand-soft: #f1c3d4;
+  --color-brand-light-blue: #fbe9f0;
+  --color-brand-pale: #fdf1f5;
+}
+:root[data-shop-theme='theme-arctic'] {
+  --color-brand-primary: #1f6a80;
+  --color-brand-primary-hover: #1a5a6d;
+  --color-brand-primary-active: #154a59;
+  --color-brand-secondary: #6fb8cc;
+  --color-brand-soft: #bce0ea;
+  --color-brand-light-blue: #e6f5f9;
+  --color-brand-pale: #f0f9fb;
+}
+:root[data-shop-theme='theme-citrus'] {
+  --color-brand-primary: #9a5b00;
+  --color-brand-primary-hover: #824c00;
+  --color-brand-primary-active: #6a3e00;
+  --color-brand-secondary: #f0b44c;
+  --color-brand-soft: #f7d9a0;
+  --color-brand-light-blue: #fff3dc;
+  --color-brand-pale: #fff8ea;
+}
+:root[data-shop-theme='theme-berry'] {
+  --color-brand-primary: #6b2d8f;
+  --color-brand-primary-hover: #5a2678;
+  --color-brand-primary-active: #491f61;
+  --color-brand-secondary: #b07cd0;
+  --color-brand-soft: #d9c0e8;
+  --color-brand-light-blue: #f3e9fa;
+  --color-brand-pale: #f8f2fc;
+}
+:root[data-shop-theme='theme-volcano'] {
+  --color-brand-primary: #b03a2e;
+  --color-brand-primary-hover: #962f25;
+  --color-brand-primary-active: #7c261e;
+  --color-brand-secondary: #e9897d;
+  --color-brand-soft: #f4c4bd;
+  --color-brand-light-blue: #fdecea;
+  --color-brand-pale: #fef4f2;
+}
+:root[data-shop-theme='theme-midnight'] {
+  --color-brand-primary: #1f2a5c;
+  --color-brand-primary-hover: #19224b;
+  --color-brand-primary-active: #131a3a;
+  --color-brand-secondary: #5664a8;
+  --color-brand-soft: #a9b1d6;
+  --color-brand-light-blue: #e3e6f5;
+  --color-brand-pale: #eef0f9;
+}
+:root[data-shop-theme='theme-royal-gold'] {
+  --color-brand-primary: #7a5a00;
+  --color-brand-primary-hover: #664b00;
+  --color-brand-primary-active: #523c00;
+  --color-brand-secondary: #d9a520;
+  --color-brand-soft: #efd68a;
+  --color-brand-light-blue: #fff6d6;
+  --color-brand-pale: #fffaea;
+}

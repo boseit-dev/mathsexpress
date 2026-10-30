@@ -59,6 +59,20 @@ export function ShopLayout({ shop }: { shop: ShopRepository }) {
     };
   }, [shop, attempt]);
 
+  // Trying on a dashboard theme recolours the whole page until the student stops trying it
+  // (Cancel, Back to my look, equipping it) or leaves the shop; then their own theme returns.
+  const previewTheme = trying.theme;
+  const ownTheme = state?.equipped.theme;
+  useEffect(() => {
+    if (!previewTheme) return undefined;
+    const root = document.documentElement;
+    root.dataset.shopTheme = previewTheme;
+    return () => {
+      if (ownTheme) root.dataset.shopTheme = ownTheme;
+      else root.removeAttribute('data-shop-theme');
+    };
+  }, [previewTheme, ownTheme]);
+
   const run = useCallback(
     async (key: string, request: () => Promise<ShopState>): Promise<ShopResult> => {
       if (busy.current) return undefined;

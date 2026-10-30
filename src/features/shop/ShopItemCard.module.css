@@ -166,13 +166,14 @@
 
 .actions {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
   gap: var(--space-2);
   margin-block-start: auto;
 }
 
 .actions > button {
   padding-inline: var(--space-3);
+  white-space: nowrap;
   font-size: var(--font-size-sm);
 }
 

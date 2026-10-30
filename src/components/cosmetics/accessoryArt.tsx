@@ -5,12 +5,14 @@ import { C, sparklePath, starPath, type Draw } from './artKit';
  * works on every avatar: hats on the top of the head, glasses on the eye line, held items as a
  * sticker at the bottom right and pets on the left shoulder.
  */
-export type AccessorySlot = 'hat' | 'face' | 'ears' | 'helmet' | 'halo' | 'held' | 'shoulder';
+export type AccessorySlot =
+  'hat' | 'face' | 'ears' | 'neck' | 'helmet' | 'halo' | 'held' | 'shoulder';
 
 export const SLOT_PLACEMENT: Record<AccessorySlot, string> = {
   hat: 'translate(50 22) scale(0.85)',
   face: 'translate(50 40)',
   ears: 'translate(50 41)',
+  neck: 'translate(50 70)',
   helmet: 'translate(50 42)',
   halo: 'translate(50 9)',
   held: 'translate(80 80) scale(0.62)',
@@ -22,6 +24,7 @@ export const SLOT_VIEWBOX: Record<AccessorySlot, string> = {
   hat: '-24 -32 48 48',
   face: '-26 -26 52 52',
   ears: '-32 -34 64 64',
+  neck: '-22 -22 44 44',
   helmet: '-36 -36 72 72',
   halo: '-22 -22 44 44',
   held: '-22 -22 44 44',
@@ -448,16 +451,96 @@ const infinityHalo: Draw = (id) => (
   </g>
 );
 
+const bowTie: Draw = () => (
+  <g>
+    <path d="M-2 0L-16 -9Q-19 0 -16 9Z" fill={C.red} />
+    <path d="M2 0L16 -9Q19 0 16 9Z" fill={C.red} />
+    <path d="M-12 -4L-12 4M12 -4L12 4" stroke="#B83E3E" strokeWidth={1.4} />
+    <rect x={-4} y={-4.5} width={8} height={9} rx={2.5} fill="#C94848" />
+  </g>
+);
+
+const partyHat: Draw = () => (
+  <g>
+    <path d="M-14 4L0 -28L14 4Z" fill={C.sky} />
+    <path d="M-9.6 -6L-6 -14L8 -10L10.4 -6ZM-3 -21L0 -28L3 -21Z" fill={C.gold} />
+    <path d="M-14 4L-11.2 -2.4L11.2 -2.4L14 4Z" fill={C.pink} />
+    <circle cy={-29} r={3.6} fill={C.red} />
+    <circle cx={-5} cy={-4} r={1.4} fill={C.white} />
+    <circle cx={4} cy={-16} r={1.4} fill={C.white} />
+  </g>
+);
+
+const protractor: Draw = () => (
+  <g>
+    <path
+      d="M-20 8A20 20 0 0 1 20 8Z"
+      fill={C.cyan}
+      fillOpacity={0.35}
+      stroke={C.primary}
+      strokeWidth={1.6}
+    />
+    <path d="M-12 8A12 12 0 0 1 12 8" fill="none" stroke={C.primary} strokeWidth={1.2} />
+    {Array.from({ length: 13 }, (_, index) => {
+      const angle = Math.PI - (index * Math.PI) / 12;
+      const inner = index % 3 === 0 ? 14 : 16.5;
+      return (
+        <path
+          key={index}
+          d={`M${(Math.cos(angle) * inner).toFixed(2)} ${(8 - Math.sin(angle) * inner).toFixed(2)}L${(Math.cos(angle) * 19).toFixed(2)} ${(8 - Math.sin(angle) * 19).toFixed(2)}`}
+          stroke={C.primary}
+          strokeWidth={0.9}
+        />
+      );
+    })}
+    <circle cy={8} r={1.6} fill={C.primary} />
+  </g>
+);
+
+const scarf: Draw = () => (
+  <g>
+    <path d="M-22 -4Q0 8 22 -4L22 4Q0 16 -22 4Z" fill={C.red} />
+    <path
+      d="M-14 -0.6Q-12 6 -11 9M-2 2.6V10.6M10 0.2Q11 6 12 9"
+      stroke={C.white}
+      strokeWidth={2.4}
+      opacity={0.85}
+    />
+    <path d="M8 6L14 24L22 21L16 4Z" fill={C.red} />
+    <path d="M10.4 12L18 9.6M12.4 18L20 15.4" stroke={C.white} strokeWidth={2.4} opacity={0.85} />
+  </g>
+);
+
+const starWand: Draw = () => (
+  <g transform="rotate(-30)">
+    <rect x={-1.6} y={-6} width={3.2} height={26} rx={1.6} fill={C.navy} />
+    <rect x={-1.6} y={14} width={3.2} height={6} rx={1.6} fill={C.gold} />
+    <path
+      d={starPath(0, -12, 11, 4.8)}
+      fill={C.gold}
+      stroke={C.goldDark}
+      strokeWidth={1.2}
+      strokeLinejoin="round"
+    />
+    <path d={sparklePath(10, -22, 3)} fill={C.white} />
+    <path d={sparklePath(-11, -4, 2.2)} fill={C.goldLight} />
+  </g>
+);
+
 export const ACCESSORY_ART: Record<string, AccessoryArt> = {
   'acc-pencil': { slot: 'held', draw: pencil },
   'acc-books': { slot: 'held', draw: books },
   'acc-snowflake': { slot: 'held', draw: snowflake },
+  'acc-bow-tie': { slot: 'neck', draw: bowTie },
   'acc-football': { slot: 'held', draw: ball(C.white, C.ink, C.ink) },
   'acc-basketball': { slot: 'held', draw: basketball },
+  'acc-party-hat': { slot: 'hat', draw: partyHat },
   'acc-sunglasses': { slot: 'face', draw: sunglasses },
   'acc-calculator': { slot: 'held', draw: calculator },
   'acc-lightning': { slot: 'held', draw: lightning },
+  'acc-protractor': { slot: 'held', draw: protractor },
   'acc-headphones': { slot: 'ears', draw: headphones },
+  'acc-scarf': { slot: 'neck', draw: scarf },
   'acc-grad-cap': { slot: 'hat', draw: gradCap },
   'acc-rainbow-cloud': { slot: 'held', draw: rainbowCloud },
   'acc-mini-rocket': { slot: 'held', draw: miniRocket },
@@ -466,6 +549,7 @@ export const ACCESSORY_ART: Record<string, AccessoryArt> = {
   'acc-crystal-orb': { slot: 'held', draw: crystalOrb },
   'acc-mini-robot': { slot: 'shoulder', draw: miniRobot },
   'acc-treasure-chest': { slot: 'held', draw: treasureChest },
+  'acc-star-wand': { slot: 'held', draw: starWand },
   'acc-space-helmet': { slot: 'helmet', draw: spaceHelmet },
   'acc-golden-football': { slot: 'held', draw: ball(C.gold, C.goldDark, C.goldDark) },
   'acc-crown': { slot: 'hat', draw: crown },

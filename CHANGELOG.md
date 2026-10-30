@@ -16,6 +16,12 @@ Phase 3 first learning slice (in development).
 
 ### Added
 
+- Added 32 more shop items (130 in all): 8 dashboard themes (Forest Green, Cherry Blossom,
+  Arctic Teal, Citrus Pop, Berry Burst, Volcano Red, Midnight Navy and the legendary Royal
+  Gold), 3 avatars, 5 accessories (including a bow tie and scarf on a new neck slot), 4
+  backgrounds, 3 frames, 3 effects and 6 titles. Trying on a theme now recolours the whole page
+  until it is cancelled. The home shortcut is now simply called Shop.
+
 - Rebuilt the student Shop as a full customisation experience: 98 original cosmetics (22
   avatars, 23 accessories, 16 backgrounds, 13 frames, 12 effects, 8 titles and 4 dashboard
   themes) from free to 5,000 coins in five rarities, all drawn as original SVG. A live preview

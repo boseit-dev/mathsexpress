@@ -242,6 +242,59 @@ const starOrbit: Draw = () => (
   </g>
 );
 
+const leafy: Draw = () => (
+  <g>
+    {ring(C.greenDark, 2)}
+    {around(18, 45).map(({ key, x, y, angle }) => (
+      <ellipse
+        key={key}
+        cx={x}
+        cy={y}
+        rx={4.6}
+        ry={2.2}
+        transform={`rotate(${angle + (key % 2 ? 60 : 120)} ${x} ${y})`}
+        fill={key % 2 ? C.green : C.leaf}
+      />
+    ))}
+  </g>
+);
+
+const pixel: Draw = () => {
+  const blocks = around(28, 45).map(({ key, x, y }) => (
+    <rect
+      key={key}
+      x={Math.round(x / 3) * 3 - 2.5}
+      y={Math.round(y / 3) * 3 - 2.5}
+      width={5}
+      height={5}
+      fill={[C.primary, C.sky, C.mint, C.gold][key % 4]}
+    />
+  ));
+  return <g shapeRendering="crispEdges">{blocks}</g>;
+};
+
+const blossom: Draw = () => (
+  <g>
+    {ring('#F1C3D4', 4)}
+    {around(10, 45, -90).map(({ key, x, y }) => (
+      <g key={key}>
+        {[0, 72, 144, 216, 288].map((turn) => (
+          <ellipse
+            key={turn}
+            cx={x}
+            cy={y - 2.4}
+            rx={1.9}
+            ry={2.6}
+            transform={`rotate(${turn} ${x} ${y})`}
+            fill={key % 2 ? C.pink : '#FBD3E1'}
+          />
+        ))}
+        <circle cx={x} cy={y} r={1.2} fill={C.gold} />
+      </g>
+    ))}
+  </g>
+);
+
 export const FRAME_ART: Record<string, Draw> = {
   'frame-classic': classic,
   'frame-starlight': starlight,
@@ -249,10 +302,13 @@ export const FRAME_ART: Record<string, Draw> = {
   'frame-royal': royal,
   'frame-sunrise': sunrise,
   'frame-lavender-glow': lavenderGlow,
+  'frame-leafy': leafy,
   'frame-rainbow': rainbow,
+  'frame-pixel': pixel,
   'frame-electric': electric,
   'frame-crystal': crystal,
   'frame-golden': golden,
+  'frame-blossom': blossom,
   'frame-cosmic': cosmic,
   'frame-diamond': diamond,
   'frame-star-orbit': starOrbit,

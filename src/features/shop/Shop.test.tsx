@@ -86,6 +86,19 @@ describe('the shop', SLOW, () => {
     );
   });
 
+  it('recolours the whole page while a theme is tried on, then puts it back', async () => {
+    const user = userEvent.setup();
+    const { state } = await openShop();
+    await user.click(screen.getByRole('button', { name: 'Try on Forest Green' }));
+    expect(document.documentElement).toHaveAttribute('data-shop-theme', 'theme-forest');
+    expect(screen.getByText(/The whole page is showing Forest Green/)).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Keep trying on' }));
+    expect(document.documentElement).toHaveAttribute('data-shop-theme', 'theme-forest');
+    await user.click(screen.getByRole('button', { name: 'Back to my look' }));
+    expect(document.documentElement).not.toHaveAttribute('data-shop-theme');
+    expect(wallet(state).equipped).toEqual({});
+  });
+
   it('cancelling a try-on removes just that item from the preview', async () => {
     const user = userEvent.setup();
     await openShop();
@@ -183,7 +196,7 @@ describe('browsing the shop', SLOW, () => {
       'aria-pressed',
       'true',
     );
-    expect(shown()).toHaveLength(16);
+    expect(shown()).toHaveLength(20);
     expect(shown()).toContain('Northern Lights');
   });
 
@@ -197,10 +210,12 @@ describe('browsing the shop', SLOW, () => {
       'Golden Football',
       'Royal Crown',
       'Golden Trophy',
+      'Desert Dunes',
       'Golden Palace',
       'Sunrise Frame',
       'Golden Frame',
       'Golden Aura',
+      'Royal Gold',
     ]);
     await user.clear(screen.getByLabelText('Search items'));
 
@@ -217,7 +232,7 @@ describe('browsing the shop', SLOW, () => {
 
     await user.selectOptions(screen.getByLabelText('Price'), '25–75 coins');
     await user.selectOptions(screen.getByLabelText('Sort by'), 'Cheapest first');
-    expect(shown()[0]).toBe('Stack of Books');
+    expect(shown().slice(0, 2)).toEqual(['Quick Thinker', 'Stack of Books']);
     await user.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(shown()).toHaveLength(SHOP_CATALOGUE.length);
   });
@@ -332,7 +347,7 @@ describe('looks around MathsExpress', SLOW, () => {
   it('shows the student’s look on the home page', async () => {
     const state = withWallet({ equipped: { avatar: 'av-fox' } });
     renderApp('/student', { state });
-    const link = await screen.findByRole('link', { name: /Shop and my look/ });
+    const link = await screen.findByRole('link', { name: /^Shop\s*Spend your coins/ });
     await waitFor(() => {
       expect(link.querySelector('svg[data-look]')?.getAttribute('data-look')).toContain('av-fox');
     });

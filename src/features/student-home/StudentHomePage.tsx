@@ -70,7 +70,7 @@ export function StudentHomePage() {
             <StudentAvatar name={student.displayName} look={look ?? {}} decorative />
           </span>
           <span className={styles.pathCopy}>
-            <strong>Shop and my look</strong>
+            <strong>Shop</strong>
             <span>Spend your coins on avatars and more.</span>
           </span>
           <ArrowUpRight className={styles.pathArrow} aria-hidden="true" />

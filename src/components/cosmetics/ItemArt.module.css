@@ -49,3 +49,11 @@
   block-size: 86%;
   aspect-ratio: 1;
 }
+
+/* Long titles wrap inside the card instead of running off it. */
+.art[data-category='title'] > span {
+  max-inline-size: 88%;
+  justify-content: center;
+  text-align: center;
+  white-space: normal;
+}

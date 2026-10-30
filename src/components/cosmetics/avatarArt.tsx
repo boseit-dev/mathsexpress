@@ -597,16 +597,89 @@ const nebula: Draw = (id) => (
   </g>
 );
 
+const bunny: Draw = () => (
+  <g>
+    <Shoulders fill="#F1EEF6" />
+    <ellipse cx={50} cy={92} rx={13} ry={15} fill={C.white} />
+    <ellipse cx={38} cy={14} rx={7} ry={17} transform="rotate(-10 38 14)" fill="#F1EEF6" />
+    <ellipse cx={62} cy={14} rx={7} ry={17} transform="rotate(10 62 14)" fill="#F1EEF6" />
+    <ellipse cx={38} cy={15} rx={3.4} ry={12} transform="rotate(-10 38 15)" fill={C.pink} />
+    <ellipse cx={62} cy={15} rx={3.4} ry={12} transform="rotate(10 62 15)" fill={C.pink} />
+    <ellipse cx={50} cy={44} rx={25} ry={22} fill="#F1EEF6" />
+    <Eyes left={40} right={60} y={42} r={3.4} />
+    <path d="M47.5 50L52.5 50L50 53Z" fill={C.pinkDark} />
+    <path
+      d="M50 53Q48 57 45 56M50 53Q52 57 55 56"
+      fill="none"
+      stroke={C.ink}
+      strokeWidth={1.3}
+      strokeLinecap="round"
+    />
+    <Cheeks left={34} right={66} y={52} />
+  </g>
+);
+
+const hedgehog: Draw = () => (
+  <g>
+    <path
+      d="M14 70L10 52L20 50L14 34L26 36L24 20L36 26L40 12L50 22L60 12L64 26L76 20L74 36L86 34L80 50L90 52L86 70Z"
+      fill="#8B6A4E"
+    />
+    <Shoulders fill="#8B6A4E" />
+    <ellipse cx={50} cy={92} rx={15} ry={14} fill={C.sand} />
+    <ellipse cx={50} cy={48} rx={22} ry={19} fill={C.sand} />
+    <ellipse cx={50} cy={56} rx={11} ry={8} fill="#F7E6C4" />
+    <circle cx={50} cy={53} r={3.2} fill={C.ink} />
+    <Eyes left={41} right={59} y={45} r={3} />
+    <Smile y={59} width={6} />
+    <Cheeks left={36} right={64} y={53} />
+  </g>
+);
+
+const unicorn: Draw = (id) => (
+  <g>
+    <defs>
+      <linearGradient id={id('horn')} x1="0" y1="1" x2="0" y2="0">
+        <stop offset="0" stopColor={C.goldDark} />
+        <stop offset="1" stopColor={C.goldLight} />
+      </linearGradient>
+    </defs>
+    <Shoulders fill={C.white} />
+    {[C.pink, '#B59CFF', C.sky, C.mint].map((colour, index) => (
+      <path
+        key={colour}
+        d={`M${62 + index * 3} ${20 + index * 4}Q${84 + index * 2} ${40 + index * 6} ${70 + index * 2} ${74 + index * 3}`}
+        fill="none"
+        stroke={colour}
+        strokeWidth={6}
+        strokeLinecap="round"
+      />
+    ))}
+    <path d="M30 26L28 12L40 22Z" fill={C.white} />
+    <path d="M70 26L72 12L60 22Z" fill={C.white} />
+    <ellipse cx={50} cy={44} rx={24} ry={22} fill={C.white} />
+    <path d="M46 24L50 2L54 24Z" fill={`url(#${id('horn')})`} />
+    <path d="M47 18L53 16M47.5 12L52.5 10.5" stroke={C.goldDark} strokeWidth={1} />
+    <ellipse cx={50} cy={56} rx={14} ry={9} fill="#F6EEF9" />
+    <ellipse cx={45} cy={56} rx={1.6} ry={1.2} fill={C.pinkDark} />
+    <ellipse cx={55} cy={56} rx={1.6} ry={1.2} fill={C.pinkDark} />
+    <Eyes left={40} right={60} y={42} r={3.2} />
+    <Cheeks left={33} right={67} y={50} />
+  </g>
+);
+
 export const AVATAR_ART: Record<string, Draw> = {
   'av-capybara': capybaraClassic,
   'av-fox': fox,
   'av-owl': owl,
   'av-cat': cat,
   'av-panda': panda,
+  'av-bunny': bunny,
   'av-koala': koala,
   'av-axolotl': axolotl,
   'av-robot-bolt': robotBolt,
   'av-cube': cube,
+  'av-hedgehog': hedgehog,
   'av-pi': piPal,
   'av-capy-scientist': capybaraScientist,
   'av-robot-orbit': robotOrbit,
@@ -614,6 +687,7 @@ export const AVATAR_ART: Record<string, Draw> = {
   'av-capy-explorer': capybaraExplorer,
   'av-capy-astronaut': capybaraAstronaut,
   'av-capy-wizard': capybaraWizard,
+  'av-unicorn': unicorn,
   'av-star-sprite': starSprite,
   'av-cyber-knight': cyberKnight,
   'av-dragon': dragon,

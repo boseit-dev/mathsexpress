@@ -290,12 +290,12 @@ are kept. Use them for reference only; never copy old code in wholesale.
 ## Coin Shop
 
 The shop is a real authenticated student feature at `/student/more/shop`, with My collection
-(`/collection`) and Coin history (`/history`) tabs. It sells 98 original cosmetics in seven
+(`/collection`) and Coin history (`/history`) tabs. It sells 130 original cosmetics in seven
 kinds (avatars, accessories, backgrounds, frames, effects, titles, dashboard themes) from free
 to 5,000 coins, in five rarities whose price bands the database enforces.
 
 - The catalogue lives twice on purpose: prices and ownership in SQL
-  (`supabase/migrations/20261031090000_shop_collection.sql`), names and artwork keys in
+  (`supabase/migrations/20261031090000_shop_collection.sql` and later shop migrations), names and artwork keys in
   `src/domain/shopCatalogue.ts`. A database test fails if they differ, and a unit test fails if
   any item has no artwork. Add items to both, with art in `src/components/cosmetics/`.
 - All artwork is original code-drawn SVG. Capybara avatars are built from the mascot rig, so

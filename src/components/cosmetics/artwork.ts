@@ -11,6 +11,14 @@ export const THEME_SWATCHES: Record<string, readonly [string, string, string]> =
   'theme-lavender': ['#62449b', '#a08acb', '#eee7fa'],
   'theme-mint': ['#21685f', '#79b6ab', '#e2f5ef'],
   'theme-sunset': ['#955038', '#da977c', '#fbefe7'],
+  'theme-forest': ['#2d6a3e', '#6fae7f', '#e5f3e8'],
+  'theme-cherry': ['#a8325e', '#e08aab', '#fbe9f0'],
+  'theme-arctic': ['#1f6a80', '#6fb8cc', '#e6f5f9'],
+  'theme-citrus': ['#9a5b00', '#f0b44c', '#fff3dc'],
+  'theme-berry': ['#6b2d8f', '#b07cd0', '#f3e9fa'],
+  'theme-volcano': ['#b03a2e', '#e9897d', '#fdecea'],
+  'theme-midnight': ['#1f2a5c', '#5664a8', '#e3e6f5'],
+  'theme-royal-gold': ['#7a5a00', '#d9a520', '#fff6d6'],
 };
 
 /** True when the website ships artwork for the item, so it can be shown and worn. */

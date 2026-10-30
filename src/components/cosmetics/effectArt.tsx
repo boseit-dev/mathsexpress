@@ -274,16 +274,74 @@ const goldenAura: Draw = (id) => (
   </g>
 );
 
+function heartPath(x: number, y: number, size: number) {
+  const s = size;
+  return `M${x} ${y + s * 0.9}C${x - s * 1.6} ${y - s * 0.2} ${x - s * 0.6} ${y - s * 1.3} ${x} ${y - s * 0.4}C${x + s * 0.6} ${y - s * 1.3} ${x + s * 1.6} ${y - s * 0.2} ${x} ${y + s * 0.9}Z`;
+}
+
+const hearts: Draw = () => (
+  <g>
+    {[12, 22, 80, 90, 18, 84].map((x, index) => (
+      <path
+        key={index}
+        d={heartPath(x, 94, index % 2 ? 2.4 : 3.2)}
+        fill={index % 2 ? C.pink : C.red}
+        opacity={0.9}
+        className={styles.rise}
+        style={delay(index, 1)}
+      />
+    ))}
+  </g>
+);
+
+const fallingLeaves: Draw = () => (
+  <g>
+    {[8, 22, 36, 66, 80, 92].map((x, index) => (
+      <ellipse
+        key={index}
+        cx={x}
+        cy={4}
+        rx={2.6}
+        ry={1.4}
+        fill={[C.orange, C.gold, C.red][index % 3]}
+        className={styles.fall}
+        style={delay(index, 1.1)}
+      />
+    ))}
+  </g>
+);
+
+const numberRain: Draw = () => (
+  <g fontFamily="ui-monospace, monospace" fontWeight={700} fontSize={6}>
+    {[6, 16, 26, 74, 84, 94].map((x, index) => (
+      <text
+        key={index}
+        x={x}
+        y={4}
+        textAnchor="middle"
+        fill={index % 2 ? C.cyan : C.mint}
+        className={styles.fall}
+        style={delay(index, 1.2)}
+      >
+        {(index * 3 + 1) % 10}
+      </text>
+    ))}
+  </g>
+);
+
 export const EFFECT_ART: Record<string, EffectArt> = {
   'fx-sparkles': { layer: 'front', draw: sparkles },
   'fx-bubbles': { layer: 'front', draw: bubbles },
   'fx-floating-stars': { layer: 'front', draw: floatingStars },
+  'fx-hearts': { layer: 'front', draw: hearts },
   'fx-snowfall': { layer: 'front', draw: snowfall },
   'fx-maths-symbols': { layer: 'front', draw: mathsSymbols },
   'fx-confetti': { layer: 'front', draw: confetti },
   'fx-fireflies': { layer: 'front', draw: fireflies },
+  'fx-falling-leaves': { layer: 'front', draw: fallingLeaves },
   'fx-rainbow-particles': { layer: 'front', draw: rainbowParticles },
   'fx-soft-lightning': { layer: 'front', draw: softLightning },
+  'fx-number-rain': { layer: 'front', draw: numberRain },
   'fx-colour-trail': { layer: 'front', draw: colourTrail },
   'fx-aurora-glow': { layer: 'behind', draw: auroraGlow },
   'fx-golden-aura': { layer: 'behind', draw: goldenAura },
