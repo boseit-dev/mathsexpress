@@ -1,0 +1,205 @@
+.card {
+  --tile: #f3f1f9;
+  --edge: var(--color-border);
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  border: 1px solid var(--edge);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  transition:
+    transform 220ms var(--ease-out-soft),
+    box-shadow 220ms var(--ease-out-soft),
+    border-color 220ms var(--ease-out-soft);
+}
+
+.card:hover,
+.card:focus-within {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Rarity: a coloured tile and edge, stronger as items get rarer. */
+.card[data-rarity='uncommon'] {
+  --tile: #e8eefd;
+  --edge: #c9d6f6;
+}
+
+.card[data-rarity='rare'] {
+  --tile: linear-gradient(160deg, #dfe6fb, #c3cff2);
+  --edge: #9fb2e8;
+}
+
+.card[data-rarity='epic'] {
+  --tile: linear-gradient(160deg, #ece3fd, #d4c3f6);
+  --edge: #b9a1ec;
+}
+
+.card[data-rarity='legendary'] {
+  --tile: linear-gradient(160deg, #fff6d8, #fbe3a0);
+  --edge: #e8c15a;
+}
+
+.card[data-status='equipped'] {
+  border-color: var(--color-brand-primary);
+  box-shadow:
+    0 0 0 2px var(--color-brand-secondary),
+    0 8px 22px rgb(61 82 160 / 0.22);
+}
+
+.artButton {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  padding: 0;
+  border: 0;
+  background: var(--tile);
+  cursor: pointer;
+}
+
+.artButton > div {
+  transition: transform 300ms var(--ease-out-soft);
+}
+
+.card:hover .artButton > div {
+  transform: scale(1.06);
+}
+
+/* Moving artwork plays only while the card has attention. */
+.card:hover :global(svg *),
+.card:focus-within :global(svg *) {
+  animation-play-state: running !important;
+}
+
+/* A slow sheen across legendary tiles. */
+.card[data-rarity='legendary'] .artButton::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    rgb(255 255 255 / 0.55) 50%,
+    transparent 65%
+  );
+  content: '';
+  transform: translateX(-100%);
+  animation: sheen 5.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.flag {
+  position: absolute;
+  inset-block-start: var(--space-2);
+  inset-inline-start: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  padding: 0.15em 0.6em;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-primary);
+  color: #ffffff;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+}
+
+.flag svg {
+  inline-size: 0.95em;
+  block-size: 0.95em;
+}
+
+.body {
+  display: grid;
+  align-content: start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-1);
+}
+
+.category {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.name {
+  margin: 0;
+  font-size: var(--font-size-md);
+  line-height: 1.25;
+}
+
+.price {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: 1.5rem;
+  margin: 0;
+  font-weight: var(--font-weight-bold);
+}
+
+.owned {
+  color: var(--color-success, #1d7a46);
+  font-size: var(--font-size-sm);
+}
+
+.need {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2em;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.need svg {
+  inline-size: 0.9em;
+  block-size: 0.9em;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+  gap: var(--space-2);
+  margin-block-start: auto;
+}
+
+.actions > button {
+  padding-inline: var(--space-3);
+  font-size: var(--font-size-sm);
+}
+
+@keyframes sheen {
+  0%,
+  60% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .artButton > div {
+    transition: none;
+  }
+
+  .card:hover,
+  .card:focus-within,
+  .card:hover .artButton > div {
+    transform: none;
+  }
+
+  .card[data-rarity='legendary'] .artButton::after {
+    animation: none;
+    display: none;
+  }
+}

@@ -62,6 +62,11 @@ export default defineConfig([
     rules: { 'react-refresh/only-export-components': 'off' },
   },
   {
+    // Shop artwork: tables of drawings and the shapes they share, not components to hot-reload.
+    files: ['src/components/cosmetics/*Art.tsx', 'src/components/cosmetics/artKit.tsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
+  {
     files: ['*.config.ts', 'scripts/**/*.ts', 'tests/**/*.ts'],
     languageOptions: { globals: globals.node },
     rules: { 'no-console': 'off' },

@@ -1,0 +1,51 @@
+.art {
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: hidden;
+}
+
+.art > svg {
+  inline-size: 78%;
+  block-size: 78%;
+}
+
+.art[data-category='background'] > svg {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.object {
+  overflow: visible;
+}
+
+.fill {
+  display: block;
+}
+
+.art[data-category='effect'] > div {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.scene {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.scene > .fill {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.onStage {
+  position: relative;
+  block-size: 86%;
+  aspect-ratio: 1;
+}

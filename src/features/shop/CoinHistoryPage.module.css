@@ -1,0 +1,100 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.history,
+.earn {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.history h2,
+.earn h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.history ul {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-block: var(--space-3);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.history li > span:first-child {
+  display: grid;
+}
+
+.history small {
+  color: var(--color-text-secondary);
+}
+
+.delta {
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+
+.delta[data-positive='true'] {
+  color: var(--color-success);
+}
+
+.note {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.earn {
+  background: var(--color-coin-surface);
+}
+
+.earn > svg {
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  color: var(--color-coin-edge);
+}
+
+.earn ul {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding-inline-start: var(--space-5);
+}
+
+.earn p {
+  margin: 0;
+}
+
+.earn a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: var(--font-weight-semibold);
+}
+
+.earn a svg {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+@media (min-width: 960px) {
+  .layout {
+    grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 1fr);
+  }
+}

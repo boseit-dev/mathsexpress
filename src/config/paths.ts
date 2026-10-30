@@ -25,6 +25,8 @@ export const paths = {
     tasks: '/student/class/tasks',
     more: '/student/more',
     shop: '/student/more/shop',
+    shopCollection: '/student/more/shop/collection',
+    shopHistory: '/student/more/shop/history',
   },
   teacher: {
     home: '/teacher',

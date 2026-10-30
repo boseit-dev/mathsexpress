@@ -1,0 +1,74 @@
+.stage {
+  display: grid;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-md);
+}
+
+.scene {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: linear-gradient(#ede8f5, #adbbda);
+}
+
+.compact .scene {
+  aspect-ratio: 16 / 9;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.portrait {
+  position: relative;
+  inline-size: min(72%, 15rem);
+  aspect-ratio: 1;
+  filter: drop-shadow(0 10px 18px rgb(20 27 61 / 0.25));
+  animation: stage-in 360ms var(--ease-out-soft);
+}
+
+.compact .portrait {
+  inline-size: min(48%, 9rem);
+}
+
+.caption {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  text-align: center;
+}
+
+.label {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.name {
+  font-size: var(--font-size-lg);
+}
+
+@keyframes stage-in {
+  from {
+    opacity: 0.4;
+    transform: translateY(6px) scale(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portrait {
+    animation: none;
+  }
+}

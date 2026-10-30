@@ -1,0 +1,45 @@
+.burst {
+  position: absolute;
+  inset-block-start: 45%;
+  inset-inline-start: 50%;
+  inline-size: 0;
+  block-size: 0;
+  pointer-events: none;
+}
+
+.coin {
+  position: absolute;
+  inset: -0.8rem;
+  display: grid;
+  place-items: center;
+  inline-size: 1.6rem;
+  block-size: 1.6rem;
+  opacity: 0;
+  animation: burst 900ms var(--ease-out-soft) forwards;
+  animation-delay: var(--delay, 0ms);
+}
+
+.coin > svg {
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+@keyframes burst {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.4);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--x), var(--y)) scale(1) rotate(200deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .burst {
+    display: none;
+  }
+}

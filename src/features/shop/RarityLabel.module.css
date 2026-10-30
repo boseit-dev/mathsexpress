@@ -1,0 +1,41 @@
+/* Each rarity has its own colour; all pass WCAG AA on their own wash. */
+.rarity {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  padding: 0.1em 0.55em;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.02em;
+}
+
+.rarity svg {
+  inline-size: 0.9em;
+  block-size: 0.9em;
+}
+
+.rarity[data-rarity='common'] {
+  background: #f1eff7;
+  color: #4b5274;
+}
+
+.rarity[data-rarity='uncommon'] {
+  background: #e4ebfc;
+  color: #2f4594;
+}
+
+.rarity[data-rarity='rare'] {
+  background: #3d52a0;
+  color: #ffffff;
+}
+
+.rarity[data-rarity='epic'] {
+  background: #6a3fc8;
+  color: #ffffff;
+}
+
+.rarity[data-rarity='legendary'] {
+  background: linear-gradient(110deg, #ffe08a, #f2b630);
+  color: #4a3203;
+}

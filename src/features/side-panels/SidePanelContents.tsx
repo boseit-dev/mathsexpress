@@ -50,7 +50,7 @@ export function SidePanelContents({ panel, student, shop }: SidePanelContentsPro
       {panel === 'leaderboard' && (
         <LeaderboardPanel entries={preview.leaderboard} currentStudentId={student.id} />
       )}
-      {panel === 'shop' && <ShopPreview shop={shop} />}
+      {panel === 'shop' && <ShopPreview shop={shop} name={student.displayName} />}
       {panel === 'challenges' && (
         <>
           {preview.challenges.some(isChallengeComplete) && (

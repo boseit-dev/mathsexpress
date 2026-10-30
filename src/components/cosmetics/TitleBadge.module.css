@@ -1,0 +1,59 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  max-inline-size: 100%;
+  padding: 0.25em 0.75em;
+  border: 1px solid var(--rarity-line, var(--color-brand-soft));
+  border-radius: var(--radius-full);
+  background: var(--rarity-wash, var(--color-brand-pale));
+  color: var(--rarity-ink, var(--color-brand-primary));
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.small {
+  font-size: var(--font-size-xs);
+}
+
+.large {
+  font-size: var(--font-size-md);
+  padding: 0.4em 1em;
+  box-shadow: 0 6px 16px rgb(61 82 160 / 0.14);
+}
+
+.icon {
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+.badge[data-rarity='common'] {
+  --rarity-wash: #f6f4fb;
+  --rarity-line: #d5dbee;
+  --rarity-ink: #3d52a0;
+}
+
+.badge[data-rarity='uncommon'] {
+  --rarity-wash: #e9efff;
+  --rarity-line: #7091e6;
+  --rarity-ink: #2f4594;
+}
+
+.badge[data-rarity='rare'] {
+  --rarity-wash: #3d52a0;
+  --rarity-line: #2c3c79;
+  --rarity-ink: #ffffff;
+}
+
+.badge[data-rarity='epic'] {
+  --rarity-wash: #6a3fc8;
+  --rarity-line: #4f2ba0;
+  --rarity-ink: #ffffff;
+}
+
+.badge[data-rarity='legendary'] {
+  --rarity-line: #a87508;
+  --rarity-ink: #4a3203;
+  background: linear-gradient(110deg, #ffe08a, #f2b630 45%, #ffe9a8 55%, #f2b630);
+}

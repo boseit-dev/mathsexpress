@@ -3,9 +3,13 @@ import { useLayoutEffect, useRef } from 'react';
 /**
  * Slides one indicator bar under the current item of a navigation list. The bar is moved with
  * transform only (translate and scale on a 1px-wide bar), so it animates without layout work.
- * The current item is the link with aria-current, which NavLink sets.
+ * The current item is the link with aria-current, which NavLink sets, unless `selector` names
+ * another marker such as a pressed button.
  */
-export function useSlidingIndicator<List extends HTMLElement>(dependency: unknown) {
+export function useSlidingIndicator<List extends HTMLElement>(
+  dependency: unknown,
+  selector = '[aria-current]',
+) {
   const listRef = useRef<List>(null);
   const indicatorRef = useRef<HTMLLIElement>(null);
 
@@ -15,7 +19,7 @@ export function useSlidingIndicator<List extends HTMLElement>(dependency: unknow
     if (!list || !indicator) return undefined;
 
     const place = () => {
-      const current = list.querySelector<HTMLElement>('[aria-current]');
+      const current = list.querySelector<HTMLElement>(selector);
       if (!current) {
         indicator.style.opacity = '0';
         return;
@@ -32,7 +36,7 @@ export function useSlidingIndicator<List extends HTMLElement>(dependency: unknow
     return () => {
       observer?.disconnect();
     };
-  }, [dependency]);
+  }, [dependency, selector]);
 
   return { listRef, indicatorRef };
 }

@@ -1,0 +1,19 @@
+.avatar {
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.small {
+  inline-size: calc(var(--size-avatar-sm) + 0.25rem);
+  block-size: calc(var(--size-avatar-sm) + 0.25rem);
+}
+
+.medium {
+  inline-size: calc(var(--size-avatar-md) + 0.25rem);
+  block-size: calc(var(--size-avatar-md) + 0.25rem);
+}
+
+.large {
+  inline-size: 4.5rem;
+  block-size: 4.5rem;
+}

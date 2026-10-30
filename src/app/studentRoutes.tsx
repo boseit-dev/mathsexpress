@@ -10,7 +10,10 @@ import { createStudentTasksLoader } from '@/features/student-tasks/studentTasksL
 import { StudentTasksPage } from '@/features/student-tasks/StudentTasksPage';
 import { createLessonLoader } from '@/features/learning/lessonLoader';
 import { TextbookPage } from '@/features/textbook/TextbookPage';
-import { ShopPage } from '@/features/shop/ShopPage';
+import { CoinHistoryPage } from '@/features/shop/CoinHistoryPage';
+import { CollectionPage } from '@/features/shop/CollectionPage';
+import { ShopBrowsePage } from '@/features/shop/ShopBrowsePage';
+import { ShopLayout } from '@/features/shop/ShopLayout';
 import { createStudentHomeLoader } from '@/features/student-home/studentHomeLoader';
 import { StudentLayout } from '@/layouts/student/StudentLayout';
 import { createStudentLayoutLoader } from '@/layouts/student/studentLayoutLoader';
@@ -71,7 +74,12 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
           },
           {
             path: paths.student.shop,
-            element: <ShopPage shop={dependencies.shop} />,
+            element: <ShopLayout shop={dependencies.shop} />,
+            children: [
+              { index: true, element: <ShopBrowsePage /> },
+              { path: paths.student.shopCollection, element: <CollectionPage /> },
+              { path: paths.student.shopHistory, element: <CoinHistoryPage /> },
+            ],
           },
           {
             path: paths.student.more,
