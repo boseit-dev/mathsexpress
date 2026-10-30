@@ -12,7 +12,7 @@ The owner approved automatic deployments **only to the separate V2 test Worker**
    that account. Never share or commit the token. A token appeared in a screenshot during
    setup: revoke it and use a newly rotated token before any public deployment.
 3. The new hosted Supabase project `czvmrksotfpzitjgopnj` has already been created in Sydney,
-   with six migrations applied and no user accounts. Do not connect to the paused legacy
+   with seven migrations applied and no user accounts. Do not connect to the paused legacy
    database (`dsjrxkxjcaurrbijihja`). See [hosted launch](hosted-launch.md) before accepting
    real accounts.
 4. Open GitHub **Settings > Secrets and variables > Actions** for `boseit-dev/mathsexpress`.

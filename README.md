@@ -18,7 +18,7 @@ architecture, design system and codebase.
 
 - The teacher workspace, lesson tasks, saved student progress, reports and coin shop are
   implemented. Other practice content and textbook chapters are still in development.
-- A **new empty hosted V2 database** was created in Sydney, and its six migrations were
+- A **new empty hosted V2 database** was created in Sydney, and its seven migrations were
   applied. Every student and teacher must create a **new account**; old accounts are not migrated.
 - The old MathsExpress database is paused and preserved. The existing public Worker still
   serves v11 until the separate V2 preview passes hosted-authentication and live-site checks.
