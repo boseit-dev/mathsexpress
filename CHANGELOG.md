@@ -6,6 +6,12 @@ All notable changes to MathsExpress 2.0 are recorded here. The format follows
 
 ## [2.0.0-alpha.3] - Unreleased
 
+### Deployment
+
+- Added CI-gated automatic Cloudflare V2 test-site deployment after both app and database checks
+  pass. Requires scoped Cloudflare secrets and a separate V2 Supabase project. The old live site
+  remains untouched.
+
 Phase 3 first learning slice (in development).
 
 ### Added

@@ -90,9 +90,12 @@ GitHub rulesets stop anyone, admins included, from force-pushing or deleting `ma
 
 ## Deployment
 
-Nothing deploys automatically: there are no deploy workflows or Git-connected Cloudflare builds.
-`wrangler.jsonc` targets a separate development Worker, `mathsexpress-v2`, and a test fails if it
-is ever pointed at the live `mathsexpress` Worker. Deploying requires the owner's approval.
+GitHub Actions deploys **tested pushes to `mathsexpress-v2`** automatically to the separate
+Cloudflare V2 Worker, once the required hosting settings are configured. Until then, CI prints a
+setup warning and skips deployment. See [Cloudflare setup](docs/cloudflare-auto-deploy.md).
+
+The original live `mathsexpress` Worker remains untouched. Merging into `main` does not trigger a
+new deployment. Replacing the original live site still requires separate approval.
 
 ## Quality and contributing
 
