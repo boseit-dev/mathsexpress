@@ -64,7 +64,9 @@ export function TextbookReader({ book, chapter }: Props) {
         <button
           className={styles.sidebarToggle}
           type="button"
-          onClick={() => setSidebarOpen((value) => !value)}
+          onClick={() => {
+            setSidebarOpen((value) => !value);
+          }}
           aria-label={sidebarOpen ? 'Hide textbook contents' : 'Show textbook contents'}
           aria-expanded={sidebarOpen}
         >
@@ -88,7 +90,9 @@ export function TextbookReader({ book, chapter }: Props) {
               className={styles.search}
               type="search"
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => {
+                setSearch(event.target.value);
+              }}
               placeholder="Find a topic"
             />
             <nav aria-label="Choose a textbook chapter" className={styles.chapterLinks}>
@@ -150,7 +154,9 @@ export function TextbookReader({ book, chapter }: Props) {
                   aria-controls={id === 'questions' ? 'panel-lesson' : 'panel-' + id}
                   aria-selected={tab === id}
                   className={styles.tab}
-                  onClick={() => setTab(id)}
+                  onClick={() => {
+                    setTab(id);
+                  }}
                 >
                   <Icon aria-hidden="true" />
                   {label}

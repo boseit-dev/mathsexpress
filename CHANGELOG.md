@@ -12,7 +12,6 @@ All notable changes to MathsExpress 2.0 are recorded here. The format follows
 - Add an original searchable textbook topic sidebar, reading tabs and revision/activity panels, and a manipulable equation exploration in the published Year 9 pilot.
 - Preserve honest status labels: full textbook chapters and content-point auditing are still in preparation.
 
-
 ### Deployment
 
 - Added CI-gated automatic Cloudflare V2 test-site deployment after both app and database checks

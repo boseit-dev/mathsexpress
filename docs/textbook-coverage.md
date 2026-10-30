@@ -60,7 +60,6 @@ been written, mapped, audited or approved.
    controls and printing in later tested increments.
 6. Run independent educational review before public launch, not just automated type checks.
 
-
 ## Topic outline upgrade — 31 October 2026
 
 The 25 books now list official stage-level and Stage 6 course focus-area headings instead of

@@ -126,11 +126,12 @@ describe('student textbook library', () => {
     expect(screen.getByRole('heading', { name: 'Chapter in preparation' })).toBeVisible();
   });
 
-
   it('lets students search topics and switch between lessons and revision', async () => {
     const user = userEvent.setup();
     renderApp('/student/textbook/year-9/solving-linear-equations');
-    expect(await screen.findByRole('navigation', { name: 'Choose a textbook chapter' })).toBeVisible();
+    expect(
+      await screen.findByRole('navigation', { name: 'Choose a textbook chapter' }),
+    ).toBeVisible();
     const topicSearch = screen.getByRole('searchbox', { name: 'Search topics' });
     await user.type(topicSearch, 'linear');
     expect(screen.getByRole('link', { name: /Solving linear equations Ready/ })).toBeVisible();
@@ -138,7 +139,9 @@ describe('student textbook library', () => {
 
     await user.click(screen.getByRole('tab', { name: 'Questions' }));
     expect(screen.getByRole('heading', { name: 'Exercise 1A' })).toBeVisible();
-    expect(screen.queryByRole('heading', { name: '1. Understanding equations' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: '1. Understanding equations' }),
+    ).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('tab', { name: 'Revision' }));
     expect(screen.getByText(/An equation is balanced when its two sides/)).toBeVisible();
@@ -146,7 +149,9 @@ describe('student textbook library', () => {
     expect(screen.getByText(/not saved to your account/)).toBeVisible();
 
     await user.click(screen.getByRole('button', { name: 'Hide textbook contents' }));
-    expect(screen.queryByRole('navigation', { name: 'Choose a textbook chapter' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('navigation', { name: 'Choose a textbook chapter' }),
+    ).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Show textbook contents' }));
     expect(screen.getByRole('navigation', { name: 'Choose a textbook chapter' })).toBeVisible();
   });

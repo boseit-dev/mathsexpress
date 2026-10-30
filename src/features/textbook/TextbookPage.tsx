@@ -1,4 +1,4 @@
-import { BookOpen, BookOpenCheck, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { BookOpen, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { paths } from '@/config/paths';

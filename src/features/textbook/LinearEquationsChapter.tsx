@@ -31,7 +31,9 @@ export function LinearEquationsChapter({ view = 'all' }: { view?: 'all' | 'quest
               min="1"
               max="10"
               value={addedNumber}
-              onChange={(event) => setAddedNumber(Number(event.target.value))}
+              onChange={(event) => {
+                setAddedNumber(Number(event.target.value));
+              }}
             />
             <p>
               <strong>x + {addedNumber} = 12</strong>
