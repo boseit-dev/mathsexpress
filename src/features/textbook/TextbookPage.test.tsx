@@ -126,38 +126,33 @@ describe('student textbook library', () => {
     expect(screen.getByRole('heading', { name: 'Lesson in preparation' })).toBeVisible();
   });
 
-  it('lets students search topics and switch between lessons and revision', async () => {
+  it('teaches with an original guided notebook before independent questions', async () => {
     const user = userEvent.setup();
     renderApp('/student/textbook/year-9/solving-linear-equations');
-    expect(
-      await screen.findByRole('navigation', { name: 'Choose a textbook chapter' }),
-    ).toBeVisible();
-    const topicSearch = screen.getByRole('searchbox', { name: 'Search topics' });
-    await user.type(topicSearch, 'linear');
-    expect(screen.getByRole('link', { name: /Solving linear equations — Ready/ })).toBeVisible();
-    expect(
-      screen.queryByRole('link', { name: /Probability — In preparation/ }),
-    ).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole('tab', { name: 'Questions' }));
+    expect(screen.getByRole('navigation', { name: 'Jump to chapter section' })).toBeVisible();
+    expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '1. Understanding equations' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Undo the operations, one at a time' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Your turn, with support' })).toBeVisible();
     expect(screen.getByRole('heading', { name: 'Exercise 1A' })).toBeVisible();
-    expect(
-      screen.queryByRole('heading', { name: '1. Understanding equations' }),
-    ).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'The four things to remember' })).toBeVisible();
 
-    await user.click(screen.getByRole('tab', { name: 'Revision' }));
-    expect(screen.getByText(/An equation is balanced when its two sides/)).toBeVisible();
-    await user.click(screen.getByRole('tab', { name: 'My activity' }));
-    expect(
-      screen.getByText(/Textbook question answers currently stay in this browser session/),
-    ).toBeVisible();
+    const slider = screen.getByRole('slider', { name: /Number added to x/ });
+    expect(slider).toHaveValue('5');
+    await user.click(screen.getByText('Explore the balance'));
+    expect(screen.getByText(/x = 12 − 5 =/)).toBeVisible();
 
-    await user.click(screen.getByRole('button', { name: 'Hide textbook contents' }));
-    expect(
-      screen.queryByRole('navigation', { name: 'Choose a textbook chapter' }),
-    ).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Show textbook contents' }));
-    expect(screen.getByRole('navigation', { name: 'Choose a textbook chapter' })).toBeVisible();
+    const step = screen.getByRole('textbox', { name: 'First step: 4x =' });
+    await user.type(step, '19');
+    await user.click(screen.getByRole('button', { name: 'Check this step' }));
+    expect(screen.getByText(/Not yet. Focus on undoing/)).toBeVisible();
+    await user.clear(step);
+    await user.type(step, '24');
+    await user.click(screen.getByRole('button', { name: 'Check this step' }));
+    expect(screen.getByText(/Exactly! 4x = 24/)).toBeVisible();
+
+    await user.click(screen.getByText(/Explore other topics in Year 9 Mathematics/));
+    expect(screen.getByRole('link', { name: 'Probability' })).toBeVisible();
   });
 
   it('has no detectable accessibility problems in the published reader', async () => {

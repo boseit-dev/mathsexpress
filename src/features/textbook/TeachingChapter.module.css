@@ -1,0 +1,306 @@
+.chapter {
+  display: grid;
+  gap: var(--space-10);
+  min-inline-size: 0;
+}
+
+.section {
+  display: grid;
+  gap: var(--space-5);
+  min-inline-size: 0;
+  scroll-margin-block-start: 6rem;
+}
+
+.section + .section {
+  padding-block-start: var(--space-8);
+  border-block-start: 1px solid var(--color-border);
+}
+
+.section h2,
+.recap h2 {
+  color: var(--color-text);
+  font-size: clamp(1.5rem, 2.7vw, 2rem);
+  line-height: var(--line-height-tight);
+}
+
+.section p,
+.recap p {
+  line-height: 1.75;
+}
+
+.stepLabel,
+.exampleTag {
+  color: var(--color-text-brand);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+}
+
+.lead {
+  max-inline-size: 69ch;
+  font-size: var(--font-size-lg);
+}
+
+.bigIdea {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border-radius: var(--radius-md);
+  border-inline-start: var(--space-2) solid var(--color-brand-secondary);
+  background: var(--color-brand-pale);
+}
+
+.bigIdea strong {
+  color: var(--color-text-brand);
+}
+
+.explorer {
+  display: grid;
+  gap: var(--space-4);
+  padding: clamp(1rem, 3vw, 2rem);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-xl);
+  background: var(--color-brand-light-blue);
+}
+
+.explorerHeading {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.explorerHeading p {
+  max-inline-size: 54ch;
+  margin-block-start: var(--space-2);
+}
+
+.exploreMark {
+  display: grid;
+  place-items: center;
+  inline-size: var(--size-tile-lg);
+  block-size: var(--size-tile-lg);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-xl);
+}
+
+.explorer input[type='range'] {
+  width: 100%;
+  accent-color: var(--color-brand-primary);
+  cursor: pointer;
+}
+
+.balance {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-3);
+}
+
+.balanceSide {
+  display: grid;
+  place-items: center;
+  gap: var(--space-2);
+  flex: 1 1 0;
+  min-inline-size: 0;
+  min-block-size: 8rem;
+  padding: var(--space-4);
+  border-block-end: 0.4rem solid var(--color-brand-primary);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.balanceSide span {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.balanceSide strong {
+  color: var(--color-text-brand);
+  font-size: clamp(1.25rem, 3vw, 2rem);
+}
+
+.equal {
+  align-self: center;
+  color: var(--color-text-brand);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.discovery {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.worked {
+  display: grid;
+  gap: var(--space-4);
+  padding: clamp(1rem, 3vw, 2rem);
+  border-radius: var(--radius-xl);
+  background: var(--color-brand-pale);
+  border: 1px solid var(--color-brand-soft);
+}
+
+.worked h3,
+.miniWorked h3 {
+  font-size: var(--font-size-xl);
+}
+
+.solutionSteps {
+  display: grid;
+  gap: var(--space-3);
+  padding-inline-start: var(--space-6);
+}
+
+.solutionSteps li {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.solutionSteps li::marker {
+  color: var(--color-brand-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.solutionSteps strong {
+  color: var(--color-text-brand);
+  font-size: var(--font-size-lg);
+}
+
+.solutionSteps p {
+  margin-block-start: var(--space-2);
+}
+
+.exampleGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.miniWorked {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-subtle);
+}
+
+.mistake {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border-inline-start: var(--space-2) solid var(--color-warning);
+  background: var(--color-warning-surface);
+}
+
+.guidedCard {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-brand-pale);
+}
+
+.guidedCard label {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.guidedInputRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.guidedInputRow input {
+  max-inline-size: 12rem;
+  min-inline-size: 0;
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-input);
+  border-radius: var(--radius-md);
+}
+
+.guidedInputRow button {
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-3) var(--space-5);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--color-brand-primary);
+  color: var(--color-text-inverse);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.guidedInputRow button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.guidedCard summary {
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.guidedCard details p {
+  padding-block-start: var(--space-2);
+}
+
+.guidedSuccess,
+.guidedRetry {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+}
+
+.guidedSuccess {
+  background: var(--color-success-surface);
+  color: var(--color-success);
+}
+
+.guidedRetry {
+  background: var(--color-warning-surface);
+  color: var(--color-warning);
+}
+
+.recap {
+  display: grid;
+  gap: var(--space-4);
+  scroll-margin-block-start: 6rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border-radius: var(--radius-xl);
+  background: var(--color-brand-pale);
+  border: 1px solid var(--color-brand-soft);
+}
+
+.recap ol {
+  display: grid;
+  gap: var(--space-2);
+  padding-inline-start: var(--space-6);
+}
+
+@media (max-width: 640px) {
+  .exampleGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .balanceSide {
+    min-block-size: 6rem;
+    padding: var(--space-2);
+  }
+
+  .guidedInputRow input {
+    max-inline-size: 100%;
+  }
+}
