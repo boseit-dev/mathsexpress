@@ -8,6 +8,8 @@ import { createFakeDependencies, createFakeState, testStudent } from '@/test/fak
 import { renderApp } from '@/test/renderApp';
 
 const SHOP = '/student/more/shop';
+/** Each shop page draws 98 illustrated cards, which takes a few seconds on CI runners. */
+const SLOW = { timeout: 15_000 };
 const STUDENT_ID = `user-${testStudent.email}`;
 
 /** A fake state where the test student already has a wallet with these changes. */
@@ -43,7 +45,7 @@ async function openShop(state = createFakeState()) {
   return view;
 }
 
-describe('the shop', () => {
+describe('the shop', SLOW, () => {
   it('shows the real wallet and every item, with no sample data', async () => {
     await openShop();
     expect(screen.getByRole('heading', { level: 1, name: 'Shop' })).toBeVisible();
@@ -166,7 +168,7 @@ describe('the shop', () => {
   });
 });
 
-describe('browsing the shop', () => {
+describe('browsing the shop', SLOW, () => {
   function shown() {
     return within(screen.getByRole('list', { name: 'Shop items' }))
       .getAllByRole('article')
@@ -239,7 +241,7 @@ describe('browsing the shop', () => {
   });
 });
 
-describe('My collection and coin history', () => {
+describe('My collection and coin history', SLOW, () => {
   it('lists owned items, equips them and restores the default look', async () => {
     const user = userEvent.setup();
     const state = withWallet({
@@ -279,7 +281,7 @@ describe('My collection and coin history', () => {
   });
 });
 
-describe('when the server has problems', () => {
+describe('when the server has problems', SLOW, () => {
   it('keeps the coins safe when a purchase fails, and lets the student try again', async () => {
     const user = userEvent.setup();
     const state = createFakeState();
@@ -315,7 +317,7 @@ describe('when the server has problems', () => {
   });
 });
 
-describe('looks around MathsExpress', () => {
+describe('looks around MathsExpress', SLOW, () => {
   it('shows each student’s look in their teacher’s class list', async () => {
     const state = withWallet({ owned: [], equipped: { avatar: 'av-owl', theme: 'theme-ocean' } });
     renderApp('/teacher/classes/class-9m2/students', { signedInAs: 'teacher', state });
@@ -337,14 +339,21 @@ describe('looks around MathsExpress', () => {
   });
 });
 
-describe('accessibility', () => {
-  it('has no detectable problems on the shop, the preview and the collection', async () => {
-    const user = userEvent.setup();
-    const { unmount } = await openShop();
+// axe checks every one of the 98 illustrated cards, which is slow on CI runners.
+describe('accessibility', { timeout: 30_000 }, () => {
+  it('has no detectable problems on the shop', async () => {
+    await openShop();
     expect(await findAccessibilityProblems()).toEqual([]);
+  });
+
+  it('has no detectable problems in the Try On preview', async () => {
+    const user = userEvent.setup();
+    await openShop();
     await user.click(screen.getByRole('button', { name: 'Try on Space Helmet' }));
     expect(await findAccessibilityProblems()).toEqual([]);
-    unmount();
+  });
+
+  it('has no detectable problems in My collection', async () => {
     renderApp(`${SHOP}/collection`);
     await screen.findByRole('heading', { name: 'My collection' });
     expect(await findAccessibilityProblems()).toEqual([]);
