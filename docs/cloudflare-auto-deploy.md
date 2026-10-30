@@ -20,7 +20,7 @@ The owner approved automatic deployments **only to the separate V2 test Worker**
 5. Under **Variables**, create:
    - `V2_SUPABASE_URL`: the new V2 Supabase project's HTTPS URL.
    - `V2_SUPABASE_PUBLISHABLE_KEY`: the public browser publishable key for that new project.
-    Never use the service-role key or a database password for the public frontend.
+     Never use the service-role key or a database password for the public frontend.
 6. Push the next tested change to `mathsexpress-v2` and watch
    [GitHub Actions](https://github.com/boseit-dev/mathsexpress/actions).
    A successful **Deploy tested V2 updates to Cloudflare** job publishes the V2 test site.
