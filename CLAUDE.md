@@ -37,8 +37,8 @@ It overrides habits and defaults. If an instruction from the user conflicts with
 - The old Supabase project `dsjrxkxjcaurrbijihja` was paused (not deleted) to free the
   Free plan slot. Never change its schema, data or account records.
 - The owner approved the separate hosted V2 Supabase project `czvmrksotfpzitjgopnj` in
-  Sydney; all seven schema migrations are installed there (the shop migration
-  last, on 30 October 2026). It starts
+  Sydney; all eight schema migrations are installed there (the two shop
+  migrations last, on 30 October 2026). It starts
   with no auth accounts. Use it only for V2, never the old database.
 - Local development still uses Docker's local Supabase stack. Hosted V2 database changes
   require reviewed migrations and tests. The hosted migration tool assigned its own migration

@@ -7,8 +7,9 @@ teachers and students to register new accounts. Do not transfer legacy user data
 
 - GitHub repo: `boseit-dev/mathsexpress`, code in `main` and `mathsexpress-v2`.
 - V2 Supabase: `czvmrksotfpzitjgopnj` (Sydney), quoted $0/month on Free plan.
-- Seven V2 SQL migrations are applied to that hosted database: six on 30 October 2026, then
-  `shop_collection` (the full shop) the same day, after its local tests passed.
+- Eight V2 SQL migrations are applied to that hosted database: six on 30 October 2026, then
+  `shop_collection` (the full shop) and `shop_more_items` (130 items) the same day, after their
+  local tests passed.
 - It has 18 public tables, all with RLS; there were zero Auth accounts and profiles on creation.
 - Paused legacy Supabase: `dsjrxkxjcaurrbijihja`, preserved as a rollback reference.
 - The public Cloudflare Worker `mathsexpress` still runs the old site until cutover.

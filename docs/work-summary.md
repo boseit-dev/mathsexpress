@@ -161,9 +161,7 @@ Routes: `/student/more/shop` (Shop), `/student/more/shop/collection` (My collect
 ## Current state and what is open
 
 - Everything above is pushed to `mathsexpress-v2`, and CI deploys the preview.
-- The hosted V2 database has the first shop migration (98 items). The second one,
-  `20261031100000_shop_more_items.sql` (the last 32 items, including 8 themes), still has to be
-  applied there with the owner's approval; until then the preview shows 98 items.
+- The hosted V2 database has both shop migrations, so the preview shows all 130 items.
 - Hosted migration history uses versions assigned by the Supabase tool, not the file
   timestamps. Reconcile before any `supabase db push` (see `docs/hosted-launch.md`).
 - Supabase's "leaked password protection" is switched off on the V2 project (an Auth setting
