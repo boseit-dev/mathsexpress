@@ -44,15 +44,17 @@
   gap: var(--space-1);
   padding: var(--space-4);
   border: 1px solid var(--color-border);
+  /* A straight brand bar along the start edge, clipped by the rounded corners. */
+  box-shadow: inset 4px 0 0 var(--color-accent);
   border-radius: var(--radius-lg);
-  background: var(--color-surface);
+  background: var(--color-surface-tint);
 }
 
 .facts dt {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  color: var(--color-text-secondary);
+  color: var(--color-text-brand);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
 }
@@ -211,4 +213,14 @@
     grid-template-columns: minmax(0, 1fr) var(--layout-sidebar-width);
     align-items: start;
   }
+}
+
+/* Brand table styling: a tinted header row and a soft highlight on the row under the pointer. */
+.table thead th {
+  background: var(--color-table-head);
+  color: var(--color-text-brand);
+}
+
+.table tbody tr:hover > * {
+  background: var(--color-row-hover);
 }

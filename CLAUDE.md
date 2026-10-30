@@ -17,8 +17,11 @@ It overrides habits and defaults. If an instruction from the user conflicts with
 - The Textbook now has a library of individual books, navigation and one original Year 9 pilot
   chapter. **Most chapters are still in preparation** and are not claimed syllabus-complete;
   see `docs/textbook-coverage.md` for exact coverage and source links.
-- Not built yet: the rest of the learning engine, full textbook contents, tasks, reports,
-  teacher home, profile/settings pages and real rewards/coin shop. Planned destinations explain
+- The teacher experience is built: teacher home, class workspaces (Overview, Students, Tasks,
+  Progress), real tasks (lessons for a class or chosen students), saved server-marked lesson
+  progress and Reports. Students see real tasks.
+- Not built yet: the rest of the learning engine (practice sets, worksheets, tests), full
+  textbook contents and profile/settings pages. Planned destinations explain
   the limitations; example scores and panels still have Sample data badges.
 - Never start the next phase until the user has reviewed and approved the current one.
 

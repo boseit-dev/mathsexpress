@@ -51,6 +51,7 @@
 
 .action:hover {
   border-color: var(--color-brand-secondary);
+  background: var(--color-surface-tint);
   box-shadow: var(--shadow-sm);
 }
 
@@ -102,8 +103,21 @@
   gap: var(--space-2);
 }
 
-.sectionHeader h2 {
+.sectionHeader h2,
+.section > h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   font-size: var(--font-size-lg);
+}
+
+.sectionHeader h2::before,
+.section > h2::before {
+  inline-size: 0.5rem;
+  block-size: 1.1rem;
+  border-radius: var(--radius-full);
+  background: var(--color-accent);
+  content: '';
 }
 
 .more {
@@ -148,7 +162,7 @@
 }
 
 .classRow:hover {
-  background: var(--color-surface-subtle);
+  background: var(--color-row-hover);
 }
 
 .classRow:focus-visible {
@@ -186,9 +200,9 @@
   align-items: center;
   gap: var(--space-5);
   padding: var(--space-6);
-  border: 1px dashed var(--color-border-strong);
+  border: 1px dashed var(--color-brand-secondary);
   border-radius: var(--radius-xl);
-  background: var(--color-surface);
+  background: var(--color-surface-tint);
 }
 
 .empty > div {
@@ -229,7 +243,7 @@
 }
 
 .taskRow:hover {
-  background: var(--color-surface-subtle);
+  background: var(--color-row-hover);
 }
 
 .taskRow:focus-visible {
@@ -239,7 +253,8 @@
 
 .quiet {
   padding: var(--space-4);
-  border: 1px dashed var(--color-border);
+  border: 1px dashed var(--color-border-strong);
+  background: var(--color-surface-tint);
   border-radius: var(--radius-lg);
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);

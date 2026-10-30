@@ -106,6 +106,12 @@ Phase 3 first learning slice (in development).
 
 ### Changed
 
+- Strengthened the MathsExpress blue and lavender identity on the new teacher pages and shared
+  components: brand-tinted tab highlights, tinted table headers and row highlights, statistic
+  tiles with a brand accent bar, coloured section markers, tinted filter bars and empty states,
+  filled step numbers and a clear brand focus ring on every field. New semantic colour tokens
+  build on the brand tokens, so equipped shop themes still recolour everything.
+
 - The student home's task list and next step now come from real tasks instead of sample data.
 
 - The lesson-completion burst of shapes is replaced by the mascot's own celebration, so there

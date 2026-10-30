@@ -1,5 +1,6 @@
 .wrap {
-  border: 1px solid var(--color-border);
+  overflow: hidden;
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
 }
@@ -146,4 +147,14 @@
   .table td:first-child::before {
     content: none;
   }
+}
+
+/* Brand table styling: a tinted header row and a soft highlight on the row under the pointer. */
+.table thead th {
+  background: var(--color-table-head);
+  color: var(--color-text-brand);
+}
+
+.table tbody tr:hover > * {
+  background: var(--color-row-hover);
 }

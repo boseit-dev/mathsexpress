@@ -93,6 +93,13 @@
 
   /* Keyboard focus ring. Dark sections override this with a light colour. */
   --color-focus: var(--color-brand-primary);
+  /* Brand tints for surfaces. Built on the brand tokens, so equipped shop themes follow. */
+  --color-surface-tint: var(--color-brand-lavender-wash);
+  --color-surface-selected: var(--color-brand-light-blue);
+  --color-row-hover: var(--color-brand-lavender-wash);
+  --color-table-head: var(--color-brand-lavender-wash);
+  --color-accent: var(--color-brand-secondary);
+  --focus-ring: 0 0 0 4px var(--color-brand-pale);
 
   /* Typography. */
   --font-family-base:

@@ -40,7 +40,7 @@
 }
 
 .filter span {
-  color: var(--color-text-secondary);
+  color: var(--color-text-brand);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
 }
@@ -56,8 +56,10 @@
 }
 
 .filter select:focus-visible {
-  outline: 3px solid var(--color-focus);
+  border-color: var(--color-brand-primary);
+  outline: 2px solid var(--color-focus);
   outline-offset: 1px;
+  box-shadow: var(--focus-ring);
 }
 
 .noMatch {
@@ -70,9 +72,9 @@
   align-items: center;
   gap: var(--space-5);
   padding: var(--space-6);
-  border: 1px dashed var(--color-border-strong);
+  border: 1px dashed var(--color-brand-secondary);
   border-radius: var(--radius-xl);
-  background: var(--color-surface);
+  background: var(--color-surface-tint);
 }
 
 .empty > div {

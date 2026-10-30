@@ -47,8 +47,8 @@
   inline-size: 1.75rem;
   block-size: 1.75rem;
   border-radius: var(--radius-full);
-  background: var(--color-brand-pale);
-  color: var(--color-text-brand);
+  background: var(--color-brand-primary);
+  color: var(--color-text-inverse);
   font-size: var(--font-size-sm);
 }
 
