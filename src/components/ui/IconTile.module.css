@@ -60,3 +60,21 @@
   background-color: var(--color-coin-surface);
   color: var(--color-coin-edge);
 }
+
+/*
+ * Large tiles mark empty states ("No tasks yet"), so they float gently to make the space feel
+ * alive. Reduced-motion settings stop it (see global.css).
+ */
+.large {
+  animation: tile-float 5s ease-in-out infinite;
+}
+
+@keyframes tile-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-4px) rotate(-2deg);
+  }
+}

@@ -112,3 +112,20 @@ ol[role='list'] {
     scroll-behavior: auto !important;
   }
 }
+
+/* The sliding bar under the current navigation item (see useSlidingIndicator). */
+.nav-indicator {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  inline-size: 1px;
+  block-size: var(--size-nav-indicator, 3px);
+  border-radius: var(--radius-full);
+  background: var(--color-brand-primary);
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: left center;
+  transition:
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 160ms ease;
+}

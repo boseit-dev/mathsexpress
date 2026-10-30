@@ -16,6 +16,10 @@ Phase 3 first learning slice (in development).
 
 ### Added
 
+- Added a sliding selection bar under the top navigation and the class workspace tabs, a
+  smooth drop-open for the account menu (its arrow turns as it opens), and a gentle float on
+  empty-state icons. All transform and opacity only, and still for reduced motion.
+
 - Added gentle background motion in the brand colours: squiggles that sway and bend near the
   left and right edges, small dots that swell, drift and fade (some in little groups), and a
   few soft floating shapes. Each area has its own arrangement; lessons and textbook reading

@@ -6,6 +6,7 @@
 }
 
 .list {
+  position: relative;
   display: flex;
   gap: var(--space-1);
   margin: 0;
@@ -50,7 +51,6 @@
 }
 
 .active {
-  border-block-end-color: var(--color-brand-primary);
   background: var(--color-surface-selected);
   color: var(--color-text-brand);
 }
