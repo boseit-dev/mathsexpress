@@ -6,6 +6,7 @@ import { createFakeState, testTeacher } from '@/test/fakeDependencies';
 import { renderApp } from '@/test/renderApp';
 
 const CLASS_PAGE = '/teacher/classes/class-9m2';
+const STUDENTS_PAGE = `${CLASS_PAGE}/students`;
 
 function teacherState() {
   const state = createFakeState();
@@ -20,9 +21,10 @@ describe('teacher Classes page', () => {
     expect(within(card).getByText('Year 9 · 1 student')).toBeVisible();
     expect(within(card).getByText('ABCD-2345')).toBeVisible();
     expect(within(card).getByText('Joining open')).toBeVisible();
-    expect(
-      within(card).getByRole('link', { name: 'Manage class 9M2 Mathematics' }),
-    ).toHaveAttribute('href', CLASS_PAGE);
+    expect(within(card).getByRole('link', { name: 'Open class 9M2 Mathematics' })).toHaveAttribute(
+      'href',
+      CLASS_PAGE,
+    );
   });
 
   it('creates a class and opens it', async () => {
@@ -78,17 +80,60 @@ describe('teacher Classes page', () => {
 
 describe('teacher class page', () => {
   it('shows the class, its code and its students', async () => {
+    const user = userEvent.setup();
     renderApp(CLASS_PAGE, { signedInAs: 'teacher' });
     expect(await screen.findByRole('heading', { level: 1, name: '9M2 Mathematics' })).toBeVisible();
     expect(screen.getByText('Year 9 · 1 student')).toBeVisible();
     expect(screen.getByText('ABCD-2345')).toBeVisible();
-    expect(screen.getByText('Mia Chen', { selector: 'p' })).toBeVisible();
+    const sections = screen.getByRole('navigation', { name: '9M2 Mathematics sections' });
+    expect(within(sections).getByRole('link', { name: 'Overview' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+
+    await user.click(within(sections).getByRole('link', { name: 'Students' }));
+    expect(await screen.findByText('Mia Chen', { selector: 'p' })).toBeVisible();
     expect(screen.getByLabelText('Mia Chen’s year level')).toHaveDisplayValue('Year 9');
+  });
+
+  it('searches and sorts the students', async () => {
+    const user = userEvent.setup();
+    const state = teacherState();
+    state.classes[0]?.students.push({
+      studentId: 'user-leo',
+      firstName: 'Leo',
+      lastName: 'Zhang',
+      yearLevel: 10,
+      joinedAt: '2026-10-01T00:00:00.000Z',
+    });
+    renderApp(STUDENTS_PAGE, { signedInAs: 'teacher', state });
+    await screen.findByText('Mia Chen', { selector: 'p' });
+    const names = () =>
+      screen
+        .getAllByText(/^(Leo Zhang|Mia Chen)$/, { selector: 'p' })
+        .map((item) => item.textContent);
+    const sortBy = (label: string) =>
+      user.selectOptions(screen.getByLabelText('Sort students by'), label);
+
+    expect(names()).toEqual(['Mia Chen', 'Leo Zhang']); // surname
+    await sortBy('First name');
+    expect(names()).toEqual(['Leo Zhang', 'Mia Chen']);
+    await sortBy('Year level');
+    expect(names()).toEqual(['Mia Chen', 'Leo Zhang']);
+    await sortBy('Recently joined');
+    expect(names()).toEqual(['Mia Chen', 'Leo Zhang']);
+
+    await user.type(screen.getByLabelText('Search students'), 'leo');
+    expect(names()).toEqual(['Leo Zhang']);
+    expect(screen.getByText('1 student of 2 match')).toBeVisible();
+    await user.clear(screen.getByLabelText('Search students'));
+    await user.type(screen.getByLabelText('Search students'), 'zz');
+    expect(screen.getByText('No students match “zz”.')).toBeVisible();
   });
 
   it('changes a student’s year level', async () => {
     const user = userEvent.setup();
-    const { state } = renderApp(CLASS_PAGE, { signedInAs: 'teacher' });
+    const { state } = renderApp(STUDENTS_PAGE, { signedInAs: 'teacher' });
 
     await user.selectOptions(await screen.findByLabelText('Mia Chen’s year level'), 'Year 10');
     await user.click(screen.getByRole('button', { name: 'Save Mia Chen’s year level' }));
@@ -124,7 +169,7 @@ describe('teacher class page', () => {
       yearLevel: 9,
       joinedAt: '2026-10-05T00:00:00.000Z',
     });
-    const { dependencies } = renderApp(CLASS_PAGE, { signedInAs: 'teacher', state });
+    const { dependencies } = renderApp(STUDENTS_PAGE, { signedInAs: 'teacher', state });
     // Hold the first request until the test lets it finish.
     let finishRemoving: (() => void) | undefined;
     const removeStudent = dependencies.classes.removeStudent.bind(dependencies.classes);
@@ -166,7 +211,7 @@ describe('teacher class page', () => {
       yearLevel: 9,
       joinedAt: '2026-10-05T00:00:00.000Z',
     });
-    const { dependencies } = renderApp(CLASS_PAGE, { signedInAs: 'teacher', state });
+    const { dependencies } = renderApp(STUDENTS_PAGE, { signedInAs: 'teacher', state });
     let finishRemoving: (() => void) | undefined;
     const removeStudent = dependencies.classes.removeStudent.bind(dependencies.classes);
     vi.spyOn(dependencies.classes, 'removeStudent').mockImplementationOnce(
@@ -200,7 +245,7 @@ describe('teacher class page', () => {
 
   it('removes a student after confirming', async () => {
     const user = userEvent.setup();
-    const { state } = renderApp(CLASS_PAGE, { signedInAs: 'teacher' });
+    const { state } = renderApp(STUDENTS_PAGE, { signedInAs: 'teacher' });
 
     await user.click(await screen.findByRole('button', { name: 'Remove Mia Chen' }));
     await user.click(screen.getByRole('button', { name: 'Remove student' }));
@@ -268,8 +313,11 @@ describe('teacher class page', () => {
     await user.click(await screen.findByRole('button', { name: 'Save settings' }));
     expect(await screen.findByText('Class settings saved.')).toBeVisible();
 
-    await user.click(screen.getByRole('button', { name: 'Save Mia Chen’s year level' }));
-    expect(await screen.findByText('Saved. Mia Chen is in Year 9.')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Make a new code' }));
+    await user.click(screen.getByRole('button', { name: 'Make new code' }));
+    expect(
+      await screen.findByText('The new class code is WXYZ-6789. The old code no longer works.'),
+    ).toBeVisible();
     expect(screen.queryByText('Class settings saved.')).not.toBeInTheDocument();
   });
 
@@ -285,6 +333,12 @@ describe('teacher class page', () => {
   it('has no detectable accessibility problems', async () => {
     renderApp(CLASS_PAGE, { signedInAs: 'teacher' });
     await screen.findByRole('heading', { level: 1, name: '9M2 Mathematics' });
+    expect(await findAccessibilityProblems()).toEqual([]);
+  });
+
+  it('has no detectable accessibility problems on the students tab', async () => {
+    renderApp(STUDENTS_PAGE, { signedInAs: 'teacher' });
+    await screen.findByText('Mia Chen', { selector: 'p' });
     expect(await findAccessibilityProblems()).toEqual([]);
   });
 });

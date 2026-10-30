@@ -208,7 +208,7 @@ describe('teacher layout', () => {
       '/teacher',
     );
     await router.navigate('/teacher');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Teacher home' })).toBeVisible();
+    expect(await screen.findByRole('heading', { level: 1, name: /Priya/ })).toBeVisible();
     expect(screen.queryByRole('link', { name: 'Back to home' })).not.toBeInTheDocument();
   });
 

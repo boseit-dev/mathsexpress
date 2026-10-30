@@ -16,6 +16,12 @@ Phase 3 first learning slice (in development).
 
 ### Added
 
+- Replaced the teacher home placeholder with a real dashboard: a personal greeting, quick
+  actions and the teacher's classes, all from real data, with a helpful first-class empty state.
+- Turned each class into a workspace with Overview and Students tabs. The Classes page and the
+  student list can be searched and sorted. Class codes, joining settings, year levels and
+  removing students work exactly as before.
+
 - Introduced the official MathsExpress capybara mascot: a flat, mouthless 2D character drawn
   once as a layered SVG rig, so all eight views (front, back, both sides and four
   three-quarter views), 29 poses and 16 eyes-and-eyebrows expressions keep identical colours

@@ -45,7 +45,7 @@ export function TeacherClassCard({ teacherClass }: { teacherClass: TeacherClass 
           )}
         </div>
         <ButtonLink to={paths.teacher.classDetail(teacherClass.id)} variant="secondary">
-          Manage class <VisuallyHidden>{teacherClass.name}</VisuallyHidden>
+          Open class <VisuallyHidden>{teacherClass.name}</VisuallyHidden>
           <ArrowRight aria-hidden="true" />
         </ButtonLink>
       </div>

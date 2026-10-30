@@ -1,21 +1,30 @@
-import { ArrowLeft } from 'lucide-react';
-import { Link } from 'react-router';
+import { ArrowLeft, LayoutDashboard, UsersRound } from 'lucide-react';
+import { Link, Outlet } from 'react-router';
 import { LatestFormScope } from '@/app/forms/LatestFormScope';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { TabNav, type TabItem } from '@/components/ui/TabNav';
 import { paths } from '@/config/paths';
 import { formatYearLevel } from '@/domain/student';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { formatCount } from '@/lib/format';
-import { ClassSettingsPanel } from './components/ClassSettingsPanel';
-import { JoinCodePanel } from './components/JoinCodePanel';
-import { StudentRoster } from './components/StudentRoster';
 import { useTeacherClassData } from './teacherClassesHandlers';
-import styles from './TeacherClassPage.module.css';
+import styles from './TeacherClassLayout.module.css';
 
-/** One class: its students and their year levels, its join code, and its settings. */
-export function TeacherClassPage() {
-  const { teacherClass, students } = useTeacherClassData();
+/** A class's workspace: its name, and tabs for each area of work with the class. */
+export function TeacherClassLayout() {
+  const data = useTeacherClassData();
+  const { teacherClass, students } = data;
   useDocumentTitle(teacherClass.name);
+
+  const tabs: TabItem[] = [
+    {
+      label: 'Overview',
+      to: paths.teacher.classDetail(teacherClass.id),
+      icon: LayoutDashboard,
+      end: true,
+    },
+    { label: 'Students', to: paths.teacher.classStudents(teacherClass.id), icon: UsersRound },
+  ];
 
   return (
     <LatestFormScope>
@@ -33,14 +42,8 @@ export function TeacherClassPage() {
             {formatYearLevel(teacherClass.yearLevel)} · {formatCount(students.length, 'student')}
           </p>
         </PageHeader>
-
-        <div className={styles.columns}>
-          <StudentRoster teacherClass={teacherClass} students={students} />
-          <div className={styles.sidebar}>
-            <JoinCodePanel teacherClass={teacherClass} />
-            <ClassSettingsPanel teacherClass={teacherClass} />
-          </div>
-        </div>
+        <TabNav label={`${teacherClass.name} sections`} items={tabs} />
+        <Outlet context={data} />
       </div>
     </LatestFormScope>
   );

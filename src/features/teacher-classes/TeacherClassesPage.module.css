@@ -73,3 +73,12 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.noMatch {
+  color: var(--color-text-secondary);
+}
+
+.create {
+  min-inline-size: 0;
+  scroll-margin-block-start: var(--space-6);
+}
