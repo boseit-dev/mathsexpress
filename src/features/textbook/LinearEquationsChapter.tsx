@@ -13,39 +13,47 @@ export function LinearEquationsChapter({ view = 'all' }: { view?: 'all' | 'quest
 
   return (
     <div className={styles.chapterBody}>
-      {view === 'all' && <section className={styles.lessonBlock} aria-labelledby="concept-heading">
-        <h2 id="concept-heading">1. Understanding equations</h2>
-        <p>
-          An equation says two expressions have the same value. To find an unknown number, keep both
-          sides equal by performing the same operation on each side.
-        </p>
+      {view === 'all' && (
+        <section className={styles.lessonBlock} aria-labelledby="concept-heading">
+          <h2 id="concept-heading">1. Understanding equations</h2>
+          <p>
+            An equation says two expressions have the same value. To find an unknown number, keep
+            both sides equal by performing the same operation on each side.
+          </p>
 
-        <div className={styles.example}>
-          <strong>Try it: keeping an equation balanced</strong>
-          <p>Move the slider to change a number in the equation. How does x change?</p>
-          <label htmlFor="equation-slider">Number added to x: {addedNumber}</label>
-          <input
-            id="equation-slider"
-            type="range"
-            min="1"
-            max="10"
-            value={addedNumber}
-            onChange={(event) => setAddedNumber(Number(event.target.value))}
-          />
-          <p><strong>x + {addedNumber} = 12</strong></p>
-          <p>Undo addition by subtracting {addedNumber} from both sides, so x = {12 - addedNumber}.</p>
-          <p>Check: {12 - addedNumber} + {addedNumber} = 12.</p>
-        </div>
-        <div className={styles.example}>
-          <strong>Worked example 1</strong>
-          <p>Solve 3x + 5 = 20.</p>
-          <ol>
-            <li>Subtract 5 from both sides: 3x = 15.</li>
-            <li>Divide both sides by 3: x = 5.</li>
-            <li>Check: 3 × 5 + 5 = 20, so the answer is correct.</li>
-          </ol>
-        </div>
-      </section>}
+          <div className={styles.example}>
+            <strong>Try it: keeping an equation balanced</strong>
+            <p>Move the slider to change a number in the equation. How does x change?</p>
+            <label htmlFor="equation-slider">Number added to x: {addedNumber}</label>
+            <input
+              id="equation-slider"
+              type="range"
+              min="1"
+              max="10"
+              value={addedNumber}
+              onChange={(event) => setAddedNumber(Number(event.target.value))}
+            />
+            <p>
+              <strong>x + {addedNumber} = 12</strong>
+            </p>
+            <p>
+              Undo addition by subtracting {addedNumber} from both sides, so x = {12 - addedNumber}.
+            </p>
+            <p>
+              Check: {12 - addedNumber} + {addedNumber} = 12.
+            </p>
+          </div>
+          <div className={styles.example}>
+            <strong>Worked example 1</strong>
+            <p>Solve 3x + 5 = 20.</p>
+            <ol>
+              <li>Subtract 5 from both sides: 3x = 15.</li>
+              <li>Divide both sides by 3: x = 5.</li>
+              <li>Check: 3 × 5 + 5 = 20, so the answer is correct.</li>
+            </ol>
+          </div>
+        </section>
+      )}
 
       <section className={styles.lessonBlock} aria-labelledby="exercise-heading">
         <div className={styles.exerciseHeading}>

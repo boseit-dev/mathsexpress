@@ -30,7 +30,6 @@ const guide: TextbookChapter = {
   status: 'ready',
 };
 
-
 /** These are syllabus focus-area headings, not a claim that individual lessons are written.
  * NESA sets learning outcomes by STAGE; textbooks for adjacent years share these headings. */
 const earlyFocus = [
@@ -97,7 +96,11 @@ const lifeSkillsFocus = [
   'Statistics and probability',
 ] as const;
 
-function focusChapters(titles: readonly string[], strand: string, prefix: string): TextbookChapter[] {
+function focusChapters(
+  titles: readonly string[],
+  strand: string,
+  prefix: string,
+): TextbookChapter[] {
   return titles.map((title, index) => ({
     id: `${prefix}-${index + 1}`,
     title,
@@ -116,7 +119,6 @@ export function stageForYear(year: YearLevel): string {
   if (year <= 10) return 'Stage 5';
   return 'Stage 6';
 }
-
 
 function k10Book(year: YearLevel, lifeSkills = false): TextbookBook {
   const title = year === 'K' ? 'Kindergarten' : `Year ${year}`;
@@ -214,7 +216,6 @@ const standard12_2 = [
   'Relative frequency and probability',
   'The normal distribution',
 ];
-
 
 /** The new NSW 2024 senior focus areas are taught in Year 11 from 2026 and
  * Year 12 from Term 4 2026. Keep courses separate, not combined. */
