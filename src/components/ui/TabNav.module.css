@@ -1,0 +1,56 @@
+/* Quiet underline tabs; they scroll sideways on narrow screens rather than wrapping. */
+.nav {
+  overflow-x: auto;
+  border-block-end: 1px solid var(--color-border);
+  scrollbar-width: none;
+}
+
+.list {
+  position: relative;
+  display: flex;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tab {
+  display: inline-flex;
+  border-start-start-radius: var(--radius-md);
+  border-start-end-radius: var(--radius-md);
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: var(--size-touch-target);
+  padding-inline: var(--space-3);
+  border-block-end: 2px solid transparent;
+  margin-block-end: -1px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color var(--duration-quick) var(--ease-out-soft),
+    border-color var(--duration-quick) var(--ease-out-soft);
+}
+
+.tab svg {
+  inline-size: var(--size-icon-sm);
+  block-size: var(--size-icon-sm);
+}
+
+.tab:hover {
+  background: var(--color-row-hover);
+  color: var(--color-text-brand);
+}
+
+.tab:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: -3px;
+  border-radius: var(--radius-sm);
+}
+
+.active {
+  background: var(--color-surface-selected);
+  color: var(--color-text-brand);
+}

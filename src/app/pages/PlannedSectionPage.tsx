@@ -1,5 +1,7 @@
 import { CalendarClock } from 'lucide-react';
 import { ButtonLink } from '@/components/ui/ButtonLink';
+import type { AnimationName } from '@/components/mascot/animations';
+import { Mascot } from '@/components/mascot/Mascot';
 import { MessageLayout } from './MessageLayout';
 
 interface PlannedSectionPageProps {
@@ -8,16 +10,19 @@ interface PlannedSectionPageProps {
   summary: string;
   /** Where "Back to home" goes. Omit when this page is itself the home page. */
   homePath?: string;
+  /** Shows the mascot doing this instead of the calendar icon. */
+  mascot?: AnimationName;
 }
 
 /**
  * Honest stand-in for a navigation destination that a later phase will build, so every link
  * works during development. None of these may remain when MathsExpress 2.0 is released.
  */
-export function PlannedSectionPage({ title, summary, homePath }: PlannedSectionPageProps) {
+export function PlannedSectionPage({ title, summary, homePath, mascot }: PlannedSectionPageProps) {
   return (
     <MessageLayout
       icon={CalendarClock}
+      art={mascot && <Mascot animation={mascot} size={170} cycles={2} />}
       eyebrow="Planned for a later phase"
       title={title}
       actions={

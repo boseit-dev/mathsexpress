@@ -1,5 +1,7 @@
 import type { RouteObject } from 'react-router';
 import type { AppDependencies } from '@/data/repositories';
+import { paths } from '@/config/paths';
+import { MascotPreviewPage } from '@/features/mascot/MascotPreviewPage';
 import { StandalonePage } from '@/layouts/StandalonePage';
 import { createAuthRoutes } from './auth/authRoutes';
 import { startPageRedirect } from './auth/guards';
@@ -32,6 +34,14 @@ export function createRoutes(dependencies: AppDependencies): RouteObject[] {
         ...createAuthRoutes(dependencies),
         createStudentRoutes(dependencies),
         createTeacherRoutes(dependencies),
+        {
+          path: paths.mascot,
+          element: (
+            <StandalonePage>
+              <MascotPreviewPage />
+            </StandalonePage>
+          ),
+        },
         {
           path: '*',
           element: (

@@ -17,8 +17,11 @@ It overrides habits and defaults. If an instruction from the user conflicts with
 - The Textbook now has a library of individual books, navigation and one original Year 9 pilot
   chapter. **Most chapters are still in preparation** and are not claimed syllabus-complete;
   see `docs/textbook-coverage.md` for exact coverage and source links.
-- Not built yet: the rest of the learning engine, full textbook contents, tasks, reports,
-  teacher home, profile/settings pages and real rewards/coin shop. Planned destinations explain
+- The teacher experience is built: teacher home, class workspaces (Overview, Students, Tasks,
+  Progress), real tasks (lessons for a class or chosen students), saved server-marked lesson
+  progress and Reports. Students see real tasks.
+- Not built yet: the rest of the learning engine (practice sets, worksheets, tests), full
+  textbook contents and profile/settings pages. Planned destinations explain
   the limitations; example scores and panels still have Sample data badges.
 - Never start the next phase until the user has reviewed and approved the current one.
 
@@ -28,8 +31,9 @@ It overrides habits and defaults. If an instruction from the user conflicts with
   Its code is preserved in tag `v11.5.35` and branch `legacy-v11`. It must keep running untouched
   until the user approves the MathsExpress 2.0 release.
 - This project deploys to a **separate** Worker, `mathsexpress-v2` (`wrangler.jsonc`). Never point
-  it at `mathsexpress`, and never run `wrangler deploy` (any Worker) without the user's explicit
-  approval in the current conversation. Never change the old Worker's routes, domains or secrets.
+  it at `mathsexpress`, and the owner approved automatic GitHub Actions deployments **only** to
+  `mathsexpress-v2` on 30 October 2026. Manual deployments and any deployment to the original
+  Worker still need explicit approval. Never change the old Worker's routes, domains or secrets.
 - Never touch the production Supabase project `dsjrxkxjcaurrbijihja`: no migrations, writes,
   deletions or exports. Student, teacher and class data must never be removed or exposed.
 - Development uses only the **local** Supabase stack (`supabase start`, in Docker). Never run
@@ -85,10 +89,11 @@ user to run `gh auth login` once; never ask for tokens in chat.
 rebase or force). Then fast-forward `mathsexpress-v2` to `main` (`git merge --ff-only origin/main`)
 and push it. Never push to `main` directly.
 
-**Deploying is separate from `main`.** Nothing deploys automatically from any branch. The live site
-keeps running v11.5.35 until the user approves replacing it; that release is a separate, agreed
-step that includes changing the Worker name in `wrangler.jsonc` (a test guards it until then). If
-the live v11 site ever needs a fix, branch from `legacy-v11` and deploy only with approval.
+**Deploying is separate from `main`.** After both CI jobs pass on a `mathsexpress-v2`
+push, GitHub Actions deploys automatically to the **separate** `mathsexpress-v2` Worker if its
+hosting secrets and a separate V2 Supabase project are configured. See
+`docs/cloudflare-auto-deploy.md`. This does not deploy from `main` or touch the old live site.
+Replacing the original v11 website requires separate owner approval.
 
 ### Commit messages
 

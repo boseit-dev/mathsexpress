@@ -1,0 +1,186 @@
+.page {
+  display: grid;
+  gap: var(--space-8);
+  inline-size: min(100%, 76rem);
+  margin-inline: auto;
+  padding-block: var(--space-6);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.header h1 {
+  font-size: var(--font-size-display);
+  line-height: var(--line-height-tight);
+}
+
+.eyebrow {
+  color: var(--color-text-brand);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.lead {
+  max-inline-size: 44rem;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-base);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.toggle input {
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+  accent-color: var(--color-brand-primary);
+}
+
+.section {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.section h2 {
+  font-size: var(--font-size-2xl);
+}
+
+.group {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.group h3 {
+  color: var(--color-text-brand);
+  font-size: var(--font-size-lg);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: var(--space-3);
+}
+
+.tile {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, var(--color-surface), var(--color-brand-pale));
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+}
+
+/* Expressions are shown as head close-ups of the same full drawing. */
+.face {
+  display: block;
+  overflow: hidden;
+  inline-size: 7.5rem;
+  block-size: 6.25rem;
+}
+
+.face svg {
+  margin-block-start: -0.6rem;
+  margin-inline-start: -1.9rem;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr));
+  gap: var(--space-4);
+}
+
+.card {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.stage {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  min-block-size: 13.5rem;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, var(--color-surface-subtle), var(--color-brand-pale));
+}
+
+.bigStage {
+  min-block-size: 18rem;
+}
+
+.cardText {
+  display: grid;
+  align-content: start;
+  gap: var(--space-1);
+}
+
+.cardText h4 {
+  font-size: var(--font-size-lg);
+}
+
+.cardText p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-base);
+}
+
+.meta code {
+  font-size: var(--font-size-xs);
+}
+
+.cardActions,
+.buttonGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.controller {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+}
+
+.controls {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+}
+
+.now {
+  font-size: var(--font-size-lg);
+}
+
+@media (min-width: 860px) {
+  .controller {
+    grid-template-columns: minmax(18rem, 1fr) 1.2fr;
+  }
+}

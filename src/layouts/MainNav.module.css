@@ -1,5 +1,6 @@
 /* Phones and tablets: a full-width row of tabs under the logo. */
 .list {
+  position: relative;
   display: grid;
   grid-auto-columns: minmax(0, 1fr);
   grid-auto-flow: column;
@@ -34,7 +35,6 @@
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   background-color: var(--color-brand-pale);
   color: var(--color-text-brand);
-  box-shadow: inset 0 calc(var(--size-nav-indicator) * -1) 0 var(--color-brand-primary);
 }
 
 .icon {

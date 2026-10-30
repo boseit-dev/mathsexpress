@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { BrandMark } from '@/layouts/BrandMark';
+import { Mascot } from '@/components/mascot/Mascot';
 import styles from './LoadingScreen.module.css';
 
 /**
@@ -10,7 +10,10 @@ import styles from './LoadingScreen.module.css';
  */
 export const SLOW_LOAD_MS = 20_000;
 
-/** Shown while the first page's data loads. Deliberately static: no spinner animation. */
+/**
+ * Shown while the first page's data loads: the mascot walks on the spot. With reduced motion it
+ * simply stands in its walking pose.
+ */
 export function LoadingScreen() {
   const [slow, setSlow] = useState(false);
 
@@ -25,7 +28,7 @@ export function LoadingScreen() {
 
   return (
     <div className={styles.loading} role="status">
-      <BrandMark className={styles.mark} />
+      <Mascot animation="walk" size={120} className={styles.mark} />
       <p>Loading MathsExpress…</p>
       {slow && (
         <div className={styles.slow}>

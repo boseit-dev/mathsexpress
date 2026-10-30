@@ -1,0 +1,191 @@
+/*
+ * Background motion for MathsExpress pages. Behind all content (z-index -1 under the page's
+ * cards), never interactive, and only transform and opacity are animated, so it stays smooth on
+ * school laptops and phones.
+ */
+.layer {
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  animation: decor-in 600ms ease-out both;
+}
+
+/* Squiggles: a faint line with a slow dashed "flow" along it, swaying and bending gently. */
+.squiggle {
+  position: absolute;
+  inline-size: 60px;
+  block-size: 360px;
+  overflow: visible;
+  opacity: 0.55;
+}
+
+.left {
+  inset-inline-start: 0.6%;
+}
+
+.right {
+  inset-inline-end: 0.6%;
+}
+
+.sway {
+  transform-origin: 30px 180px;
+  animation: sway var(--speed) ease-in-out infinite alternate;
+}
+
+.bend {
+  transform-origin: 30px 180px;
+  /* A different length to the sway, so the two never line up and the motion doesn't repeat. */
+  animation: bend calc(var(--speed) * 0.73) ease-in-out infinite alternate;
+}
+
+.line,
+.flow {
+  fill: none;
+  stroke: var(--colour);
+  stroke-linecap: round;
+}
+
+.line {
+  stroke-width: 3;
+  opacity: 0.45;
+}
+
+.flow {
+  stroke-width: 3.5;
+  stroke-dasharray: 18 26;
+  animation: flow calc(var(--speed) * 1.4) linear infinite;
+}
+
+/* Dots: appear, swell, drift down or diagonally, shrink and fade. */
+.dot {
+  position: absolute;
+  inline-size: var(--size);
+  block-size: var(--size);
+  border-radius: var(--radius-full);
+  background: var(--colour);
+  opacity: 0;
+  animation: drift var(--duration) ease-in-out var(--delay) infinite;
+}
+
+/* Soft shapes float and turn very slowly. */
+.shape {
+  position: absolute;
+  inline-size: var(--size);
+  block-size: var(--size);
+  overflow: visible;
+  opacity: 0.6;
+  animation: float var(--duration) ease-in-out infinite alternate;
+}
+
+.ring circle,
+.arc path,
+.plus path {
+  fill: none;
+  stroke: var(--colour);
+  stroke-linecap: round;
+  stroke-width: 6;
+}
+
+.blob path {
+  fill: var(--colour);
+}
+
+.ring {
+  animation-name: pulse;
+}
+
+/* Phones: keep everything to the very edges, away from text. */
+@media (max-width: 700px) {
+  .inner,
+  .shape,
+  .squiggle:nth-of-type(n + 2) {
+    display: none;
+  }
+
+  .squiggle {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer,
+  .layer * {
+    animation: none !important;
+  }
+
+  .dot {
+    opacity: 0.35;
+  }
+}
+
+@keyframes decor-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes sway {
+  from {
+    transform: translateY(-18px) rotate(-5deg);
+  }
+  to {
+    transform: translateY(22px) rotate(5deg);
+  }
+}
+
+@keyframes bend {
+  from {
+    transform: scaleX(0.7);
+  }
+  to {
+    transform: scaleX(1.25);
+  }
+}
+
+@keyframes flow {
+  to {
+    stroke-dashoffset: -88;
+  }
+}
+
+@keyframes drift {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  20% {
+    opacity: var(--peak);
+  }
+  50% {
+    transform: translate(calc(var(--dx) * 0.5), 34px) scale(1.15);
+  }
+  80% {
+    opacity: var(--peak);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), 72px) scale(0.7);
+  }
+}
+
+@keyframes float {
+  from {
+    transform: translate(-50%, -6px) rotate(-6deg);
+  }
+  to {
+    transform: translate(-50%, 8px) rotate(7deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: translate(-50%, 0) scale(1);
+  }
+  50% {
+    transform: translate(-50%, 6px) scale(1.08);
+  }
+}

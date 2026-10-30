@@ -1,5 +1,7 @@
-import { ArrowRight, BookOpenCheck, GraduationCap, LockKeyhole, Search } from 'lucide-react';
+import { ArrowRight, BookOpenCheck, GraduationCap } from 'lucide-react';
 import { Link } from 'react-router';
+import { Mascot } from '@/components/mascot/Mascot';
+import { cx } from '@/lib/cx';
 import { paths } from '@/config/paths';
 import { lessonsForYear } from '@/domain/learning';
 import { formatYearLevel } from '@/domain/student';
@@ -32,7 +34,7 @@ export function LearnPage() {
       </header>
       {classes.length === 0 ? (
         <section className={styles.empty} aria-labelledby="no-class-heading">
-          <LockKeyhole aria-hidden="true" size={32} />
+          <Mascot animation="peek" size={130} cycles={2} />
           <h2 id="no-class-heading">Join a class to get started</h2>
           <p>Your teacher will set your year level when you join. You cannot change it yourself.</p>
           <Link className={styles.primaryLink} to={paths.student.class}>
@@ -74,7 +76,7 @@ export function LearnPage() {
             </div>
             {uniqueLessons.length === 0 ? (
               <div className={styles.empty}>
-                <Search aria-hidden="true" size={28} />
+                <Mascot animation="reading" size={120} cycles={2} />
                 <h3>Lessons for your year are being prepared</h3>
                 <p>
                   There is no published lesson for your assigned year yet. Your class and year level
@@ -88,6 +90,14 @@ export function LearnPage() {
                     <div className={styles.cardArt} aria-hidden="true">
                       <span className={styles.equationArt}>3x + 5 = 20</span>
                       <span className={styles.artCircle}>x = ?</span>
+                      {/* Reads quietly; on hover or keyboard focus it stands and points at the topic. */}
+                      <Mascot className={styles.cardMascot} pose="reading" size={104} />
+                      <Mascot
+                        className={cx(styles.cardMascot, styles.cardMascotPointing)}
+                        pose="pointing"
+                        view="front-left"
+                        size={104}
+                      />
                     </div>
                     <div className={styles.cardBody}>
                       <span className={styles.miniLabel}>

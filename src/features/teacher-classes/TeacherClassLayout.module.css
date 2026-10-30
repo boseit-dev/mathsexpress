@@ -1,0 +1,21 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--space-1);
+  min-block-size: var(--size-touch-target-min);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.back svg {
+  inline-size: var(--size-icon-sm);
+  block-size: var(--size-icon-sm);
+}

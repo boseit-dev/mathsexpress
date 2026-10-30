@@ -202,13 +202,13 @@ describe('teacher layout', () => {
   });
 
   it('offers "Back to home" on planned sections but not on the home page itself', async () => {
-    const { router } = renderApp('/teacher/tasks', { signedInAs: 'teacher' });
+    const { router } = renderApp('/teacher/more', { signedInAs: 'teacher' });
     expect(await screen.findByRole('link', { name: 'Back to home' })).toHaveAttribute(
       'href',
       '/teacher',
     );
     await router.navigate('/teacher');
-    expect(await screen.findByRole('heading', { level: 1, name: 'Teacher home' })).toBeVisible();
+    expect(await screen.findByRole('heading', { level: 1, name: /Priya/ })).toBeVisible();
     expect(screen.queryByRole('link', { name: 'Back to home' })).not.toBeInTheDocument();
   });
 

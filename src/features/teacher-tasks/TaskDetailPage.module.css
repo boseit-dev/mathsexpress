@@ -1,0 +1,226 @@
+.page {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--space-1);
+  min-block-size: var(--size-touch-target-min);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.back svg {
+  inline-size: var(--size-icon-sm);
+  block-size: var(--size-icon-sm);
+}
+
+.columns {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.main,
+.sidebar {
+  display: grid;
+  align-content: start;
+  gap: var(--space-5);
+  min-inline-size: 0;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: var(--space-3);
+  margin: 0;
+}
+
+.facts > div {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  /* A straight brand bar along the start edge, clipped by the rounded corners. */
+  box-shadow: inset 4px 0 0 var(--color-accent);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-tint);
+}
+
+.facts dt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.facts dt svg {
+  inline-size: var(--size-icon-xs);
+  block-size: var(--size-icon-xs);
+  color: var(--color-text-brand);
+}
+
+.facts dd {
+  display: grid;
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.dueNote {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.instructions,
+.panel {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+}
+
+.instructions h2,
+.panel h2 {
+  font-size: var(--font-size-lg);
+}
+
+.instructions p {
+  white-space: pre-line;
+}
+
+.muted {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.summary {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.summary p {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.summary strong {
+  color: var(--color-text);
+}
+
+.dueForm {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.table th,
+.table td {
+  padding: var(--space-3) var(--space-2);
+  text-align: start;
+  vertical-align: middle;
+}
+
+.table thead th {
+  border-block-end: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.table tbody th {
+  font-weight: var(--font-weight-semibold);
+}
+
+.table tbody tr + tr > * {
+  border-block-start: 1px solid var(--color-border);
+}
+
+.late {
+  color: var(--color-warning);
+  font-weight: var(--font-weight-semibold);
+}
+
+.visuallyHidden {
+  position: absolute;
+  overflow: hidden;
+  inline-size: 1px;
+  block-size: 1px;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 639px) {
+  .table thead {
+    position: absolute;
+    overflow: hidden;
+    inline-size: 1px;
+    block-size: 1px;
+    clip-path: inset(50%);
+  }
+
+  .table tr {
+    display: grid;
+    gap: var(--space-1);
+    padding-block: var(--space-3);
+  }
+
+  .table tbody tr + tr {
+    border-block-start: 1px solid var(--color-border);
+  }
+
+  .table tbody tr + tr > * {
+    border-block-start: 0;
+  }
+
+  .table th,
+  .table td {
+    display: grid;
+    grid-template-columns: 8rem minmax(0, 1fr);
+    padding: 0;
+  }
+
+  .table td::before {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-xs);
+    content: attr(data-label);
+  }
+
+  .table tbody th {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1100px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr) var(--layout-sidebar-width);
+    align-items: start;
+  }
+}
+
+/* Brand table styling: a tinted header row and a soft highlight on the row under the pointer. */
+.table thead th {
+  background: var(--color-table-head);
+  color: var(--color-text-brand);
+}
+
+.table tbody tr:hover > * {
+  background: var(--color-row-hover);
+}

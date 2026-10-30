@@ -6,9 +6,70 @@ All notable changes to MathsExpress 2.0 are recorded here. The format follows
 
 ## [2.0.0-alpha.3] - Unreleased
 
+### Deployment
+
+- Added CI-gated automatic Cloudflare V2 test-site deployment after both app and database checks
+  pass. Requires scoped Cloudflare secrets and a separate V2 Supabase project. The old live site
+  remains untouched.
+
 Phase 3 first learning slice (in development).
 
 ### Added
+
+- Added a sliding selection bar under the top navigation and the class workspace tabs, a
+  smooth drop-open for the account menu (its arrow turns as it opens), and a gentle float on
+  empty-state icons. All transform and opacity only, and still for reduced motion.
+
+- Added gentle background motion in the brand colours: squiggles that sway and bend near the
+  left and right edges, small dots that swell, drift and fade (some in little groups), and a
+  few soft floating shapes. Each area has its own arrangement; lessons and textbook reading
+  stay calm. Decorative only: behind content, not clickable, hidden from screen readers, still
+  for reduced motion, and kept to the very edges on phones.
+
+- Built teacher Reports from saved, server-marked lesson work only: class summaries (active
+  students, lessons completed, right-first-time accuracy, tasks completed), per-lesson progress
+  bars, a searchable and sortable student table, task completion, and each student's attempts.
+  Filters for class, period and student live in the address. Each class workspace gains a
+  Progress tab, and the teacher home shows recent activity. No activity shows as none, never
+  as an invented score.
+
+- Built real tasks. Teachers set a published lesson for a whole class or chosen students with a
+  due date and optional instructions, publish now or save a draft, move the due date, delete
+  with confirmation, and see each student's result. Tasks are listed across classes (search,
+  class and status filters) and in each class's new Tasks tab, and the teacher home shows what
+  is coming up and what needs following up.
+- Students see their real tasks on the home page and on a new Your tasks page, and can open a
+  lesson their teacher set even outside their year level.
+- Lesson progress is now saved to the student's account as they answer. The server marks every
+  answer against its own answer key, so completion and accuracy can't be faked, and practice
+  keeps working (with a clear message) if saving fails.
+- New database tables and functions with row-level security for the learning catalogue, lesson
+  attempts, tasks and task students, with database tests for every permission.
+
+- Replaced the teacher home placeholder with a real dashboard: a personal greeting, quick
+  actions and the teacher's classes, all from real data, with a helpful first-class empty state.
+- Turned each class into a workspace with Overview and Students tabs. The Classes page and the
+  student list can be searched and sorted. Class codes, joining settings, year levels and
+  removing students work exactly as before.
+
+- Introduced the official MathsExpress capybara mascot: a flat, mouthless 2D character drawn
+  once as a layered SVG rig, so all eight views (front, back, both sides and four
+  three-quarter views), 29 poses and 16 eyes-and-eyebrows expressions keep identical colours
+  and proportions.
+- Added 24 smooth mascot animations (movement, learning, feedback and rewards) and an
+  animation controller that eases between a resting state and short reactions to real events.
+- The mascot now responds around the site: it waves when a student arrives, reads and points
+  at lessons on Learn, reacts kindly to wrong answers, lights a bulb for hints, celebrates
+  correct answers and finished lessons (a special level-up for a perfect run), walks on the
+  loading screen, and appears in empty states, the achievements and challenges panels and the
+  teacher home page. Reduced-motion visitors see still poses.
+- Upgraded the mascot's animation quality: arms now bend at the elbow, faces move with real
+  eyelids (smiles squeeze, blinks close, brows glide), ears and tuft follow through, every
+  animation uses anticipation, squash and stretch and overshoot, celebrations are bigger (the
+  lesson-complete jump includes a mid-air twirl), changing direction plays a quick turn, and
+  the character has soft volume shading.
+- Added the `/mascot` workshop page to review every view, pose and animation, transparent SVG
+  and PNG exports in `src/assets/mascot/`, `npm run mascot:export` and mascot documentation.
 
 - Built the first real account-backed Coin Shop with an original catalogue of eight
   permanent themes and avatar frames, a starter wallet, secure transactional buying,
@@ -54,6 +115,17 @@ Phase 3 first learning slice (in development).
   complete lesson flow.
 
 ### Changed
+
+- Strengthened the MathsExpress blue and lavender identity on the new teacher pages and shared
+  components: brand-tinted tab highlights, tinted table headers and row highlights, statistic
+  tiles with a brand accent bar, coloured section markers, tinted filter bars and empty states,
+  filled step numbers and a clear brand focus ring on every field. New semantic colour tokens
+  build on the brand tokens, so equipped shop themes still recolour everything.
+
+- The student home's task list and next step now come from real tasks instead of sample data.
+
+- The lesson-completion burst of shapes is replaced by the mascot's own celebration, so there
+  is one celebration instead of two.
 
 - Extended the official MathsExpress blue/lavender palette across the 2.0 site:
   softly colourful page backgrounds, navigation, active tabs, buttons, Study Journal
@@ -144,6 +216,11 @@ Phase 2: authentication, accounts and class management.
 - The Google button shows that Google sign-in isn't available yet before anyone presses it.
 
 ### Fixed
+
+- Fixed the page jumping sideways and back when moving between pages. The page-entrance
+  animation moved the whole main area down a few pixels, briefly pushing short pages past the
+  window and flashing a scrollbar (and moving the fixed quick-tools bar). Now only the page
+  content animates, and space for the scrollbar is always reserved.
 
 - The site's Content-Security-Policy now allows connections to its Supabase project; before, a
   build served by the Worker could not reach the database.

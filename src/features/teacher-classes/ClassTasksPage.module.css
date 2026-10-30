@@ -1,0 +1,33 @@
+.section {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.header h2 {
+  font-size: var(--font-size-lg);
+}
+
+.header svg {
+  inline-size: var(--size-icon-sm);
+  block-size: var(--size-icon-sm);
+}
+
+.empty {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border: 1px dashed var(--color-brand-secondary);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface-tint);
+  color: var(--color-text-secondary);
+}

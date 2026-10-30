@@ -142,3 +142,8 @@
     transform: translateY(10px);
   }
 }
+
+/* The mascot sits above the panel content; it plays once and then holds still. */
+.mascot {
+  justify-self: center;
+}

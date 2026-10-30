@@ -10,7 +10,21 @@ import type {
 } from '@/domain/classes';
 import type { CurrentStudent, YearLevel } from '@/domain/student';
 import type { StudentHome } from '@/domain/studentHome';
+import type {
+  RecentCompletion,
+  StudentAttemptResult,
+  StudentProgressSummary,
+  TopicProgress,
+} from '@/domain/reports';
 import type { CosmeticCategory, ShopState } from '@/domain/shop';
+import type {
+  AnswerResult,
+  LearningItem,
+  NewTask,
+  StudentTask,
+  TaskStudentResult,
+  TeacherTask,
+} from '@/domain/tasks';
 
 export interface RequestOptions {
   /** Cancels the request, e.g. when the user navigates away before it finishes. */
@@ -92,6 +106,55 @@ export interface ShopRepository {
   awardAnswer(questionId: string, answer: string): Promise<ShopState>;
 }
 
+/** Tasks: teachers set and track them; students see the ones set for them. */
+export interface TaskRepository {
+  /** What can be assigned and learned. */
+  listCatalogue(options?: RequestOptions): Promise<LearningItem[]>;
+  // Teachers
+  createTask(task: NewTask): Promise<TeacherTask>;
+  publishTask(taskId: string): Promise<TeacherTask>;
+  setDueDate(taskId: string, dueAt: string): Promise<TeacherTask>;
+  deleteTask(taskId: string): Promise<void>;
+  /** One class's tasks, or every class's when classId is omitted. */
+  listTeacherTasks(classId?: string, options?: RequestOptions): Promise<TeacherTask[]>;
+  getTask(taskId: string, options?: RequestOptions): Promise<TeacherTask>;
+  listTaskResults(taskId: string, options?: RequestOptions): Promise<TaskStudentResult[]>;
+  // Students
+  listMyTasks(options?: RequestOptions): Promise<StudentTask[]>;
+}
+
+/** Saved lesson progress. Answers are marked on the server. */
+export interface ProgressRepository {
+  startAttempt(contentId: string): Promise<string>;
+  recordAnswer(
+    attemptId: string,
+    questionId: string,
+    answer: string,
+    hintsUsed: number,
+  ): Promise<AnswerResult>;
+}
+
+/** Teacher reports from saved, server-marked learning. `since` limits them to recent work. */
+export interface ReportRepository {
+  classProgress(
+    classId: string,
+    since: Date | null,
+    options?: RequestOptions,
+  ): Promise<StudentProgressSummary[]>;
+  studentResults(
+    classId: string,
+    studentId: string,
+    since: Date | null,
+    options?: RequestOptions,
+  ): Promise<StudentAttemptResult[]>;
+  topicProgress(
+    classId: string,
+    since: Date | null,
+    options?: RequestOptions,
+  ): Promise<TopicProgress[]>;
+  recentCompletions(options?: RequestOptions): Promise<RecentCompletion[]>;
+}
+
 /** Everything the routes need from the outside world, injected so tests can replace it. */
 export interface AppDependencies {
   auth: AuthService;
@@ -99,6 +162,9 @@ export interface AppDependencies {
   classes: ClassRepository;
   studentHome: StudentHomeRepository;
   shop: ShopRepository;
+  tasks: TaskRepository;
+  progress: ProgressRepository;
+  reports: ReportRepository;
   /** The current time. Injected so date-based logic can be tested. */
   now: () => Date;
 }
