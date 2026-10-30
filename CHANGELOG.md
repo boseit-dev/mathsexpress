@@ -16,6 +16,13 @@ Phase 3 first learning slice (in development).
 
 ### Added
 
+- Built teacher Reports from saved, server-marked lesson work only: class summaries (active
+  students, lessons completed, right-first-time accuracy, tasks completed), per-lesson progress
+  bars, a searchable and sortable student table, task completion, and each student's attempts.
+  Filters for class, period and student live in the address. Each class workspace gains a
+  Progress tab, and the teacher home shows recent activity. No activity shows as none, never
+  as an invented score.
+
 - Built real tasks. Teachers set a published lesson for a whole class or chosen students with a
   due date and optional instructions, publish now or save a draft, move the due date, delete
   with confirmation, and see each student's result. Tasks are listed across classes (search,

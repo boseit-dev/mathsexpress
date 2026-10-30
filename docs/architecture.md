@@ -64,10 +64,11 @@ URL ──▶ React Router (src/app/routes.tsx)
 | `/teacher/classes/:classId`            | Class workspace: overview, code and settings          | Built        |
 | `/teacher/classes/:classId/students`   | Students and year levels (search, sort, remove)       | Built        |
 | `/teacher/classes/:classId/tasks`      | The class's tasks                                     | Built        |
+| `/teacher/classes/:classId/progress`   | The class's report inside its workspace               | Built        |
 | `/teacher/tasks`                       | All tasks, with search and filters                    | Built        |
 | `/teacher/tasks/new`                   | Set a lesson for a class or chosen students           | Built        |
 | `/teacher/tasks/:taskId`               | A task's results; publish, move due date, delete      | Built        |
-| `/teacher/reports`                     | Reports                                               | Planned page |
+| `/teacher/reports`                     | Class and student reports from saved, marked work     | Built        |
 | `/teacher/more`                        | More                                                  | Planned page |
 
 Every planned page must be replaced by the real feature before release.

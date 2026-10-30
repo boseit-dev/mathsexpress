@@ -10,6 +10,12 @@ import type {
 } from '@/domain/classes';
 import type { CurrentStudent, YearLevel } from '@/domain/student';
 import type { StudentHome } from '@/domain/studentHome';
+import type {
+  RecentCompletion,
+  StudentAttemptResult,
+  StudentProgressSummary,
+  TopicProgress,
+} from '@/domain/reports';
 import type { CosmeticCategory, ShopState } from '@/domain/shop';
 import type {
   AnswerResult,
@@ -128,6 +134,27 @@ export interface ProgressRepository {
   ): Promise<AnswerResult>;
 }
 
+/** Teacher reports from saved, server-marked learning. `since` limits them to recent work. */
+export interface ReportRepository {
+  classProgress(
+    classId: string,
+    since: Date | null,
+    options?: RequestOptions,
+  ): Promise<StudentProgressSummary[]>;
+  studentResults(
+    classId: string,
+    studentId: string,
+    since: Date | null,
+    options?: RequestOptions,
+  ): Promise<StudentAttemptResult[]>;
+  topicProgress(
+    classId: string,
+    since: Date | null,
+    options?: RequestOptions,
+  ): Promise<TopicProgress[]>;
+  recentCompletions(options?: RequestOptions): Promise<RecentCompletion[]>;
+}
+
 /** Everything the routes need from the outside world, injected so tests can replace it. */
 export interface AppDependencies {
   auth: AuthService;
@@ -137,6 +164,7 @@ export interface AppDependencies {
   shop: ShopRepository;
   tasks: TaskRepository;
   progress: ProgressRepository;
+  reports: ReportRepository;
   /** The current time. Injected so date-based logic can be tested. */
   now: () => Date;
 }

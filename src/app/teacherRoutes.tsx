@@ -10,7 +10,13 @@ import {
 import { TeacherClassesPage } from '@/features/teacher-classes/TeacherClassesPage';
 import { ClassOverviewPage } from '@/features/teacher-classes/ClassOverviewPage';
 import { ClassStudentsPage } from '@/features/teacher-classes/ClassStudentsPage';
+import { ClassProgressPage } from '@/features/teacher-classes/ClassProgressPage';
 import { ClassTasksPage } from '@/features/teacher-classes/ClassTasksPage';
+import {
+  createClassProgressLoader,
+  createReportsLoader,
+} from '@/features/teacher-reports/reportHandlers';
+import { ReportsPage } from '@/features/teacher-reports/ReportsPage';
 import { NewTaskPage } from '@/features/teacher-tasks/NewTaskPage';
 import { TaskDetailPage } from '@/features/teacher-tasks/TaskDetailPage';
 import {
@@ -71,6 +77,11 @@ export function createTeacherRoutes(dependencies: AppDependencies): RouteObject 
                 loader: createClassTasksLoader(dependencies),
                 element: <ClassTasksPage />,
               },
+              {
+                path: 'progress',
+                loader: createClassProgressLoader(dependencies),
+                element: <ClassProgressPage />,
+              },
             ],
           },
           {
@@ -92,7 +103,8 @@ export function createTeacherRoutes(dependencies: AppDependencies): RouteObject 
           },
           {
             path: paths.teacher.reports,
-            element: planned('Reports', 'Progress and accuracy for each class, student and topic.'),
+            loader: createReportsLoader(dependencies),
+            element: <ReportsPage />,
           },
           {
             path: paths.teacher.more,

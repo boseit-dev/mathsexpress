@@ -15,6 +15,12 @@ import { makeFreshShopState, type ShopState } from '@/domain/shop';
 import { getFullName, getShortName } from '@/domain/people';
 import type { YearLevel } from '@/domain/student';
 import type {
+  RecentCompletion,
+  StudentAttemptResult,
+  StudentProgressSummary,
+  TopicProgress,
+} from '@/domain/reports';
+import type {
   LearningItem,
   StudentTask,
   TaskProgress,
@@ -283,6 +289,14 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
       questionsSolved: questions.filter((item) => item.solved).length,
       firstTryCorrect: questions.filter((item) => item.firstTryCorrect).length,
     };
+  }
+
+  function attemptsIn(studentId: string, since: Date | null): FakeAttempt[] {
+    return state.attempts.filter(
+      (attempt) =>
+        attempt.studentId === studentId &&
+        (!since || Date.parse(attempt.lastActivityAt) >= since.getTime()),
+    );
   }
 
   function teacherTaskView(task: FakeTask): TeacherTask {
@@ -817,6 +831,130 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
         const completed = lesson.questions.every((item) => attempt.questions.get(item.id)?.solved);
         if (completed) attempt.completedAt ??= TEST_NOW.toISOString();
         return { correct, alreadySolved: false, completed };
+      },
+    },
+    reports: {
+      async classProgress(classId, since) {
+        await Promise.resolve();
+        const target = ownClass(classId);
+        return [...target.students]
+          .sort((a, b) => a.lastName.localeCompare(b.lastName))
+          .map((student): StudentProgressSummary => {
+            const attempts = attemptsIn(student.studentId, since);
+            const answers = attempts.flatMap((attempt) => [...attempt.questions.values()]);
+            const tasks = state.tasks.filter(
+              (task) =>
+                task.classId === classId &&
+                assignedStudents(task).some((entry) => entry.studentId === student.studentId) &&
+                (!since || Date.parse(task.dueAt) >= since.getTime()),
+            );
+            return {
+              studentId: student.studentId,
+              firstName: student.firstName,
+              lastName: student.lastName,
+              yearLevel: student.yearLevel,
+              lessonsCompleted: new Set(
+                attempts.filter((item) => item.completedAt).map((item) => item.contentId),
+              ).size,
+              questionsAnswered: answers.length,
+              firstTryCorrect: answers.filter((item) => item.firstTryCorrect).length,
+              hintsUsed: answers.reduce((sum, item) => sum + item.hintsUsed, 0),
+              tasksAssigned: tasks.length,
+              tasksCompleted: tasks.filter(
+                (task) => taskResult(task, student.studentId).progress === 'completed',
+              ).length,
+              lastActiveAt:
+                attempts
+                  .map((item) => item.lastActivityAt)
+                  .sort()
+                  .at(-1) ?? null,
+            };
+          });
+      },
+      async studentResults(classId, studentId, since) {
+        await Promise.resolve();
+        const target = ownClass(classId);
+        if (!target.students.some((entry) => entry.studentId === studentId)) {
+          throw new AppError('student_not_found');
+        }
+        return attemptsIn(studentId, since)
+          .filter((attempt) => attempt.questions.size > 0)
+          .sort((a, b) => b.lastActivityAt.localeCompare(a.lastActivityAt))
+          .map((attempt): StudentAttemptResult => {
+            const lesson = catalogue().find((item) => item.id === attempt.contentId);
+            const answers = [...attempt.questions.values()];
+            return {
+              attemptId: attempt.id,
+              contentId: attempt.contentId,
+              contentTitle: lesson?.title ?? '',
+              strand: lesson?.strand ?? '',
+              topic: lesson?.topic ?? '',
+              startedAt: attempt.startedAt,
+              lastActivityAt: attempt.lastActivityAt,
+              completedAt: attempt.completedAt,
+              questionCount: lesson?.questionCount ?? 0,
+              questionsAnswered: answers.length,
+              firstTryCorrect: answers.filter((item) => item.firstTryCorrect).length,
+              hintsUsed: answers.reduce((sum, item) => sum + item.hintsUsed, 0),
+            };
+          });
+      },
+      async topicProgress(classId, since) {
+        await Promise.resolve();
+        const target = ownClass(classId);
+        const ids = new Set(target.students.map((entry) => entry.studentId));
+        const attempts = state.attempts.filter(
+          (attempt) =>
+            ids.has(attempt.studentId) &&
+            attempt.questions.size > 0 &&
+            (!since || Date.parse(attempt.lastActivityAt) >= since.getTime()),
+        );
+        return catalogue()
+          .filter((item) => attempts.some((attempt) => attempt.contentId === item.id))
+          .map((item): TopicProgress => {
+            const mine = attempts.filter((attempt) => attempt.contentId === item.id);
+            const answers = mine.flatMap((attempt) => [...attempt.questions.values()]);
+            return {
+              contentId: item.id,
+              contentTitle: item.title,
+              strand: item.strand,
+              topic: item.topic,
+              classSize: target.students.length,
+              studentsStarted: new Set(mine.map((attempt) => attempt.studentId)).size,
+              studentsCompleted: new Set(
+                mine.filter((attempt) => attempt.completedAt).map((attempt) => attempt.studentId),
+              ).size,
+              questionsAnswered: answers.length,
+              firstTryCorrect: answers.filter((answer) => answer.firstTryCorrect).length,
+            };
+          });
+      },
+      async recentCompletions() {
+        await Promise.resolve();
+        const teacher = requireRole('teacher');
+        const rows: RecentCompletion[] = [];
+        for (const item of state.classes.filter((entry) => entry.teacherId === teacher.id)) {
+          for (const student of item.students) {
+            for (const attempt of state.attempts) {
+              if (attempt.studentId !== student.studentId || !attempt.completedAt) continue;
+              const lesson = catalogue().find((entry) => entry.id === attempt.contentId);
+              rows.push({
+                studentId: student.studentId,
+                firstName: student.firstName,
+                lastName: student.lastName,
+                classId: item.id,
+                className: item.name,
+                contentTitle: lesson?.title ?? '',
+                completedAt: attempt.completedAt,
+                questionCount: lesson?.questionCount ?? 0,
+                firstTryCorrect: [...attempt.questions.values()].filter(
+                  (answer) => answer.firstTryCorrect,
+                ).length,
+              });
+            }
+          }
+        }
+        return rows.sort((a, b) => b.completedAt.localeCompare(a.completedAt)).slice(0, 6);
       },
     },
     now: () => TEST_NOW,

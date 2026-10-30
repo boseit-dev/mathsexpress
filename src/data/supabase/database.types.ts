@@ -708,12 +708,32 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      class_progress: {
+        Args: { class_id: string; since?: string; until?: string };
+        Returns: Database['public']['CompositeTypes']['student_progress_summary'][];
+        SetofOptions: {
+          from: '*';
+          to: 'student_progress_summary';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       class_students: {
         Args: { class_id: string };
         Returns: Database['public']['CompositeTypes']['class_student'][];
         SetofOptions: {
           from: '*';
           to: 'class_student';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      class_topic_progress: {
+        Args: { class_id: string; since?: string; until?: string };
+        Returns: Database['public']['CompositeTypes']['topic_progress'][];
+        SetofOptions: {
+          from: '*';
+          to: 'topic_progress';
           isOneToOne: false;
           isSetofReturn: true;
         };
@@ -843,6 +863,16 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      recent_completions: {
+        Args: { max_rows?: number };
+        Returns: Database['public']['CompositeTypes']['recent_completion'][];
+        SetofOptions: {
+          from: '*';
+          to: 'recent_completion';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       record_answer: {
         Args: { answer: string; attempt_id: string; hints_used?: number; question_id: string };
         Returns: Json;
@@ -874,6 +904,16 @@ export type Database = {
       shop_equip: { Args: { category: string; item_id?: string }; Returns: Json };
       shop_state: { Args: Record<PropertyKey, never>; Returns: Json };
       start_lesson_attempt: { Args: { content_id: string }; Returns: string };
+      student_results: {
+        Args: { class_id: string; since?: string; student_id: string; until?: string };
+        Returns: Database['public']['CompositeTypes']['student_attempt_result'][];
+        SetofOptions: {
+          from: '*';
+          to: 'student_attempt_result';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       task_chosen_students: { Args: { task_id: string }; Returns: string[] };
       task_results: {
         Args: { task_id: string };
@@ -962,6 +1002,31 @@ export type Database = {
         question_count: number | null;
         estimated_minutes: number | null;
       };
+      recent_completion: {
+        student_id: string | null;
+        first_name: string | null;
+        last_name: string | null;
+        class_id: string | null;
+        class_name: string | null;
+        content_title: string | null;
+        completed_at: string | null;
+        question_count: number | null;
+        first_try_correct: number | null;
+      };
+      student_attempt_result: {
+        attempt_id: string | null;
+        content_id: string | null;
+        content_title: string | null;
+        strand: string | null;
+        topic: string | null;
+        started_at: string | null;
+        last_activity_at: string | null;
+        completed_at: string | null;
+        question_count: number | null;
+        questions_answered: number | null;
+        first_try_correct: number | null;
+        hints_used: number | null;
+      };
       student_class: {
         class_id: string | null;
         class_name: string | null;
@@ -970,6 +1035,19 @@ export type Database = {
         teacher_name: string | null;
         students_can_leave: boolean | null;
         joined_at: string | null;
+      };
+      student_progress_summary: {
+        student_id: string | null;
+        first_name: string | null;
+        last_name: string | null;
+        year_level: number | null;
+        lessons_completed: number | null;
+        questions_answered: number | null;
+        first_try_correct: number | null;
+        hints_used: number | null;
+        tasks_assigned: number | null;
+        tasks_completed: number | null;
+        last_active_at: string | null;
       };
       student_task: {
         id: string | null;
@@ -1027,6 +1105,17 @@ export type Database = {
         assigned_count: number | null;
         completed_count: number | null;
         in_progress_count: number | null;
+      };
+      topic_progress: {
+        content_id: string | null;
+        content_title: string | null;
+        strand: string | null;
+        topic: string | null;
+        class_size: number | null;
+        students_started: number | null;
+        students_completed: number | null;
+        questions_answered: number | null;
+        first_try_correct: number | null;
       };
     };
   };

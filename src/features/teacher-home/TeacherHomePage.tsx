@@ -1,15 +1,16 @@
-import { ArrowRight, ClipboardList, Plus, School, UsersRound } from 'lucide-react';
+import { ArrowRight, ChartColumn, ClipboardList, Plus, School, UsersRound } from 'lucide-react';
 import { Link } from 'react-router';
 import { Mascot } from '@/components/mascot/Mascot';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { paths } from '@/config/paths';
+import { getFullName } from '@/domain/people';
 import { formatYearLevel } from '@/domain/student';
 import { describeTaskDue, isTaskOverdue, outstandingCount } from '@/domain/tasks';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useCurrentTeacher } from '@/layouts/teacher/useCurrentTeacher';
-import { formatLongDate, getGreeting } from '@/lib/dates';
+import { formatLongDate, formatShortDate, getGreeting } from '@/lib/dates';
 import { formatCount } from '@/lib/format';
-import { ofCount } from '@/features/tasks/taskDisplay';
+import { accuracyPercent, ofCount } from '@/features/tasks/taskDisplay';
 import { useTeacherHomeData } from './teacherHomeLoader';
 import styles from './TeacherHomePage.module.css';
 
@@ -19,7 +20,7 @@ const HOME_CLASS_LIMIT = 6;
 /** The teacher's day at a glance: their classes and the next things to do. */
 export function TeacherHomePage() {
   const teacher = useCurrentTeacher();
-  const { classes, tasks, now } = useTeacherHomeData();
+  const { classes, tasks, activity, now } = useTeacherHomeData();
   useDocumentTitle('Home');
   const studentCount = classes.reduce((sum, item) => sum + item.studentCount, 0);
   const shown = classes.slice(0, HOME_CLASS_LIMIT);
@@ -74,6 +75,17 @@ export function TeacherHomePage() {
             <span>
               <strong>Create a task</strong>
               <span>Set a lesson with a due date.</span>
+            </span>
+          </Link>
+        )}
+        {classes.length > 0 && (
+          <Link to={paths.teacher.reports} className={styles.action}>
+            <span className={styles.actionIcon}>
+              <ChartColumn aria-hidden="true" />
+            </span>
+            <span>
+              <strong>View progress</strong>
+              <span>Class and student reports.</span>
             </span>
           </Link>
         )}
@@ -141,6 +153,30 @@ export function TeacherHomePage() {
             )}
           </section>
         </div>
+      )}
+
+      {activity.length > 0 && (
+        <section aria-labelledby="home-activity-heading" className={styles.section}>
+          <div className={styles.sectionHeader}>
+            <h2 id="home-activity-heading">Recent activity</h2>
+            <Link to={paths.teacher.reports} className={styles.more}>
+              Reports <ArrowRight aria-hidden="true" />
+            </Link>
+          </div>
+          <ul role="list" aria-labelledby="home-activity-heading" className={styles.classList}>
+            {activity.map((item) => (
+              <li key={`${item.studentId}-${item.completedAt}`} className={styles.taskRow}>
+                <span>
+                  <strong>{getFullName(item)}</strong> finished {item.contentTitle}
+                </span>
+                <span className={styles.classMeta}>
+                  {item.className} · {formatShortDate(new Date(item.completedAt))} · right first
+                  time {accuracyPercent(item.firstTryCorrect, item.questionCount)}%
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       <section aria-labelledby="home-classes-heading" className={styles.section}>

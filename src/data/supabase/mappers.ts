@@ -2,6 +2,12 @@
 // type, so every field is checked: a missing value is a server bug, reported loudly.
 import type { Profile } from '@/domain/account';
 import type { ClassStudent, StudentClassMembership, TeacherClass } from '@/domain/classes';
+import type {
+  RecentCompletion,
+  StudentAttemptResult,
+  StudentProgressSummary,
+  TopicProgress,
+} from '@/domain/reports';
 import { AppError } from '@/domain/errors';
 import { yearLevelFromNumber } from '@/domain/student';
 import type {
@@ -151,5 +157,70 @@ export function toStudentTask(row: Composite['student_task']): StudentTask {
     progress: required(row.status, 'status'),
     completedAt: row.completed_at,
     questionsSolved: required(row.questions_solved, 'questions_solved'),
+  };
+}
+
+export function toStudentProgressSummary(
+  row: Composite['student_progress_summary'],
+): StudentProgressSummary {
+  return {
+    studentId: required(row.student_id, 'student_id'),
+    firstName: required(row.first_name, 'first_name'),
+    lastName: required(row.last_name, 'last_name'),
+    yearLevel: yearLevelFromNumber(required(row.year_level, 'year_level')),
+    lessonsCompleted: required(row.lessons_completed, 'lessons_completed'),
+    questionsAnswered: required(row.questions_answered, 'questions_answered'),
+    firstTryCorrect: required(row.first_try_correct, 'first_try_correct'),
+    hintsUsed: required(row.hints_used, 'hints_used'),
+    tasksAssigned: required(row.tasks_assigned, 'tasks_assigned'),
+    tasksCompleted: required(row.tasks_completed, 'tasks_completed'),
+    lastActiveAt: row.last_active_at,
+  };
+}
+
+export function toStudentAttemptResult(
+  row: Composite['student_attempt_result'],
+): StudentAttemptResult {
+  return {
+    attemptId: required(row.attempt_id, 'attempt_id'),
+    contentId: required(row.content_id, 'content_id'),
+    contentTitle: required(row.content_title, 'content_title'),
+    strand: required(row.strand, 'strand'),
+    topic: required(row.topic, 'topic'),
+    startedAt: required(row.started_at, 'started_at'),
+    lastActivityAt: required(row.last_activity_at, 'last_activity_at'),
+    completedAt: row.completed_at,
+    questionCount: required(row.question_count, 'question_count'),
+    questionsAnswered: required(row.questions_answered, 'questions_answered'),
+    firstTryCorrect: required(row.first_try_correct, 'first_try_correct'),
+    hintsUsed: required(row.hints_used, 'hints_used'),
+  };
+}
+
+export function toTopicProgress(row: Composite['topic_progress']): TopicProgress {
+  return {
+    contentId: required(row.content_id, 'content_id'),
+    contentTitle: required(row.content_title, 'content_title'),
+    strand: required(row.strand, 'strand'),
+    topic: required(row.topic, 'topic'),
+    classSize: required(row.class_size, 'class_size'),
+    studentsStarted: required(row.students_started, 'students_started'),
+    studentsCompleted: required(row.students_completed, 'students_completed'),
+    questionsAnswered: required(row.questions_answered, 'questions_answered'),
+    firstTryCorrect: required(row.first_try_correct, 'first_try_correct'),
+  };
+}
+
+export function toRecentCompletion(row: Composite['recent_completion']): RecentCompletion {
+  return {
+    studentId: required(row.student_id, 'student_id'),
+    firstName: required(row.first_name, 'first_name'),
+    lastName: required(row.last_name, 'last_name'),
+    classId: required(row.class_id, 'class_id'),
+    className: required(row.class_name, 'class_name'),
+    contentTitle: required(row.content_title, 'content_title'),
+    completedAt: required(row.completed_at, 'completed_at'),
+    questionCount: required(row.question_count, 'question_count'),
+    firstTryCorrect: required(row.first_try_correct, 'first_try_correct'),
   };
 }

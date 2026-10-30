@@ -5,6 +5,7 @@ import { createSupabaseClient } from './supabase/client';
 import { createSupabaseAccountRepository } from './supabase/supabaseAccountRepository';
 import { createSupabaseAuthService } from './supabase/supabaseAuthService';
 import { createSupabaseClassRepository } from './supabase/supabaseClassRepository';
+import { createSupabaseReportRepository } from './supabase/supabaseReportRepository';
 import { createSupabaseShopRepository } from './supabase/supabaseShopRepository';
 import {
   createSupabaseProgressRepository,
@@ -34,6 +35,7 @@ export function createAppDependencies(
     shop: createSupabaseShopRepository(client),
     tasks: createSupabaseTaskRepository(client),
     progress: createSupabaseProgressRepository(client),
+    reports: createSupabaseReportRepository(client),
     now,
   };
 }
