@@ -15,6 +15,23 @@ describe('NSW textbook catalogue', () => {
     }
   });
 
+
+  it('indexes stage focus areas and every senior course separately', () => {
+    expect(findTextbook('kindergarten')?.chapters.some((c) => c.title === 'Forming groups')).toBe(true);
+    expect(findTextbook('year-4')?.chapters.some((c) => c.title === 'Partitioned fractions')).toBe(true);
+    expect(findTextbook('year-6')?.chapters.some((c) => c.title === 'Representing quantity fractions')).toBe(true);
+    expect(findTextbook('year-9')?.chapters.some((c) => c.strand === 'Stage 5 Paths')).toBe(true);
+    expect(findTextbook('year-8')?.chapters.some((c) => c.strand === 'Stage 5 Paths')).toBe(false);
+    expect(findTextbook('year-11-advanced')?.chapters.some((c) => c.title === 'Introduction to differentiation')).toBe(true);
+    expect(findTextbook('year-12-advanced')?.chapters.some((c) => c.title === 'Integral calculus')).toBe(true);
+    expect(findTextbook('year-11-extension-1')?.chapters.some((c) => c.title === 'The binomial theorem')).toBe(true);
+    expect(findTextbook('year-12-extension-2')?.chapters.some((c) => c.title === 'Introduction to complex numbers')).toBe(true);
+    for (const book of textbookBooks) {
+      expect(book.chapters.length).toBeGreaterThan(3);
+      expect(book.chapters.filter((c) => c.id !== 'getting-started' && c.status === 'ready').length).toBe(book.id === 'year-9' ? 1 : 0);
+    }
+  });
+
   it('has separate Standard 1 and Standard 2 Year 12 books', () => {
     expect(findTextbook('year-12-standard-1')?.chapters).not.toEqual(
       findTextbook('year-12-standard-2')?.chapters,

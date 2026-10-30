@@ -119,11 +119,42 @@ describe('student textbook library', () => {
   });
 
   it('does not claim that unpublished chapters are finished', async () => {
-    renderApp('/student/textbook/year-4/measurement-and-space');
+    renderApp('/student/textbook/year-4/focus-5');
     expect(
-      await screen.findByRole('heading', { level: 1, name: 'Measurement and space' }),
+      await screen.findByRole('heading', { level: 1, name: 'Geometric measure' }),
     ).toBeVisible();
     expect(screen.getByRole('heading', { name: 'Chapter in preparation' })).toBeVisible();
+  });
+
+
+  it('lets students search topics and switch between lessons and revision', async () => {
+    const user = userEvent.setup();
+    renderApp('/student/textbook/year-9/solving-linear-equations');
+    expect(await screen.findByRole('navigation', { name: 'Choose a textbook chapter' })).toBeVisible();
+    const topicSearch = screen.getByRole('searchbox', { name: 'Search topics' });
+    await user.type(topicSearch, 'linear');
+    expect(screen.getByRole('link', { name: /Solving linear equations Ready/ })).toBeVisible();
+    expect(screen.queryByRole('link', { name: /Probability Planned/ })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Questions' }));
+    expect(screen.getByRole('heading', { name: 'Exercise 1A' })).toBeVisible();
+    expect(screen.queryByRole('heading', { name: '1. Understanding equations' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Revision' }));
+    expect(screen.getByText(/An equation is balanced when its two sides/)).toBeVisible();
+    await user.click(screen.getByRole('tab', { name: 'My activity' }));
+    expect(screen.getByText(/not saved to your account/)).toBeVisible();
+
+    await user.click(screen.getByRole('button', { name: 'Hide textbook contents' }));
+    expect(screen.queryByRole('navigation', { name: 'Choose a textbook chapter' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Show textbook contents' }));
+    expect(screen.getByRole('navigation', { name: 'Choose a textbook chapter' })).toBeVisible();
+  });
+
+  it('has no detectable accessibility problems in the published reader', async () => {
+    renderApp('/student/textbook/year-9/solving-linear-equations');
+    await screen.findByRole('heading', { name: 'Exercise 1A' });
+    expect(await findAccessibilityProblems()).toEqual([]);
   });
 
   it('has no detectable accessibility problems on the library page', async () => {

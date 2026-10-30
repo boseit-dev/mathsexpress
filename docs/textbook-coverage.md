@@ -1,7 +1,7 @@
-# MathsExpress textbook catalogue — initial curriculum record
+# MathsExpress textbook catalogue — syllabus-aware outline and reader
 
-This file records verified syllabus structure and the deliberately limited content
-of the first implementation. It is **not** a claim that all 25 books or outcomes have
+This file records verified syllabus structure, a richer topic-level reading interface,
+and the deliberately limited authored content It is **not** a claim that all 25 books or outcomes have
 been written, mapped, audited or approved.
 
 ## Primary sources checked 29 October 2026
@@ -25,13 +25,18 @@ been written, mapped, audited or approved.
   separate Year 12 Standard 1, Standard 2, Advanced, Extension 1, Extension 2 and Life Skills books.
 - Every book has its own contents and an original getting-started page. Book and chapter
   navigation is real and tested. Catalogue search is based on title and stage.
-- The broad headings of Number and algebra, Measurement and space, and Statistics and
-  probability reflect the K–10 syllabus. These headings are **not** complete yearly
-  outcome maps. NESA specifies outcomes by stage and permits teacher programming choices;
-  do not imply a textbook year sequence is prescribed by the syllabus.
+- K–6 books now list the relevant stage-level syllabus focus areas, including Parts A and B
+  where applicable. Years 7–10 outline Core content groups; Years 9–10 additionally display
+  Stage 5 Paths. NESA does **not** prescribe a fixed year sequence: Paths may also be taught
+  during Stage 4 if appropriate. These are focus-area indexes, not outcome-by-outcome maps.
+- Stage 6 books list distinct official Standard, Advanced, Extension 1, Extension 2 and
+  Life Skills focus areas; the new 2024 Year 12 syllabuses start from Term 4 2026.
 - Standard 11 and Standard 1/2 Year 12 have their distinct focus-area titles from NESA.
   Content is not yet published for those titles.
-- One original pilot chapter: Year 9, solving linear equations. Includes a worked example,
+- A searchable chapter sidebar, compact responsive reading area, and separate Lesson,
+  Questions, My activity and Revision views on the published Year 9 pilot. The activity view
+  correctly explains that textbook responses are local only, not stored in teacher reports.
+- One original pilot chapter: Year 9, solving linear equations. Includes interactive exploration, a worked example,
   six numerical questions, hints, retry feedback and simple answer checking. Equations
   and answers are verified by unit tests. No user answers or scores are persisted.
 - The library can filter by assigned year and by books with published maths chapters.
@@ -54,6 +59,20 @@ been written, mapped, audited or approved.
 5. Add question types beyond numeric input, chapter bookmarking, saved responses, teacher
    controls and printing in later tested increments.
 6. Run independent educational review before public launch, not just automated type checks.
+
+
+## Topic outline upgrade — 31 October 2026
+
+The 25 books now list official stage-level and Stage 6 course focus-area headings instead of
+three generic placeholders. Each topic is independently addressable and searchable in the
+reading sidebar. Only the existing Year 9 equations pilot is flagged as authored.
+The pilot now has a movable equation exploration and revision panel.
+
+**Not yet achieved:** a full official outcome/content-point mapping for every stage,
+hundreds of original reviewed explanations, example banks, questions, diagrams, or
+teacher-approved K–12 coverage. Heading coverage is not lesson coverage.
+Source checks: [NESA K–10 overview](https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-k-10-2022/overview);
+[NESA 2024 Stage 6 catalogue](https://curriculum.nsw.edu.au/learning-areas/mathematics).
 
 ## Copyright and accuracy
 

@@ -125,7 +125,7 @@ export function TextbookReader({ book, chapter }: Props) {
                   key={id}
                   role="tab"
                   id={'tab-' + id}
-                  aria-controls={'panel-' + id}
+                  aria-controls={id === 'questions' ? 'panel-lesson' : 'panel-' + id}
                   aria-selected={tab === id}
                   className={styles.tab}
                   onClick={() => setTab(id)}
@@ -140,7 +140,7 @@ export function TextbookReader({ book, chapter }: Props) {
             <div
               role={isPilot ? 'tabpanel' : undefined}
               id={isPilot ? 'panel-lesson' : undefined}
-              aria-labelledby={isPilot ? 'tab-lesson' : undefined}
+              aria-labelledby={isPilot ? (tab === 'questions' ? 'tab-questions' : 'tab-lesson') : undefined}
               hidden={isPilot && tab !== 'lesson' && tab !== 'questions'}
               className={styles.readingContent}
             >

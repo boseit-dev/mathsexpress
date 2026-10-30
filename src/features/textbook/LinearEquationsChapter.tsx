@@ -5,6 +5,7 @@ import styles from './TextbookPage.module.css';
 
 /** A full original pilot chapter. The book does not claim to save answers to an account. */
 export function LinearEquationsChapter({ view = 'all' }: { view?: 'all' | 'questions' }) {
+  const [addedNumber, setAddedNumber] = useState(5);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [results, setResults] = useState<Record<string, boolean | undefined>>({});
   const [hints, setHints] = useState<readonly string[]>([]);
@@ -18,6 +19,23 @@ export function LinearEquationsChapter({ view = 'all' }: { view?: 'all' | 'quest
           An equation says two expressions have the same value. To find an unknown number, keep both
           sides equal by performing the same operation on each side.
         </p>
+
+        <div className={styles.example}>
+          <strong>Try it: keeping an equation balanced</strong>
+          <p>Move the slider to change a number in the equation. How does x change?</p>
+          <label htmlFor="equation-slider">Number added to x: {addedNumber}</label>
+          <input
+            id="equation-slider"
+            type="range"
+            min="1"
+            max="10"
+            value={addedNumber}
+            onChange={(event) => setAddedNumber(Number(event.target.value))}
+          />
+          <p><strong>x + {addedNumber} = 12</strong></p>
+          <p>Undo addition by subtracting {addedNumber} from both sides, so x = {12 - addedNumber}.</p>
+          <p>Check: {12 - addedNumber} + {addedNumber} = 12.</p>
+        </div>
         <div className={styles.example}>
           <strong>Worked example 1</strong>
           <p>Solve 3x + 5 = 20.</p>
