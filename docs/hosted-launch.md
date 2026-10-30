@@ -12,6 +12,8 @@ teachers and students to register new accounts. Do not transfer legacy user data
 - Paused legacy Supabase: `dsjrxkxjcaurrbijihja`, preserved as a rollback reference.
 - The public Cloudflare Worker `mathsexpress` still runs the old site until cutover.
 - GitHub Actions has a separate V2 Cloudflare deployment job; the Worker is not yet verified.
+- Supabase **Customize Access Token (JWT) Claims** hook was enabled in the hosted V2 dashboard,
+  using the Postgres function `public.custom_access_token_hook` (confirmed by the owner).
 
 ## Hosting and authentication requirements before public cutover
 
