@@ -129,10 +129,12 @@ describe('student textbook library', () => {
   it('teaches with an original guided notebook before independent questions', async () => {
     const user = userEvent.setup();
     renderApp('/student/textbook/year-9/solving-linear-equations');
-    expect(screen.getByRole('navigation', { name: 'Jump to chapter section' })).toBeVisible();
+    expect(await screen.findByRole('navigation', { name: 'Jump to chapter section' })).toBeVisible();
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: '1. Understanding equations' })).toBeVisible();
-    expect(screen.getByRole('heading', { name: 'Undo the operations, one at a time' })).toBeVisible();
+    expect(
+      screen.getByRole('heading', { name: 'Undo the operations, one at a time' }),
+    ).toBeVisible();
     expect(screen.getByRole('heading', { name: 'Your turn, with support' })).toBeVisible();
     expect(screen.getByRole('heading', { name: 'Exercise 1A' })).toBeVisible();
     expect(screen.getByRole('heading', { name: 'The four things to remember' })).toBeVisible();

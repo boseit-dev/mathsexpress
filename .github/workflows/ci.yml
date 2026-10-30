@@ -40,11 +40,6 @@ jobs:
           node scripts/check-secrets.ts --all
           node scripts/check-secrets.ts --commits origin/main..HEAD
 
-      - name: Show textbook Prettier fixes
-        run: |
-          npx prettier --write src/features/textbook/LinearEquationsChapter.tsx src/features/textbook/TextbookPage.test.tsx src/features/textbook/TextbookReader.tsx
-          git diff -- src/features/textbook/LinearEquationsChapter.tsx src/features/textbook/TextbookPage.test.tsx src/features/textbook/TextbookReader.tsx
-
       - name: Run all checks
         run: npm run check
 

@@ -70,12 +70,12 @@ export function TextbookReader({ book, chapter }: Props) {
           <section className={styles.notice}>
             <h2>How to learn from this book</h2>
             <p>
-              Start by reading a topic's explanation. Explore its examples, work through a
-              question with guidance, then try the independent exercises when you feel ready.
+              Start by reading a topic's explanation. Explore its examples, work through a question
+              with guidance, then try the independent exercises when you feel ready.
             </p>
             <p>
-              NSW syllabus stages guide these outlines. Your teacher decides how and when topics
-              are taught; the order in these books is not an official year-by-year requirement.
+              NSW syllabus stages guide these outlines. Your teacher decides how and when topics are
+              taught; the order in these books is not an official year-by-year requirement.
             </p>
             <a href={book.syllabusUrl} target="_blank" rel="noopener noreferrer">
               Check the official syllabus
@@ -86,12 +86,12 @@ export function TextbookReader({ book, chapter }: Props) {
             <p className={styles.eyebrow}>NOT PUBLISHED YET</p>
             <h2>Lesson in preparation</h2>
             <p>
-              This topic is included in your syllabus outline, but its teaching explanation,
-              worked examples and exercises have not been reviewed or published.
+              This topic is included in your syllabus outline, but its teaching explanation, worked
+              examples and exercises have not been reviewed or published.
             </p>
             <p>
-              We only mark original, checked lessons as ready. You can browse another topic or
-              read the official syllabus while this lesson is being written.
+              We only mark original, checked lessons as ready. You can browse another topic or read
+              the official syllabus while this lesson is being written.
             </p>
             <a href={book.syllabusUrl} target="_blank" rel="noopener noreferrer">
               View the NSW syllabus

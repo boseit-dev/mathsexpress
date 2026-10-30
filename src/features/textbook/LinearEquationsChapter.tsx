@@ -20,27 +20,35 @@ export function LinearEquationsChapter() {
         <p className={styles.stepLabel}>01 / DISCOVER THE IDEA</p>
         <h2 id="concept-heading">1. Understanding equations</h2>
         <p className={styles.lead}>
-          Imagine two sides of a balance scale. When they are level, both sides weigh the same.
-          An equation works in exactly the same way: the equals sign means the two expressions
-          have the same value.
+          Imagine two sides of a balance scale. When they are level, both sides weigh the same. An
+          equation works in exactly the same way: the equals sign means the two expressions have the
+          same value.
         </p>
         <p>
-          A <strong>variable</strong>, such as x, stands for a number we do not know yet. Solving
-          an equation means finding the number that makes both sides equal.
+          A <strong>variable</strong>, such as x, stands for a number we do not know yet. Solving an
+          equation means finding the number that makes both sides equal.
         </p>
         <div className={styles.bigIdea}>
           <strong>The big idea</strong>
-          <p>If you change one side of an equation, you must make the same change to the other side.</p>
+          <p>
+            If you change one side of an equation, you must make the same change to the other side.
+          </p>
         </div>
         <div className={styles.explorer}>
           <div className={styles.explorerHeading}>
             <div>
               <strong>Explore the balance</strong>
-              <p>Change the number being added to x. Notice how x changes to keep the total at 12.</p>
+              <p>
+                Change the number being added to x. Notice how x changes to keep the total at 12.
+              </p>
             </div>
-            <span className={styles.exploreMark} aria-hidden="true">↔</span>
+            <span className={styles.exploreMark} aria-hidden="true">
+              ↔
+            </span>
           </div>
-          <label htmlFor="equation-slider">Number added to x: <strong>{addedNumber}</strong></label>
+          <label htmlFor="equation-slider">
+            Number added to x: <strong>{addedNumber}</strong>
+          </label>
           <input
             id="equation-slider"
             type="range"
@@ -56,7 +64,9 @@ export function LinearEquationsChapter() {
               <span>LEFT SIDE</span>
               <strong>x + {addedNumber}</strong>
             </div>
-            <span className={styles.equal} aria-hidden="true">=</span>
+            <span className={styles.equal} aria-hidden="true">
+              =
+            </span>
             <div className={styles.balanceSide}>
               <span>RIGHT SIDE</span>
               <strong>12</strong>
@@ -65,10 +75,12 @@ export function LinearEquationsChapter() {
           <div className={styles.discovery}>
             <strong>What happens?</strong>
             <p>
-              Subtract {addedNumber} from <em>both</em> sides to leave x on its own:
-              x = 12 − {addedNumber} = <strong>{12 - addedNumber}</strong>.
+              Subtract {addedNumber} from <em>both</em> sides to leave x on its own: x = 12 −{' '}
+              {addedNumber} = <strong>{12 - addedNumber}</strong>.
             </p>
-            <p>The check is {12 - addedNumber} + {addedNumber} = 12. Both sides agree.</p>
+            <p>
+              The check is {12 - addedNumber} + {addedNumber} = 12. Both sides agree.
+            </p>
           </div>
         </div>
       </section>
@@ -109,7 +121,9 @@ export function LinearEquationsChapter() {
             <p className={styles.exampleTag}>WORKED EXAMPLE B · NEGATIVES</p>
             <h3>Solve −2x + 9 = 17</h3>
             <p>Subtract 9 from both sides: −2x = 8.</p>
-            <p>Divide both sides by <strong>−2</strong>: x = −4.</p>
+            <p>
+              Divide both sides by <strong>−2</strong>: x = −4.
+            </p>
             <p>Check: −2 × (−4) + 9 = 17.</p>
           </div>
           <div className={styles.miniWorked}>
@@ -123,8 +137,8 @@ export function LinearEquationsChapter() {
         <div className={styles.mistake}>
           <strong>Common mistake: changing only one side</strong>
           <p>
-            If 2x + 4 = 14, you cannot just remove the 4 from the left. You must also
-            subtract 4 from the right: 2x = 10, so x = 5.
+            If 2x + 4 = 14, you cannot just remove the 4 from the left. You must also subtract 4
+            from the right: 2x = 10, so x = 5.
           </p>
         </div>
       </section>
@@ -133,8 +147,8 @@ export function LinearEquationsChapter() {
         <p className={styles.stepLabel}>03 / TRY IT TOGETHER</p>
         <h2 id="guided-heading">Your turn, with support</h2>
         <p className={styles.lead}>
-          Look at <strong>4x − 5 = 19</strong>. Before you find x, first undo the subtraction.
-          What does <strong>4x</strong> equal after adding 5 to both sides?
+          Look at <strong>4x − 5 = 19</strong>. Before you find x, first undo the subtraction. What
+          does <strong>4x</strong> equal after adding 5 to both sides?
         </p>
         <form
           className={styles.guidedCard}
@@ -155,7 +169,9 @@ export function LinearEquationsChapter() {
                 setGuidedChecked(undefined);
               }}
             />
-            <button type="submit" disabled={!guidedAnswer.trim()}>Check this step</button>
+            <button type="submit" disabled={!guidedAnswer.trim()}>
+              Check this step
+            </button>
           </div>
           <details>
             <summary>Need a clue?</summary>
@@ -178,7 +194,9 @@ export function LinearEquationsChapter() {
             <h2 id="exercise-heading">Exercise 1A</h2>
             <p>Use what you have learnt. You can check each answer, retry and open a hint.</p>
           </div>
-          <p className={base.score}>{completed} / {linearEquationExercises.length} correct</p>
+          <p className={base.score}>
+            {completed} / {linearEquationExercises.length} correct
+          </p>
         </div>
         <div className={base.exerciseList}>
           {linearEquationExercises.map((exercise, index) => {
