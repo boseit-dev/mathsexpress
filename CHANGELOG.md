@@ -16,6 +16,20 @@ Phase 3 first learning slice (in development).
 
 ### Added
 
+- Rebuilt the student Shop as a full customisation experience: 98 original cosmetics (22
+  avatars, 23 accessories, 16 backgrounds, 13 frames, 12 effects, 8 titles and 4 dashboard
+  themes) from free to 5,000 coins in five rarities, all drawn as original SVG. A live preview
+  shows the student's avatar with everything they are wearing and trying on; Try On is free,
+  works in combinations, and Cancel or Back to my look puts the student's own look back.
+  Buying asks to confirm, is checked and charged once on the server, celebrates with a coin
+  burst and offers Equip now. Search, category tabs, rarity, price, owned and affordable
+  filters, and sorting by price or name. My collection equips owned items and restores the
+  default look; Coin history explains how to earn. Students' looks appear in the header, on
+  the home page, in the quick-tools shop and leaderboard row, and in teachers' class lists.
+
+- Finishing a lesson now earns 25 coins plus 5 for each question right first time, for the
+  first four lessons finished each day, and the lesson page says how many were earned.
+
 - Added a sliding selection bar under the top navigation and the class workspace tabs, a
   smooth drop-open for the account menu (its arrow turns as it opens), and a gentle float on
   empty-state icons. All transform and opacity only, and still for reduced motion.

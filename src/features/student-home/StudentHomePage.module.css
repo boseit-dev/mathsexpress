@@ -59,6 +59,19 @@
   color: var(--color-text);
 }
 
+.lookIcon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 3rem;
+  inline-size: 3rem;
+  block-size: 3rem;
+}
+
+.lookIcon > span {
+  inline-size: 3rem;
+  block-size: 3rem;
+}
+
 .pathIcon svg {
   inline-size: var(--size-icon-lg);
   block-size: var(--size-icon-lg);
@@ -120,11 +133,19 @@
   font-size: var(--font-size-xs);
 }
 
-@media (min-width: 850px) {
+@media (min-width: 640px) {
   .paths {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
+@media (min-width: 1100px) {
+  .paths {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 850px) {
   .path {
     align-items: flex-start;
   }

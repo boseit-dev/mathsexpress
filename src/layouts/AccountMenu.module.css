@@ -67,27 +67,18 @@
   inline-size: 100%;
 }
 
-.avatarOutline {
-  display: inline-grid;
-  place-items: center;
-  border: 3px solid transparent;
-  border-radius: var(--radius-full);
+.who {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
 }
 
-.avatarOutline[data-frame='frame-starlight'] {
-  border-color: var(--color-brand-secondary);
-  box-shadow: 0 0 0 2px var(--color-brand-pale);
-}
-
-.avatarOutline[data-frame='frame-sky'] {
-  border-color: var(--color-brand-primary);
-}
-.avatarOutline[data-frame='frame-royal'] {
-  border-color: var(--color-logo-violet);
-  box-shadow: 0 0 0 2px var(--color-brand-soft);
-}
-.avatarOutline[data-frame='frame-sunrise'] {
-  border-color: var(--color-coin-edge);
+.lookLink {
+  display: inline-block;
+  margin-block-start: var(--space-1);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 /* The menu drops open smoothly from the button, and the chevron turns to show it is open. */

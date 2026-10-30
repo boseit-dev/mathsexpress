@@ -12,6 +12,7 @@ import { formError, readText, runForm, type FormResult } from '@/app/forms/formR
 import { paths } from '@/config/paths';
 import type { AppDependencies } from '@/data/repositories';
 import type { ClassStudent, TeacherClass } from '@/domain/classes';
+import type { Look } from '@/domain/shop';
 import { formatJoinCode } from '@/domain/classes';
 import { AppError } from '@/domain/errors';
 import { getFullName } from '@/domain/people';
@@ -46,6 +47,8 @@ export function createTeacherClassesAction({ classes }: AppDependencies) {
 export interface TeacherClassData {
   teacherClass: TeacherClass;
   students: ClassStudent[];
+  /** What each student wears, by student id. Empty if it couldn't load: looks are optional. */
+  looks: Record<string, Look>;
 }
 
 export function createTeacherClassLoader(dependencies: AppDependencies) {
@@ -54,11 +57,12 @@ export function createTeacherClassLoader(dependencies: AppDependencies) {
     const classId = params.classId ?? '';
     const options = { signal: request.signal };
     try {
-      const [teacherClass, students] = await Promise.all([
+      const [teacherClass, students, looks] = await Promise.all([
         dependencies.classes.getTeacherClass(classId, options),
         dependencies.classes.listClassStudents(classId, options),
+        dependencies.shop.classLooks(classId).catch(() => ({})),
       ]);
-      return { teacherClass, students };
+      return { teacherClass, students, looks };
     } catch (error) {
       // Another teacher's class looks exactly like one that doesn't exist.
       if (error instanceof AppError && error.code === 'class_not_found') {

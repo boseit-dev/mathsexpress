@@ -6,6 +6,7 @@ import { Panel } from '@/components/ui/Panel';
 import { TableToolbar } from '@/components/ui/TableToolbar';
 import type { ClassStudent, TeacherClass } from '@/domain/classes';
 import { getFullName } from '@/domain/people';
+import type { Look } from '@/domain/shop';
 import { yearLevelToNumber } from '@/domain/student';
 import { formatCount } from '@/lib/format';
 import { REMOVE_STUDENT_FETCHER } from './removeStudentFetcher';
@@ -40,10 +41,12 @@ type SortKey = keyof typeof SORTS;
 interface StudentRosterProps {
   teacherClass: TeacherClass;
   students: ClassStudent[];
+  /** What each student wears, by student id. */
+  looks?: Record<string, Look>;
 }
 
 /** The students in a class, with each one's year level and removing them. */
-export function StudentRoster({ teacherClass, students }: StudentRosterProps) {
+export function StudentRoster({ teacherClass, students, looks = {} }: StudentRosterProps) {
   const remove = useFetcherForm({ key: REMOVE_STUDENT_FETCHER });
   const removedRef = useRef<HTMLDivElement>(null);
   const removeProblemRef = useRef<HTMLDivElement>(null);
@@ -107,7 +110,11 @@ export function StudentRoster({ teacherClass, students }: StudentRosterProps) {
             <ul className={styles.rows}>
               {shown.map((student) => (
                 <li key={student.studentId}>
-                  <StudentRow student={student} className={teacherClass.name} />
+                  <StudentRow
+                    student={student}
+                    className={teacherClass.name}
+                    look={looks[student.studentId]}
+                  />
                 </li>
               ))}
             </ul>

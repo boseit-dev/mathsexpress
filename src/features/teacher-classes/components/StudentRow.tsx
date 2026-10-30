@@ -2,11 +2,12 @@ import { useRef } from 'react';
 import { useFetcherForm } from '@/app/forms/useFetcherForm';
 import { SelectField } from '@/components/forms/SelectField';
 import { SubmitButton } from '@/components/forms/SubmitButton';
-import { Avatar } from '@/components/ui/Avatar';
+import { StudentAvatar } from '@/components/cosmetics/StudentAvatar';
 import { ConfirmAction } from '@/components/ui/ConfirmAction';
 import { VisuallyHidden } from '@/components/ui/VisuallyHidden';
 import type { ClassStudent } from '@/domain/classes';
 import { getFullName } from '@/domain/people';
+import type { Look } from '@/domain/shop';
 import { yearLevelToNumber } from '@/domain/student';
 import { yearLevelOptions } from '@/features/classes/yearLevelOptions';
 import { formatLongDate } from '@/lib/dates';
@@ -17,10 +18,12 @@ import styles from './StudentRow.module.css';
 interface StudentRowProps {
   student: ClassStudent;
   className: string;
+  /** The student's equipped look, if it loaded; otherwise their initials are shown. */
+  look?: Look;
 }
 
 /** One student in a class: their year level, which the teacher can change, and removing them. */
-export function StudentRow({ student, className }: StudentRowProps) {
+export function StudentRow({ student, className, look }: StudentRowProps) {
   const name = getFullName(student);
   const formRef = useRef<HTMLFormElement>(null);
   const saveRef = useRef<HTMLButtonElement>(null);
@@ -34,7 +37,7 @@ export function StudentRow({ student, className }: StudentRowProps) {
   return (
     <div className={styles.row}>
       <div className={styles.person}>
-        <Avatar name={name} decorative />
+        <StudentAvatar name={name} look={look} decorative />
         <div className={styles.names}>
           <p className={styles.name}>{name}</p>
           <p className={styles.joined}>Joined {formatLongDate(new Date(student.joinedAt))}</p>

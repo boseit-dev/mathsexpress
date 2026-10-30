@@ -1,6 +1,6 @@
 import { Trophy } from 'lucide-react';
 import { ArrowLink } from '@/components/ui/ArrowLink';
-import { Avatar } from '@/components/ui/Avatar';
+import { StudentAvatar } from '@/components/cosmetics/StudentAvatar';
 import { CoinAmount } from '@/components/ui/CoinAmount';
 import { Panel } from '@/components/ui/Panel';
 import { SampleDataBadge } from '@/components/ui/SampleDataBadge';
@@ -12,6 +12,8 @@ import {
   type LeaderboardEntry,
   type RankedLeaderboardEntry,
 } from '@/domain/leaderboard';
+import type { Look } from '@/domain/shop';
+import { useStudentLook } from '@/layouts/student/studentLook';
 import { cx } from '@/lib/cx';
 import styles from './LeaderboardPanel.module.css';
 
@@ -29,7 +31,7 @@ interface LeaderboardPanelProps {
   currentStudentId: string;
 }
 
-function renderRow(entry: RankedLeaderboardEntry, detached = false) {
+function renderRow(entry: RankedLeaderboardEntry, look: Look | null, detached = false) {
   return (
     <li
       key={entry.studentId}
@@ -43,7 +45,12 @@ function renderRow(entry: RankedLeaderboardEntry, detached = false) {
         <VisuallyHidden>Rank </VisuallyHidden>
         {entry.rank}
       </span>
-      <Avatar name={entry.displayName} size="small" decorative />
+      <StudentAvatar
+        name={entry.displayName}
+        look={entry.isCurrentStudent ? look : null}
+        size="small"
+        decorative
+      />
       <span className={styles.name}>
         {entry.isCurrentStudent ? (
           <>
@@ -60,6 +67,7 @@ function renderRow(entry: RankedLeaderboardEntry, detached = false) {
 
 /** This week's class leaderboard, with the current student highlighted. */
 export function LeaderboardPanel({ entries, currentStudentId }: LeaderboardPanelProps) {
+  const look = useStudentLook();
   const { top, currentStudent } = getLeaderboardPreview(
     rankLeaderboard(entries, currentStudentId),
     LEADERBOARD_SIZE,
@@ -77,8 +85,8 @@ export function LeaderboardPanel({ entries, currentStudentId }: LeaderboardPanel
         <p className={styles.empty}>Nobody in your class has earned coins yet this week.</p>
       ) : (
         <ol role="list" className={styles.list}>
-          {top.map((entry) => renderRow(entry))}
-          {currentStudent && renderRow(currentStudent, true)}
+          {top.map((entry) => renderRow(entry, look))}
+          {currentStudent && renderRow(currentStudent, look, true)}
         </ol>
       )}
     </Panel>

@@ -1,4 +1,5 @@
 import { ArrowUpRight, BookOpenText, GraduationCap, UsersRound } from 'lucide-react';
+import { StudentAvatar } from '@/components/cosmetics/StudentAvatar';
 import { Link } from 'react-router';
 import { paths } from '@/config/paths';
 import { countOpenTasks, selectContinueTask } from '@/domain/tasks';
@@ -6,6 +7,7 @@ import { getPrimaryClass } from '@/domain/student';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useRefreshWhenStale } from '@/hooks/useRefreshWhenStale';
 import { useCurrentStudent } from '@/layouts/student/useCurrentStudent';
+import { useStudentLook } from '@/layouts/student/studentLook';
 import { TaskSection } from './components/TaskSection';
 import { RecommendedPractice } from './components/RecommendedPractice';
 import { StudentProgress } from './components/StudentProgress';
@@ -20,6 +22,7 @@ export function StudentHomePage() {
   useDocumentTitle('Home');
   useRefreshWhenStale(now);
   const primaryClass = getPrimaryClass(student);
+  const look = useStudentLook();
 
   return (
     <div className={styles.page}>
@@ -59,6 +62,16 @@ export function StudentHomePage() {
           <span className={styles.pathCopy}>
             <strong>My class</strong>
             <span>See your teachers and class details.</span>
+          </span>
+          <ArrowUpRight className={styles.pathArrow} aria-hidden="true" />
+        </Link>
+        <Link to={paths.student.shop} className={styles.path}>
+          <span className={styles.lookIcon}>
+            <StudentAvatar name={student.displayName} look={look ?? {}} decorative />
+          </span>
+          <span className={styles.pathCopy}>
+            <strong>Shop and my look</strong>
+            <span>Spend your coins on avatars and more.</span>
           </span>
           <ArrowUpRight className={styles.pathArrow} aria-hidden="true" />
         </Link>

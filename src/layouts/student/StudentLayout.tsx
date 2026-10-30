@@ -8,6 +8,7 @@ import { getFullName } from '@/domain/people';
 import { SidePanelToolbar } from '@/features/side-panels/SidePanelToolbar';
 import { AccountMenu } from '../AccountMenu';
 import { AppShell } from '../AppShell';
+import { StudentLookContext } from './studentLook';
 import { useStudentLayoutData } from './studentLayoutLoader';
 
 /** Frame for every student page: top navigation Home | Learn | Textbook | Class | More. */
@@ -35,16 +36,17 @@ export function StudentLayout({ shop }: { shop: ShopRepository }) {
     };
   }, [shop]);
 
+  const theme = appearance?.equipped.theme;
   useEffect(() => {
-    if (appearance?.equippedTheme) {
-      document.documentElement.dataset.shopTheme = appearance.equippedTheme;
+    if (theme) {
+      document.documentElement.dataset.shopTheme = theme;
     } else {
       document.documentElement.removeAttribute('data-shop-theme');
     }
     return () => {
       document.documentElement.removeAttribute('data-shop-theme');
     };
-  }, [appearance?.equippedTheme]);
+  }, [theme]);
   const { pathname } = useLocation();
 
   return (
@@ -56,12 +58,14 @@ export function StudentLayout({ shop }: { shop: ShopRepository }) {
         <AccountMenu
           name={getFullName(student)}
           roleLabel="Student"
-          frame={appearance?.equippedFrame}
+          look={appearance?.equipped ?? null}
         />
       }
     >
-      <Outlet context={student} />
-      <SidePanelToolbar key={pathname} student={student} shop={shop} />
+      <StudentLookContext value={appearance?.equipped ?? null}>
+        <Outlet context={student} />
+        <SidePanelToolbar key={pathname} student={student} shop={shop} />
+      </StudentLookContext>
     </AppShell>
   );
 }

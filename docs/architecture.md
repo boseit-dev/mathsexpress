@@ -58,7 +58,9 @@ URL ──▶ React Router (src/app/routes.tsx)
 | `/student/textbook/:bookId/:chapterId` | Chapter reader and checked Year 9 exercises           | Pilot built  |
 | `/student/class/tasks`                 | The student's real tasks: to do and completed         | Built        |
 | `/student/more`                        | More                                                  | Planned page |
-| `/student/more/shop`                   | Coin shop                                             | Planned page |
+| `/student/more/shop`                   | Coin shop: browse, Try On, buy and equip              | Built        |
+| `/student/more/shop/collection`        | My collection: equip owned items, restore the default | Built        |
+| `/student/more/shop/history`           | Coin history and how to earn coins                    | Built        |
 | `/teacher`                             | Teacher home: classes, coming up, to follow up        | Built        |
 | `/teacher/classes`                     | The teacher's classes; create a class                 | Built        |
 | `/teacher/classes/:classId`            | Class workspace: overview, code and settings          | Built        |
@@ -182,3 +184,13 @@ implementation and in-memory tests. Database RPC functions are the only
 authenticated shop API; new catalogue, wallet, inventory, ledger and answer
 award tables have RLS enabled and no direct authenticated table grants.
 No real-money payment functionality or random/loot-box products are implemented.
+
+- `ShopLayout` loads the wallet once and shares it with the Shop, My collection and Coin
+  history pages; it also holds the try-on look, which is never saved.
+- `AvatarPortrait` (in `src/components/cosmetics/`) draws any look in layers: effect glow,
+  background, character, frame, accessory, effect particles. Accessories are placed by slot
+  (hat, face, ears, helmet, halo, held, shoulder) so each one fits every avatar.
+- `StudentAvatar` shows a student's look wherever their avatar appears (the header, home page,
+  quick-tools shop and leaderboard, and teachers' class lists); without a look it shows initials.
+- `record_answer` pays lesson-completion coins in the same transaction that completes the
+  attempt, and returns `coinsAwarded` so the lesson page can say so.

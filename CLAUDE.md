@@ -286,14 +286,23 @@ Rules:
 See `docs/rebuild-reference.md` for where the old code, feature inventory and live-system notes
 are kept. Use them for reference only; never copy old code in wholesale.
 
-## Coin Shop (new)
+## Coin Shop
 
-The shop is now a real authenticated student feature at `/student/more/shop`.
-A secure SQL migration creates account wallets, cosmetic inventory and coin
-transactions, plus RPC functions that verify access and handle purchases and
-lesson rewards atomically. The shop grants 100 once-only welcome coins and
-20 coins for each of the five published Year 9 lesson questions correctly
-solved once. Do not invent coin balances, let the browser set coins, expose
-shop tables directly or imply repeat practice earns infinite coins. Cosmetics
-are permanent; themes affect brand accents and frames outline the account avatar.
-Other rewards in the side panels remain explicitly sample data.
+The shop is a real authenticated student feature at `/student/more/shop`, with My collection
+(`/collection`) and Coin history (`/history`) tabs. It sells 98 original cosmetics in seven
+kinds (avatars, accessories, backgrounds, frames, effects, titles, dashboard themes) from free
+to 5,000 coins, in five rarities whose price bands the database enforces.
+
+- The catalogue lives twice on purpose: prices and ownership in SQL
+  (`supabase/migrations/20261031090000_shop_collection.sql`), names and artwork keys in
+  `src/domain/shopCatalogue.ts`. A database test fails if they differ, and a unit test fails if
+  any item has no artwork. Add items to both, with art in `src/components/cosmetics/`.
+- All artwork is original code-drawn SVG. Capybara avatars are built from the mascot rig, so
+  they match the official character (and never have a mouth).
+- Coins: 100 welcome coins; 20 the first time each lesson question is solved; 25 per finished
+  lesson plus 5 per first-try answer, for the first four finished lessons each day (Sydney
+  time). Never let the browser set coins or prices, expose shop tables directly, or add real
+  money, random rewards or gameplay advantages.
+- Trying on is free and saves nothing. Buying locks the wallet row, so duplicate or racing
+  requests charge once. Teachers see students' avatar parts (not themes or effects) in class lists.
+- Other rewards in the side panels remain explicitly sample data.
