@@ -1,7 +1,7 @@
 # MathsExpress textbook catalogue — syllabus-aware outline and reader
 
 This file records verified syllabus structure, a richer topic-level reading interface,
-and the deliberately limited authored content It is **not** a claim that all 25 books or outcomes have
+and the deliberately limited authored content. It is **not** a claim that all 25 books or outcomes have
 been written, mapped, audited or approved.
 
 ## Primary sources checked 29 October 2026
@@ -33,12 +33,14 @@ been written, mapped, audited or approved.
   Life Skills focus areas; the new 2024 Year 12 syllabuses start from Term 4 2026.
 - Standard 11 and Standard 1/2 Year 12 have their distinct focus-area titles from NESA.
   Content is not yet published for those titles.
-- A searchable chapter sidebar, compact responsive reading area, and separate Lesson,
-  Questions, My activity and Revision views on the published Year 9 pilot. The activity view
-  correctly explains that textbook responses are local only, not stored in teacher reports.
-- One original pilot chapter: Year 9, solving linear equations. Includes interactive exploration, a worked example,
-  six numerical questions, hints, retry feedback and simple answer checking. Equations
-  and answers are verified by unit tests. No user answers or scores are persisted.
+- An original Study Notebook instead of a tabbed, persistent-sidebar interface. A continuous
+  five-part narrative teaches the concept, the method, a guided first step, independent practice
+  and a final recap. Other topics are available in a collapsed chapter list.
+- One authored pilot: Year 9 solving linear equations. Its interactive balance model explains
+  equality; three worked examples show two-step, negative and bracket equations; a common
+  mistake panel explains what goes wrong; a guided first-step check supports learners before
+  the six existing numerical practice questions. Hints and retry feedback remain available.
+  Exercise answers stay on the page and are not saved to the student's account.
 - The library can filter by assigned year and by books with published maths chapters.
   It reports actual availability: only the Year 9 equations pilot has maths lessons at
   this stage. The introduction guide is not counted as a complete maths chapter.
@@ -64,8 +66,8 @@ been written, mapped, audited or approved.
 
 The 25 books now list official stage-level and Stage 6 course focus-area headings instead of
 three generic placeholders. Each topic is independently addressable and searchable in the
-reading sidebar. Only the existing Year 9 equations pilot is flagged as authored.
-The pilot now has a movable equation exploration and revision panel.
+book contents. Only the Year 9 equations pilot is flagged as authored.
+The pilot now uses a concept-first Study Notebook, interactive exploration and explanations.
 
 **Not yet achieved:** a full official outcome/content-point mapping for every stage,
 hundreds of original reviewed explanations, example banks, questions, diagrams, or

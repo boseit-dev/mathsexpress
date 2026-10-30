@@ -9,7 +9,9 @@ All notable changes to MathsExpress 2.0 are recorded here. The format follows
 ### Textbook reader and syllabus structure
 
 - Replace generic textbook chapter placeholders with stage-aware NSW syllabus focus-area outlines across 25 books, including Stage 5 Core/Paths and the distinct 2024 senior courses.
-- Add an original searchable textbook topic sidebar, reading tabs and revision/activity panels, and a manipulable equation exploration in the published Year 9 pilot.
+- Replace a copied-feeling sidebar and question tabs with an original, continuous Study Notebook:
+  a five-part learning path, an interactive balance model, three fully explained examples,
+  a guided intermediate step, common mistakes, practice and a recap.
 - Preserve honest status labels: full textbook chapters and content-point auditing are still in preparation.
 
 ### Deployment
