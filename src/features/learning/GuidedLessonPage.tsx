@@ -14,21 +14,36 @@ import { Link, useParams } from 'react-router';
 import { Button } from '@/components/ui/Button';
 import { paths } from '@/config/paths';
 import { checkNumericalAnswer, publishedLessons } from '@/domain/learning';
-import type { ShopRepository } from '@/data/repositories';
+import type { ProgressRepository, ShopRepository } from '@/data/repositories';
+import { describeTaskDue } from '@/domain/tasks';
 import { errorCodeOf } from '@/domain/errors';
 import { useRefreshWhenVisible } from '@/hooks/useRefreshWhenVisible';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useCurrentStudent } from '@/layouts/student/useCurrentStudent';
+import { useLessonData } from './lessonLoader';
+import { useLessonProgress } from './useLessonProgress';
 import styles from './Learning.module.css';
 
 type Feedback = 'idle' | 'incorrect' | 'correct';
 
-/** Real practice and marking. Account-based progress saving is a separate, upcoming phase. */
-export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
+/** Real practice and marking, saved to the student's account as they answer. */
+export function GuidedLessonPage({
+  shop,
+  progress,
+}: {
+  shop: ShopRepository;
+  progress: ProgressRepository;
+}) {
   const { lessonId } = useParams();
   const student = useCurrentStudent();
+  const { tasks, now } = useLessonData();
   const lesson = publishedLessons.find((item) => item.id === lessonId);
-  const permitted = lesson && student.classes.some((item) => item.yearLevel === lesson.yearLevel);
+  // Open for the student's teacher-assigned year level, or when a teacher has set it as a task.
+  const permitted =
+    lesson &&
+    (student.classes.some((item) => item.yearLevel === lesson.yearLevel) || tasks.length > 0);
+  const openTask = tasks.find((task) => task.progress !== 'completed');
+  const saving = useLessonProgress(progress, lessonId ?? '');
   useDocumentTitle(lesson?.title ?? 'Lesson');
   useRefreshWhenVisible();
   const [index, setIndex] = useState(0);
@@ -71,6 +86,8 @@ export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
 
   function checkAnswer() {
     if (!current || !answer.trim() || feedback === 'correct') return;
+    // The server marks it again and saves it; the check here is for instant feedback.
+    saving.save(current.id, answer, hints);
     if (checkNumericalAnswer(answer, current.solution)) {
       setFeedback('correct');
       // Solved: no more pondering after the celebration.
@@ -132,6 +149,7 @@ export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
     setComplete(false);
     mascot.setRest('idle');
     setCoinNotice('');
+    saving.restart();
   }
 
   return (
@@ -144,6 +162,12 @@ export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
         <h1>{lesson.title}</h1>
         <p>{lesson.introduction}</p>
       </header>
+      {openTask && (
+        <p className={styles.taskBanner}>
+          Set by your teacher: <strong>{openTask.title}</strong> · {openTask.className} ·{' '}
+          {describeTaskDue(openTask, now).label}
+        </p>
+      )}
       {lesson.yearLevel === 9 && (
         <Link
           className={styles.textbookReturn}
@@ -191,9 +215,12 @@ export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
                   ? 'All correct on the first try.'
                   : `${mistakes} incorrect ${mistakes === 1 ? 'attempt' : 'attempts'} along the way. Your practice helped you improve.`}
               </p>
-              <div className={styles.note}>
-                This session is not saved to your account yet. Account-based progress saving is
-                coming next.
+              <div className={styles.note} role="status">
+                {saving.completed
+                  ? 'Saved to your account. Your teacher can see this result.'
+                  : saving.status === 'failed'
+                    ? 'Some answers couldn’t be saved, so this result may not reach your teacher. Check your connection and practise again.'
+                    : 'Saving your result…'}
               </div>
               <div className={styles.actions}>
                 <Button onClick={restart} variant="secondary">
@@ -318,9 +345,11 @@ export function GuidedLessonPage({ shop }: { shop: ShopRepository }) {
                   )}
                 </div>
               </form>
-              <p className={styles.sessionNote}>
-                <Sparkles size={15} aria-hidden="true" /> Your first correct answers earn real
-                coins. Lesson progress is not saved yet.
+              <p className={styles.sessionNote} aria-live="polite">
+                <Sparkles size={15} aria-hidden="true" />{' '}
+                {saving.status === 'failed'
+                  ? 'Your answers are still checked, but your progress couldn’t be saved. Check your connection.'
+                  : 'Your progress is saved to your account as you go. First correct answers earn coins.'}
               </p>
             </>
           )}

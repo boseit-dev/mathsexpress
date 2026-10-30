@@ -50,6 +50,18 @@ export const errorMessages = {
   shop_question_unavailable: 'That question cannot earn coins.',
   shop_answer_incorrect: 'That answer is not correct yet.',
   shop_already_rewarded: 'You have already earned coins for this question.',
+  // Tasks and progress
+  invalid_task_title: 'Give the task a title of up to 80 characters.',
+  invalid_instructions: 'Keep the instructions to 500 characters or fewer.',
+  invalid_due_date: 'Choose a due date in the future, within the next year.',
+  content_unavailable: 'That lesson isn’t available.',
+  invalid_students: 'Choose at least one student who is in this class.',
+  task_not_found: 'That task couldn’t be found.',
+  task_already_published: 'This task is already published.',
+  invalid_request: 'Something went wrong. Please try again.',
+  attempt_not_found: 'Your progress couldn’t be saved. Start the lesson again.',
+  question_not_found: 'That question isn’t part of this lesson.',
+  invalid_answer: 'Enter a number, such as 4 or −3.',
   // Anything else
   network: 'MathsExpress couldn’t connect. Check your internet connection and try again.',
   unknown: 'Something went wrong. Please try again.',

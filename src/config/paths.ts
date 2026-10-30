@@ -34,6 +34,10 @@ export const paths = {
     classTasks: (classId: string) => `/teacher/classes/${encodeURIComponent(classId)}/tasks`,
     classProgress: (classId: string) => `/teacher/classes/${encodeURIComponent(classId)}/progress`,
     tasks: '/teacher/tasks',
+    /** Setting a new task, optionally for one class already chosen. */
+    newTask: (classId?: string) =>
+      classId ? `/teacher/tasks/new?class=${encodeURIComponent(classId)}` : '/teacher/tasks/new',
+    taskDetail: (taskId: string) => `/teacher/tasks/${encodeURIComponent(taskId)}`,
     reports: '/teacher/reports',
     more: '/teacher/more',
   },

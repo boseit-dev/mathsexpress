@@ -6,6 +6,9 @@ import { StudentClassPage } from '@/features/student-class/StudentClassPage';
 import { StudentHomePage } from '@/features/student-home/StudentHomePage';
 import { LearnPage } from '@/features/learning/LearnPage';
 import { GuidedLessonPage } from '@/features/learning/GuidedLessonPage';
+import { createStudentTasksLoader } from '@/features/student-tasks/studentTasksLoader';
+import { StudentTasksPage } from '@/features/student-tasks/StudentTasksPage';
+import { createLessonLoader } from '@/features/learning/lessonLoader';
 import { TextbookPage } from '@/features/textbook/TextbookPage';
 import { ShopPage } from '@/features/shop/ShopPage';
 import { createStudentHomeLoader } from '@/features/student-home/studentHomeLoader';
@@ -49,7 +52,8 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
           },
           {
             path: `${paths.student.learn}/:lessonId`,
-            element: <GuidedLessonPage shop={dependencies.shop} />,
+            loader: createLessonLoader(dependencies),
+            element: <GuidedLessonPage shop={dependencies.shop} progress={dependencies.progress} />,
           },
           { path: paths.student.textbook, element: <TextbookPage /> },
           { path: `${paths.student.textbook}/:bookId`, element: <TextbookPage /> },
@@ -62,10 +66,8 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
           },
           {
             path: paths.student.tasks,
-            element: planned(
-              'Your tasks',
-              'Every task your teacher has set, with due dates, progress and results.',
-            ),
+            loader: createStudentTasksLoader(dependencies),
+            element: <StudentTasksPage />,
           },
           {
             path: paths.student.shop,

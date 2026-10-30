@@ -202,7 +202,7 @@ describe('teacher layout', () => {
   });
 
   it('offers "Back to home" on planned sections but not on the home page itself', async () => {
-    const { router } = renderApp('/teacher/tasks', { signedInAs: 'teacher' });
+    const { router } = renderApp('/teacher/reports', { signedInAs: 'teacher' });
     expect(await screen.findByRole('link', { name: 'Back to home' })).toHaveAttribute(
       'href',
       '/teacher',

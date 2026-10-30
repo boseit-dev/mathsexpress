@@ -2,33 +2,32 @@ import { ClipboardList } from 'lucide-react';
 import { Mascot } from '@/components/mascot/Mascot';
 import { ArrowLink } from '@/components/ui/ArrowLink';
 import { Panel } from '@/components/ui/Panel';
-import { SampleDataBadge } from '@/components/ui/SampleDataBadge';
 import { paths } from '@/config/paths';
-import { selectHomeAssignments, type Assignment } from '@/domain/assignment';
+import { sortStudentTasks, type StudentTask } from '@/domain/tasks';
 import { formatCount } from '@/lib/format';
-import { AssignmentCard } from './AssignmentCard';
-import styles from './AssignmentSection.module.css';
+import { TaskCard } from './TaskCard';
+import styles from './TaskSection.module.css';
 
 /** How many tasks the home page shows before "View all". */
 const HOME_TASK_LIMIT = 3;
 
-interface AssignmentSectionProps {
-  assignments: readonly Assignment[];
+interface TaskSectionProps {
+  tasks: readonly StudentTask[];
   now: Date;
 }
 
-export function AssignmentSection({ assignments, now }: AssignmentSectionProps) {
-  const shown = selectHomeAssignments(assignments, HOME_TASK_LIMIT);
+/** The work teachers have set, most urgent first. */
+export function TaskSection({ tasks, now }: TaskSectionProps) {
+  const shown = sortStudentTasks(tasks).slice(0, HOME_TASK_LIMIT);
 
   return (
     <Panel
       title="Your assigned tasks"
-      badge={<SampleDataBadge />}
       icon={ClipboardList}
       footer={
-        assignments.length > 0 && (
+        tasks.length > HOME_TASK_LIMIT && (
           <ArrowLink to={paths.student.tasks}>
-            View all {formatCount(assignments.length, 'task')}
+            View all {formatCount(tasks.length, 'task')}
           </ArrowLink>
         )
       }
@@ -42,9 +41,9 @@ export function AssignmentSection({ assignments, now }: AssignmentSectionProps) 
         </div>
       ) : (
         <ul role="list" className={styles.list}>
-          {shown.map((assignment) => (
-            <li key={assignment.id}>
-              <AssignmentCard assignment={assignment} now={now} />
+          {shown.map((task) => (
+            <li key={task.id}>
+              <TaskCard task={task} now={now} />
             </li>
           ))}
         </ul>

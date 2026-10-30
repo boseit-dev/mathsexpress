@@ -2,7 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import type { CurrentStudent } from '@/domain/student';
 import { renderWithRouter } from '@/test/renderWithRouter';
-import { AssignmentSection } from './AssignmentSection';
+import { TaskSection } from './TaskSection';
 import { ChallengesPanel } from './ChallengesPanel';
 import { LeaderboardPanel } from './LeaderboardPanel';
 import { RecommendedPractice } from './RecommendedPractice';
@@ -26,7 +26,7 @@ describe('WelcomeBanner', () => {
         primaryClass={null}
         now={NOW}
         taskCounts={{ open: 0, overdue: 0 }}
-        continueAssignment={null}
+        continueTask={null}
       />,
     );
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Good morning, Sam');
@@ -42,7 +42,7 @@ describe('WelcomeBanner', () => {
         primaryClass={null}
         now={NOW}
         taskCounts={{ open: 0, overdue: 0 }}
-        continueAssignment={null}
+        continueTask={null}
       />,
     );
     expect(
@@ -53,7 +53,7 @@ describe('WelcomeBanner', () => {
 
 describe('empty states', () => {
   it('explains when there are no tasks yet', () => {
-    renderWithRouter(<AssignmentSection assignments={[]} now={NOW} />);
+    renderWithRouter(<TaskSection tasks={[]} now={NOW} />);
     expect(screen.getByText(/hasn’t set any tasks yet/)).toBeVisible();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
   });

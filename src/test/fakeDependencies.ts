@@ -10,10 +10,17 @@ import {
   type TeacherClass,
 } from '@/domain/classes';
 import { AppError } from '@/domain/errors';
-import { checkNumericalAnswer } from '@/domain/learning';
+import { checkNumericalAnswer, publishedLessons } from '@/domain/learning';
 import { makeFreshShopState, type ShopState } from '@/domain/shop';
 import { getFullName, getShortName } from '@/domain/people';
 import type { YearLevel } from '@/domain/student';
+import type {
+  LearningItem,
+  StudentTask,
+  TaskProgress,
+  TaskStudentResult,
+  TeacherTask,
+} from '@/domain/tasks';
 import { createSampleStudentHomeRepository } from '@/data/sample/sampleStudentHomeRepository';
 import type { AppDependencies, EmailLinkType } from '@/data/repositories';
 
@@ -38,7 +45,38 @@ interface FakeClass extends TeacherClass {
   formerStudents: Map<string, { yearLevel: YearLevel; followedClassLevel: boolean }>;
 }
 
+export interface FakeTask {
+  id: string;
+  classId: string;
+  createdBy: string;
+  requestId: string;
+  title: string;
+  instructions: string | null;
+  contentId: string;
+  audience: 'class' | 'students';
+  studentIds: string[];
+  state: 'draft' | 'published';
+  dueAt: string;
+  createdAt: string;
+  publishedAt: string | null;
+}
+
+export interface FakeAttempt {
+  id: string;
+  studentId: string;
+  contentId: string;
+  startedAt: string;
+  lastActivityAt: string;
+  completedAt: string | null;
+  questions: Map<
+    string,
+    { tries: number; hintsUsed: number; firstTryCorrect: boolean; solved: boolean }
+  >;
+}
+
 export interface FakeState {
+  tasks: FakeTask[];
+  attempts: FakeAttempt[];
   accounts: Map<string, FakeAccount>;
   classes: FakeClass[];
   signedInEmail: string | null;
@@ -80,6 +118,8 @@ export function createFakeState(): FakeState {
   const student = account(testStudent.email, 'student', testStudent);
   const teacher = account(testTeacher.email, 'teacher', testTeacher);
   return {
+    tasks: [],
+    attempts: [],
     accounts: new Map([
       [student.user.email, student],
       [teacher.user.email, teacher],
@@ -187,6 +227,86 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
       });
     }
     target.students = target.students.filter((entry) => entry.studentId !== studentId);
+  }
+
+  function catalogue(): LearningItem[] {
+    return publishedLessons.map((lesson) => ({
+      id: lesson.id,
+      kind: 'lesson',
+      title: lesson.title,
+      strand: lesson.strand,
+      topic: 'Linear equations',
+      yearLevel: lesson.yearLevel,
+      questionCount: lesson.questions.length,
+      estimatedMinutes: lesson.estimatedMinutes,
+    }));
+  }
+
+  function ownTask(taskId: string): FakeTask {
+    const teacher = requireRole('teacher');
+    const task = state.tasks.find((entry) => entry.id === taskId);
+    const taught =
+      task &&
+      state.classes.some((item) => item.id === task.classId && item.teacherId === teacher.id);
+    if (!task || !taught) throw new AppError('task_not_found');
+    return task;
+  }
+
+  /** Like the database: published, still in the class, and chosen (or the whole class). */
+  function assignedStudents(task: FakeTask): ClassStudent[] {
+    if (task.state !== 'published') return [];
+    const target = state.classes.find((item) => item.id === task.classId);
+    return (target?.students ?? []).filter(
+      (student) => task.audience === 'class' || task.studentIds.includes(student.studentId),
+    );
+  }
+
+  function taskResult(task: FakeTask, studentId: string) {
+    const attempts = state.attempts.filter(
+      (entry) =>
+        entry.studentId === studentId &&
+        entry.contentId === task.contentId &&
+        task.publishedAt !== null &&
+        entry.startedAt >= task.publishedAt,
+    );
+    const best = attempts.find((entry) => entry.completedAt) ?? attempts.at(-1);
+    const progress: TaskProgress = !best
+      ? 'not_started'
+      : best.completedAt
+        ? 'completed'
+        : 'in_progress';
+    const questions = best ? [...best.questions.values()] : [];
+    return {
+      progress,
+      completedAt: best?.completedAt ?? null,
+      lastActivityAt: best?.lastActivityAt ?? null,
+      questionsSolved: questions.filter((item) => item.solved).length,
+      firstTryCorrect: questions.filter((item) => item.firstTryCorrect).length,
+    };
+  }
+
+  function teacherTaskView(task: FakeTask): TeacherTask {
+    const target = state.classes.find((item) => item.id === task.classId);
+    const lesson = catalogue().find((item) => item.id === task.contentId);
+    const results = assignedStudents(task).map((student) => taskResult(task, student.studentId));
+    return {
+      id: task.id,
+      classId: task.classId,
+      className: target?.name ?? '',
+      title: task.title,
+      instructions: task.instructions,
+      contentId: task.contentId,
+      contentTitle: lesson?.title ?? '',
+      contentKind: lesson?.kind ?? 'lesson',
+      state: task.state,
+      audience: task.audience,
+      dueAt: task.dueAt,
+      createdAt: task.createdAt,
+      publishedAt: task.publishedAt,
+      assignedCount: results.length,
+      completedCount: results.filter((item) => item.progress === 'completed').length,
+      inProgressCount: results.filter((item) => item.progress === 'in_progress').length,
+    };
   }
 
   function sendEmail(email: string, type: EmailLinkType) {
@@ -498,6 +618,207 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
         return structuredClone(snapshot);
       },
     },
+    tasks: {
+      async listCatalogue() {
+        await Promise.resolve();
+        requireProfile();
+        return catalogue();
+      },
+      async createTask(input) {
+        await Promise.resolve();
+        const teacher = requireRole('teacher');
+        const target = ownClass(input.classId);
+        const existing = state.tasks.find(
+          (task) => task.createdBy === teacher.id && task.requestId === input.requestId,
+        );
+        if (existing) return teacherTaskView(existing);
+        const title = input.title.trim().replace(/\s+/g, ' ');
+        if (!title || title.length > 80) throw new AppError('invalid_task_title');
+        const instructions = input.instructions.trim();
+        if (instructions.length > 500) throw new AppError('invalid_instructions');
+        if (!catalogue().some((item) => item.id === input.contentId && item.kind === 'lesson')) {
+          throw new AppError('content_unavailable');
+        }
+        const due = Date.parse(input.dueAt);
+        if (!Number.isFinite(due) || due <= TEST_NOW.getTime()) {
+          throw new AppError('invalid_due_date');
+        }
+        if (
+          input.studentIds &&
+          (input.studentIds.length === 0 ||
+            input.studentIds.some(
+              (id) => !target.students.some((student) => student.studentId === id),
+            ))
+        ) {
+          throw new AppError('invalid_students');
+        }
+        const created: FakeTask = {
+          id: `task-${state.tasks.length + 1}`,
+          classId: target.id,
+          createdBy: teacher.id,
+          requestId: input.requestId,
+          title,
+          instructions: instructions || null,
+          contentId: input.contentId,
+          audience: input.studentIds ? 'students' : 'class',
+          studentIds: input.studentIds ? [...new Set(input.studentIds)] : [],
+          state: input.publish ? 'published' : 'draft',
+          dueAt: new Date(due).toISOString(),
+          createdAt: TEST_NOW.toISOString(),
+          publishedAt: input.publish ? TEST_NOW.toISOString() : null,
+        };
+        state.tasks.push(created);
+        return teacherTaskView(created);
+      },
+      async publishTask(taskId) {
+        await Promise.resolve();
+        const task = ownTask(taskId);
+        if (task.state === 'published') throw new AppError('task_already_published');
+        if (Date.parse(task.dueAt) <= TEST_NOW.getTime()) throw new AppError('invalid_due_date');
+        task.state = 'published';
+        task.publishedAt = TEST_NOW.toISOString();
+        return teacherTaskView(task);
+      },
+      async setDueDate(taskId, dueAt) {
+        await Promise.resolve();
+        const task = ownTask(taskId);
+        const due = Date.parse(dueAt);
+        if (!Number.isFinite(due) || due <= TEST_NOW.getTime()) {
+          throw new AppError('invalid_due_date');
+        }
+        task.dueAt = new Date(due).toISOString();
+        return teacherTaskView(task);
+      },
+      async deleteTask(taskId) {
+        await Promise.resolve();
+        const task = ownTask(taskId);
+        state.tasks = state.tasks.filter((entry) => entry !== task);
+      },
+      async listTeacherTasks(classId) {
+        await Promise.resolve();
+        const teacher = requireRole('teacher');
+        if (classId) ownClass(classId);
+        const taught = new Set(
+          state.classes.filter((item) => item.teacherId === teacher.id).map((item) => item.id),
+        );
+        return state.tasks
+          .filter((task) => taught.has(task.classId) && (!classId || task.classId === classId))
+          .sort(
+            (a, b) =>
+              Number(a.state === 'published') - Number(b.state === 'published') ||
+              a.dueAt.localeCompare(b.dueAt),
+          )
+          .map(teacherTaskView);
+      },
+      async getTask(taskId) {
+        await Promise.resolve();
+        return teacherTaskView(ownTask(taskId));
+      },
+      async listTaskResults(taskId) {
+        await Promise.resolve();
+        const task = ownTask(taskId);
+        const lesson = catalogue().find((item) => item.id === task.contentId);
+        return assignedStudents(task)
+          .map((student): TaskStudentResult => {
+            const result = taskResult(task, student.studentId);
+            return {
+              studentId: student.studentId,
+              firstName: student.firstName,
+              lastName: student.lastName,
+              ...result,
+              questionCount: lesson?.questionCount ?? 0,
+            };
+          })
+          .sort((a, b) => a.lastName.localeCompare(b.lastName));
+      },
+      async listMyTasks() {
+        await Promise.resolve();
+        const student = requireRole('student');
+        return state.tasks
+          .filter((task) => assignedStudents(task).some((entry) => entry.studentId === student.id))
+          .map((task): StudentTask => {
+            const target = state.classes.find((item) => item.id === task.classId);
+            const lesson = catalogue().find((item) => item.id === task.contentId);
+            const result = taskResult(task, student.id);
+            return {
+              id: task.id,
+              classId: task.classId,
+              className: target?.name ?? '',
+              title: task.title,
+              instructions: task.instructions,
+              contentId: task.contentId,
+              contentTitle: lesson?.title ?? '',
+              contentKind: lesson?.kind ?? 'lesson',
+              topic: lesson?.topic ?? '',
+              questionCount: lesson?.questionCount ?? 0,
+              estimatedMinutes: lesson?.estimatedMinutes ?? 0,
+              dueAt: task.dueAt,
+              publishedAt: task.publishedAt ?? '',
+              progress: result.progress,
+              completedAt: result.completedAt,
+              questionsSolved: result.questionsSolved,
+            };
+          });
+      },
+    },
+    progress: {
+      async startAttempt(contentId) {
+        await Promise.resolve();
+        const student = requireRole('student');
+        const lesson = catalogue().find((item) => item.id === contentId);
+        const yearMatch = state.classes.some((item) =>
+          item.students.some(
+            (entry) => entry.studentId === student.id && entry.yearLevel === lesson?.yearLevel,
+          ),
+        );
+        const assigned = state.tasks.some(
+          (task) =>
+            task.contentId === contentId &&
+            assignedStudents(task).some((entry) => entry.studentId === student.id),
+        );
+        if (!lesson || (!yearMatch && !assigned)) throw new AppError('content_unavailable');
+        const attempt: FakeAttempt = {
+          id: `attempt-${state.attempts.length + 1}`,
+          studentId: student.id,
+          contentId,
+          startedAt: TEST_NOW.toISOString(),
+          lastActivityAt: TEST_NOW.toISOString(),
+          completedAt: null,
+          questions: new Map(),
+        };
+        state.attempts.push(attempt);
+        return attempt.id;
+      },
+      async recordAnswer(attemptId, questionId, answer, hintsUsed) {
+        await Promise.resolve();
+        const student = requireRole('student');
+        const attempt = state.attempts.find(
+          (entry) => entry.id === attemptId && entry.studentId === student.id,
+        );
+        if (!attempt) throw new AppError('attempt_not_found');
+        const lesson = publishedLessons.find((item) => item.id === attempt.contentId);
+        const question = lesson?.questions.find((item) => item.id === questionId);
+        if (!lesson || !question) throw new AppError('question_not_found');
+        if (!/^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/.test(answer.trim().replaceAll('−', '-'))) {
+          throw new AppError('invalid_answer');
+        }
+        const correct = checkNumericalAnswer(answer, question.solution);
+        const saved = attempt.questions.get(questionId);
+        if (saved?.solved) {
+          return { correct, alreadySolved: true, completed: attempt.completedAt !== null };
+        }
+        attempt.questions.set(questionId, {
+          tries: (saved?.tries ?? 0) + 1,
+          hintsUsed: Math.max(saved?.hintsUsed ?? 0, hintsUsed),
+          firstTryCorrect: saved ? saved.firstTryCorrect : correct,
+          solved: correct,
+        });
+        attempt.lastActivityAt = TEST_NOW.toISOString();
+        const completed = lesson.questions.every((item) => attempt.questions.get(item.id)?.solved);
+        if (completed) attempt.completedAt ??= TEST_NOW.toISOString();
+        return { correct, alreadySolved: false, completed };
+      },
+    },
     now: () => TEST_NOW,
   };
 }
@@ -511,3 +832,62 @@ export function endSessionElsewhere(state: FakeState) {
 
 /** The short name a student's classmates see, as the app derives it. */
 export const testStudentShortName = getShortName(testStudent);
+
+/** Adds a published task for the test class (whole class by default), like a teacher would. */
+export function addFakeTask(state: FakeState, overrides: Partial<FakeTask> = {}): FakeTask {
+  const task: FakeTask = {
+    id: `task-${state.tasks.length + 1}`,
+    classId: 'class-9m2',
+    createdBy: `user-${testTeacher.email}`,
+    requestId: `request-${state.tasks.length + 1}`,
+    title: 'Linear equations homework',
+    instructions: null,
+    contentId: 'linear-equations-basics',
+    audience: 'class',
+    studentIds: [],
+    state: 'published',
+    dueAt: new Date(2026, 9, 30, 23, 59).toISOString(),
+    createdAt: new Date(2026, 9, 26).toISOString(),
+    publishedAt: new Date(2026, 9, 26).toISOString(),
+    ...overrides,
+  };
+  state.tasks.push(task);
+  return task;
+}
+
+/** Saves progress on a lesson as the server would: `solved` questions right, the first `wrong` of them after a mistake. */
+export function addFakeAttempt(
+  state: FakeState,
+  {
+    studentId = `user-${testStudent.email}`,
+    contentId = 'linear-equations-basics',
+    solved = 0,
+    wrong = 0,
+    at = new Date(2026, 9, 27),
+  }: { studentId?: string; contentId?: string; solved?: number; wrong?: number; at?: Date } = {},
+): FakeAttempt {
+  const lesson = publishedLessons.find((item) => item.id === contentId);
+  const questions = new Map<
+    string,
+    { tries: number; hintsUsed: number; firstTryCorrect: boolean; solved: boolean }
+  >();
+  lesson?.questions.slice(0, solved).forEach((question, i) => {
+    questions.set(question.id, {
+      tries: i < wrong ? 2 : 1,
+      hintsUsed: 0,
+      firstTryCorrect: i >= wrong,
+      solved: true,
+    });
+  });
+  const attempt: FakeAttempt = {
+    id: `attempt-${state.attempts.length + 1}`,
+    studentId,
+    contentId,
+    startedAt: at.toISOString(),
+    lastActivityAt: at.toISOString(),
+    completedAt: lesson && solved >= lesson.questions.length ? at.toISOString() : null,
+    questions,
+  };
+  state.attempts.push(attempt);
+  return attempt;
+}

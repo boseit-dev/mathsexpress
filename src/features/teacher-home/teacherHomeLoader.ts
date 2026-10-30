@@ -2,9 +2,11 @@ import { useLoaderData, type LoaderFunctionArgs } from 'react-router';
 import { requireAccount } from '@/app/auth/guards';
 import type { AppDependencies } from '@/data/repositories';
 import type { TeacherClass } from '@/domain/classes';
+import type { TeacherTask } from '@/domain/tasks';
 
 export interface TeacherHomeData {
   classes: TeacherClass[];
+  tasks: TeacherTask[];
   now: Date;
 }
 
@@ -12,8 +14,12 @@ export interface TeacherHomeData {
 export function createTeacherHomeLoader(dependencies: AppDependencies) {
   return async ({ request }: LoaderFunctionArgs): Promise<TeacherHomeData> => {
     await requireAccount(dependencies, request, 'teacher');
-    const classes = await dependencies.classes.listTeacherClasses({ signal: request.signal });
-    return { classes, now: dependencies.now() };
+    const options = { signal: request.signal };
+    const [classes, tasks] = await Promise.all([
+      dependencies.classes.listTeacherClasses(options),
+      dependencies.tasks.listTeacherTasks(undefined, options),
+    ]);
+    return { classes, tasks, now: dependencies.now() };
   };
 }
 

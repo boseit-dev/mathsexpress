@@ -5,12 +5,43 @@ import type { StudentHomeRepository } from '@/data/repositories';
 import { createSampleStudentHomeRepository } from '@/data/sample/sampleStudentHomeRepository';
 import { millisecondsUntilMidnight } from '@/lib/dates';
 import { findAccessibilityProblems } from '@/test/axe';
-import { createFakeState } from '@/test/fakeDependencies';
+import {
+  addFakeAttempt,
+  addFakeTask,
+  createFakeState,
+  type FakeState,
+} from '@/test/fakeDependencies';
 import { renderApp, TEST_NOW } from '@/test/renderApp';
 
-// renderApp uses the sample data with "now" fixed at Wednesday 28 October 2026, 3:30 pm.
-async function renderHome() {
-  const view = renderApp('/student');
+/**
+ * Three real tasks for the same lesson, judged by the attempts made after each was set:
+ * one overdue and not started, one in progress, one completed.
+ */
+function stateWithTasks(): FakeState {
+  const state = createFakeState();
+  addFakeAttempt(state, { solved: 5, at: new Date(2026, 9, 27, 10) });
+  addFakeAttempt(state, { solved: 2, at: new Date(2026, 9, 28, 10) });
+  addFakeTask(state, {
+    title: 'Algebra check-in',
+    publishedAt: new Date(2026, 9, 26).toISOString(),
+    dueAt: new Date(2026, 9, 27, 12).toISOString(),
+  });
+  addFakeTask(state, {
+    title: 'Equations practice',
+    publishedAt: new Date(2026, 9, 28, 9).toISOString(),
+    dueAt: new Date(2026, 9, 29, 23, 59).toISOString(),
+  });
+  addFakeTask(state, {
+    title: 'Surface area revision',
+    publishedAt: new Date(2026, 9, 28, 11).toISOString(),
+    dueAt: new Date(2026, 9, 28, 14).toISOString(),
+  });
+  return state;
+}
+
+// renderApp's "now" is fixed at Wednesday 28 October 2026, 3:30 pm.
+async function renderHome(state: FakeState = stateWithTasks()) {
+  const view = renderApp('/student', { state });
   await screen.findByRole('heading', { level: 1 });
   return view;
 }
@@ -31,49 +62,50 @@ describe('student home page', () => {
     });
   });
 
-  it('keeps Continue learning prominent and working', async () => {
+  it('keeps Continue learning prominent and taking the student to their task', async () => {
     const user = userEvent.setup();
     await renderHome();
     const banner = section('Good afternoon, Mia');
     expect(banner).toHaveTextContent('Pick up where you left off');
     expect(
-      within(banner).getByRole('progressbar', { name: 'Solving linear equations progress' }),
-    ).toHaveAttribute('aria-valuetext', '7 of 12 questions');
+      within(banner).getByRole('progressbar', { name: 'Equations practice progress' }),
+    ).toHaveAttribute('aria-valuetext', '2 of 5 questions');
 
     await user.click(within(banner).getByRole('link', { name: 'Continue learning' }));
 
-    expect(await screen.findByRole('heading', { level: 1, name: 'Learn' })).toBeVisible();
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' }),
+    ).toBeVisible();
   });
 
-  it('lists the most urgent tasks first, then the latest completed one', async () => {
+  it('lists the most urgent real tasks first, then the latest completed one', async () => {
     await renderHome();
     const tasks = section('Your assigned tasks');
     const cards = within(tasks).getAllByRole('article');
     expect(cards.map((card) => within(card).getByRole('heading').textContent)).toEqual([
       'Surface area revision',
-      'Solving linear equations',
-      'Pythagoras’ theorem quiz',
+      'Equations practice',
+      'Algebra check-in',
     ]);
     const [overdue, inProgress, completed] = cards as [HTMLElement, HTMLElement, HTMLElement];
-    expect(overdue).toHaveTextContent('Overdue · was due yesterday');
+    expect(overdue).toHaveTextContent('Overdue · was due today');
     expect(overdue).toHaveTextContent('Not started');
     expect(
       within(overdue).getByRole('link', { name: 'Start Surface area revision' }),
-    ).toBeVisible();
+    ).toHaveAttribute('href', '/student/learn/linear-equations-basics');
     expect(inProgress).toHaveTextContent('Due tomorrow');
     expect(inProgress).toHaveTextContent('In progress');
-    expect(inProgress).toHaveTextContent('Reward: +60 coins');
-    expect(
-      within(inProgress).getByRole('link', { name: 'Continue Solving linear equations' }),
-    ).toHaveAttribute('href', '/student/learn');
     expect(completed).toHaveTextContent('Completed 27 Oct');
-    expect(completed).toHaveTextContent('42 coins earned');
-    expect(
-      within(completed).getByRole('link', { name: 'Review Pythagoras’ theorem quiz' }),
-    ).toBeVisible();
-    expect(within(tasks).getByRole('link', { name: 'View all 5 tasks' })).toHaveAttribute(
-      'href',
-      '/student/class/tasks',
+    expect(within(completed).getByRole('link', { name: 'Review Algebra check-in' })).toBeVisible();
+    expect(within(tasks).queryByText('Sample data')).not.toBeInTheDocument();
+  });
+
+  it('says so when no tasks have been set yet', async () => {
+    await renderHome(createFakeState());
+    const tasks = section('Your assigned tasks');
+    expect(tasks).toHaveTextContent('Your teacher hasn’t set any tasks yet.');
+    expect(section('Good afternoon, Mia')).toHaveTextContent(
+      'You’re all caught up on your tasks. Nice work!',
     );
   });
 
@@ -126,15 +158,13 @@ describe('student home page', () => {
     }
   });
 
-  it('marks every panel that shows sample data', async () => {
+  it('marks every panel that shows sample data, and only those', async () => {
     await renderHome();
-    for (const name of ['Your assigned tasks', 'Your recommended practice', 'Your progress']) {
+    for (const name of ['Your recommended practice', 'Your progress']) {
       expect(section(name)).toHaveTextContent('Sample data');
     }
-    expect(section('Good afternoon, Mia')).toHaveTextContent('(sample task)');
-    expect(section('Good afternoon, Mia')).toHaveTextContent(
-      'You have 2 tasks to finish, and 1 is overdue. (sample tasks)',
-    );
+    expect(section('Your assigned tasks')).not.toHaveTextContent('Sample data');
+    expect(section('Good afternoon, Mia')).not.toHaveTextContent('sample');
   });
 
   it('shows the student’s real class and teacher-assigned year level', async () => {

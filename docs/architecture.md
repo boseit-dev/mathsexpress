@@ -56,13 +56,17 @@ URL ──▶ React Router (src/app/routes.tsx)
 | `/student/textbook`                    | Separate NSW textbook volumes and book contents       | Pilot built  |
 | `/student/textbook/:bookId`            | Individual MathsExpress book contents                 | Pilot built  |
 | `/student/textbook/:bookId/:chapterId` | Chapter reader and checked Year 9 exercises           | Pilot built  |
-| `/student/class/tasks`                 | All of the student's tasks                            | Planned page |
+| `/student/class/tasks`                 | The student's real tasks: to do and completed         | Built        |
 | `/student/more`                        | More                                                  | Planned page |
 | `/student/more/shop`                   | Coin shop                                             | Planned page |
-| `/teacher`                             | Teacher home                                          | Planned page |
+| `/teacher`                             | Teacher home: classes, coming up, to follow up        | Built        |
 | `/teacher/classes`                     | The teacher's classes; create a class                 | Built        |
-| `/teacher/classes/:classId`            | Students and year levels, class code, class settings  | Built        |
-| `/teacher/tasks`                       | Tasks                                                 | Planned page |
+| `/teacher/classes/:classId`            | Class workspace: overview, code and settings          | Built        |
+| `/teacher/classes/:classId/students`   | Students and year levels (search, sort, remove)       | Built        |
+| `/teacher/classes/:classId/tasks`      | The class's tasks                                     | Built        |
+| `/teacher/tasks`                       | All tasks, with search and filters                    | Built        |
+| `/teacher/tasks/new`                   | Set a lesson for a class or chosen students           | Built        |
+| `/teacher/tasks/:taskId`               | A task's results; publish, move due date, delete      | Built        |
 | `/teacher/reports`                     | Reports                                               | Planned page |
 | `/teacher/more`                        | More                                                  | Planned page |
 

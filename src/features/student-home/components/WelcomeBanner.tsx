@@ -6,9 +6,9 @@ import { useMascotController } from '@/components/mascot/useMascotController';
 import { ButtonLink } from '@/components/ui/ButtonLink';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { paths } from '@/config/paths';
-import { getAssignmentStatus, type Assignment } from '@/domain/assignment';
 import type { StudentClassMembership } from '@/domain/classes';
 import { formatYearLevel, type CurrentStudent } from '@/domain/student';
+import type { StudentTask } from '@/domain/tasks';
 import { getGreeting } from '@/lib/dates';
 import { formatCount } from '@/lib/format';
 import { toPercent } from '@/lib/math';
@@ -19,7 +19,7 @@ interface WelcomeBannerProps {
   primaryClass: StudentClassMembership | null;
   now: Date;
   taskCounts: { open: number; overdue: number };
-  continueAssignment: Assignment | null;
+  continueTask: StudentTask | null;
 }
 
 const GREETED_KEY = 'mathsexpress:mascot-greeted';
@@ -48,7 +48,7 @@ export function WelcomeBanner({
   primaryClass,
   now,
   taskCounts,
-  continueAssignment,
+  continueTask,
 }: WelcomeBannerProps) {
   const headingId = useId();
   const mascot = useMascotController('idle');
@@ -66,9 +66,7 @@ export function WelcomeBanner({
           <h1 id={headingId} className={styles.greeting}>
             {getGreeting(now)}, {student.firstName}
           </h1>
-          <p className={styles.summary}>
-            {describeTasks(taskCounts)} <span className={styles.sampleTag}>(sample tasks)</span>
-          </p>
+          <p className={styles.summary}>{describeTasks(taskCounts)}</p>
           {primaryClass ? (
             <p className={styles.classLabel}>
               {formatYearLevel(primaryClass.yearLevel)} · {primaryClass.className}
@@ -83,31 +81,30 @@ export function WelcomeBanner({
       </div>
       <div className={styles.nextUp}>
         <p className={styles.nextUpHeading}>Your next step</p>
-        {continueAssignment && (
+        {continueTask && (
           <div className={styles.preview}>
             <p className={styles.nextUpLabel}>
-              {getAssignmentStatus(continueAssignment) === 'in-progress'
-                ? 'Pick up where you left off'
-                : 'Up next'}{' '}
-              <span className={styles.sampleTag}>(sample task)</span>
+              {continueTask.progress === 'in_progress' ? 'Pick up where you left off' : 'Up next'}
             </p>
-            <p className={styles.nextUpTitle}>{continueAssignment.title}</p>
+            <p className={styles.nextUpTitle}>{continueTask.title}</p>
             <ProgressBar
-              value={continueAssignment.questionsCompleted}
-              max={continueAssignment.questionCount}
-              label={`${continueAssignment.title} progress`}
-              valueText={`${continueAssignment.questionsCompleted} of ${continueAssignment.questionCount} questions`}
+              value={continueTask.questionsSolved}
+              max={continueTask.questionCount}
+              label={`${continueTask.title} progress`}
+              valueText={`${continueTask.questionsSolved} of ${continueTask.questionCount} questions`}
               size="small"
             />
             <p className={styles.nextUpMeta}>
-              {continueAssignment.questionsCompleted} of {continueAssignment.questionCount}{' '}
-              questions ·{' '}
-              {toPercent(continueAssignment.questionsCompleted, continueAssignment.questionCount)}%
-              done
+              {continueTask.questionsSolved} of {continueTask.questionCount} questions ·{' '}
+              {toPercent(continueTask.questionsSolved, continueTask.questionCount)}% done
             </p>
           </div>
         )}
-        <ButtonLink to={paths.student.learn} size="large" className={styles.continueButton}>
+        <ButtonLink
+          to={continueTask ? paths.student.lesson(continueTask.contentId) : paths.student.learn}
+          size="large"
+          className={styles.continueButton}
+        >
           Continue learning <ArrowRight aria-hidden="true" />
         </ButtonLink>
       </div>

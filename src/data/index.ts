@@ -6,6 +6,10 @@ import { createSupabaseAccountRepository } from './supabase/supabaseAccountRepos
 import { createSupabaseAuthService } from './supabase/supabaseAuthService';
 import { createSupabaseClassRepository } from './supabase/supabaseClassRepository';
 import { createSupabaseShopRepository } from './supabase/supabaseShopRepository';
+import {
+  createSupabaseProgressRepository,
+  createSupabaseTaskRepository,
+} from './supabase/supabaseTaskRepository';
 
 interface DependencyOptions {
   /** Where the app is served, so sign-in providers can send people back to it. */
@@ -28,6 +32,8 @@ export function createAppDependencies(
     classes: createSupabaseClassRepository(client),
     studentHome: createSampleStudentHomeRepository(now),
     shop: createSupabaseShopRepository(client),
+    tasks: createSupabaseTaskRepository(client),
+    progress: createSupabaseProgressRepository(client),
     now,
   };
 }

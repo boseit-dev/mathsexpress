@@ -1,0 +1,135 @@
+.page {
+  display: grid;
+  gap: var(--space-6);
+  max-inline-size: 46rem;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--space-1);
+  min-block-size: var(--size-touch-target-min);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.back svg {
+  inline-size: var(--size-icon-sm);
+  block-size: var(--size-icon-sm);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-5);
+}
+
+.step {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+}
+
+.stepTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-lg);
+}
+
+.stepTitle span {
+  display: grid;
+  place-items: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  border-radius: var(--radius-full);
+  background: var(--color-brand-pale);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-sm);
+}
+
+.hint,
+.note {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.dueRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: var(--space-4);
+}
+
+.audience,
+.students {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.radio,
+.check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  column-gap: var(--space-3);
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.radio:has(input:checked),
+.check:has(input:checked) {
+  border-color: var(--color-brand-primary);
+  background: var(--color-brand-pale);
+}
+
+.radio input,
+.check input {
+  grid-row: span 2;
+  inline-size: 1.1rem;
+  block-size: 1.1rem;
+  accent-color: var(--color-brand-primary);
+}
+
+.radioHint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular, 400);
+}
+
+.studentsLegend {
+  margin-block-end: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.error {
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.visuallyHidden {
+  position: absolute;
+  overflow: hidden;
+  inline-size: 1px;
+  block-size: 1px;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

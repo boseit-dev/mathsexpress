@@ -16,6 +16,19 @@ Phase 3 first learning slice (in development).
 
 ### Added
 
+- Built real tasks. Teachers set a published lesson for a whole class or chosen students with a
+  due date and optional instructions, publish now or save a draft, move the due date, delete
+  with confirmation, and see each student's result. Tasks are listed across classes (search,
+  class and status filters) and in each class's new Tasks tab, and the teacher home shows what
+  is coming up and what needs following up.
+- Students see their real tasks on the home page and on a new Your tasks page, and can open a
+  lesson their teacher set even outside their year level.
+- Lesson progress is now saved to the student's account as they answer. The server marks every
+  answer against its own answer key, so completion and accuracy can't be faked, and practice
+  keeps working (with a clear message) if saving fails.
+- New database tables and functions with row-level security for the learning catalogue, lesson
+  attempts, tasks and task students, with database tests for every permission.
+
 - Replaced the teacher home placeholder with a real dashboard: a personal greeting, quick
   actions and the teacher's classes, all from real data, with a helpful first-class empty state.
 - Turned each class into a workspace with Overview and Students tabs. The Classes page and the
@@ -85,6 +98,8 @@ Phase 3 first learning slice (in development).
   complete lesson flow.
 
 ### Changed
+
+- The student home's task list and next step now come from real tasks instead of sample data.
 
 - The lesson-completion burst of shapes is replaced by the mascot's own celebration, so there
   is one celebration instead of two.

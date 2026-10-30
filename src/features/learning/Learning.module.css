@@ -560,3 +560,12 @@
 .textbookReturn:hover {
   background: var(--color-brand-pale);
 }
+
+.taskBanner {
+  justify-self: start;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  background: var(--color-brand-pale);
+  color: var(--color-text-brand);
+  font-size: var(--font-size-sm);
+}

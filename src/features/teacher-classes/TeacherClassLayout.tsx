@@ -1,4 +1,4 @@
-import { ArrowLeft, LayoutDashboard, UsersRound } from 'lucide-react';
+import { ArrowLeft, ClipboardList, LayoutDashboard, UsersRound } from 'lucide-react';
 import { Link, Outlet } from 'react-router';
 import { LatestFormScope } from '@/app/forms/LatestFormScope';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -24,6 +24,7 @@ export function TeacherClassLayout() {
       end: true,
     },
     { label: 'Students', to: paths.teacher.classStudents(teacherClass.id), icon: UsersRound },
+    { label: 'Tasks', to: paths.teacher.classTasks(teacherClass.id), icon: ClipboardList },
   ];
 
   return (

@@ -4,6 +4,15 @@ import type { Profile } from '@/domain/account';
 import type { ClassStudent, StudentClassMembership, TeacherClass } from '@/domain/classes';
 import { AppError } from '@/domain/errors';
 import { yearLevelFromNumber } from '@/domain/student';
+import type {
+  ContentKind,
+  LearningItem,
+  StudentTask,
+  TaskAudience,
+  TaskState,
+  TaskStudentResult,
+  TeacherTask,
+} from '@/domain/tasks';
 import type { Database } from './database.types';
 
 type Composite = Database['public']['CompositeTypes'];
@@ -53,5 +62,94 @@ export function toClassStudent(row: Composite['class_student']): ClassStudent {
     lastName: required(row.last_name, 'last_name'),
     yearLevel: yearLevelFromNumber(required(row.year_level, 'year_level')),
     joinedAt: required(row.joined_at, 'joined_at'),
+  };
+}
+
+function contentKind(value: string | null): ContentKind {
+  const kind = required(value, 'kind');
+  if (kind === 'lesson' || kind === 'practice' || kind === 'worksheet' || kind === 'test') {
+    return kind;
+  }
+  throw new AppError('unknown', { cause: new Error(`Unknown content kind ${kind}`) });
+}
+
+function taskState(value: string | null): TaskState {
+  const state = required(value, 'status');
+  if (state === 'draft' || state === 'published') return state;
+  throw new AppError('unknown', { cause: new Error(`Unknown task status ${state}`) });
+}
+
+function taskAudience(value: string | null): TaskAudience {
+  const audience = required(value, 'assign_to');
+  if (audience === 'class' || audience === 'students') return audience;
+  throw new AppError('unknown', { cause: new Error(`Unknown task audience ${audience}`) });
+}
+
+export function toLearningItem(row: Composite['learning_item']): LearningItem {
+  return {
+    id: required(row.id, 'id'),
+    kind: contentKind(row.kind),
+    title: required(row.title, 'title'),
+    strand: required(row.strand, 'strand'),
+    topic: required(row.topic, 'topic'),
+    yearLevel: yearLevelFromNumber(required(row.year_level, 'year_level')),
+    questionCount: required(row.question_count, 'question_count'),
+    estimatedMinutes: required(row.estimated_minutes, 'estimated_minutes'),
+  };
+}
+
+export function toTeacherTask(row: Composite['teacher_task']): TeacherTask {
+  return {
+    id: required(row.id, 'id'),
+    classId: required(row.class_id, 'class_id'),
+    className: required(row.class_name, 'class_name'),
+    title: required(row.title, 'title'),
+    instructions: row.instructions,
+    contentId: required(row.content_id, 'content_id'),
+    contentTitle: required(row.content_title, 'content_title'),
+    contentKind: contentKind(row.content_kind),
+    state: taskState(row.status),
+    audience: taskAudience(row.assign_to),
+    dueAt: required(row.due_at, 'due_at'),
+    createdAt: required(row.created_at, 'created_at'),
+    publishedAt: row.published_at,
+    assignedCount: required(row.assigned_count, 'assigned_count'),
+    completedCount: required(row.completed_count, 'completed_count'),
+    inProgressCount: required(row.in_progress_count, 'in_progress_count'),
+  };
+}
+
+export function toTaskStudentResult(row: Composite['task_student_result']): TaskStudentResult {
+  return {
+    studentId: required(row.student_id, 'student_id'),
+    firstName: required(row.first_name, 'first_name'),
+    lastName: required(row.last_name, 'last_name'),
+    progress: required(row.status, 'status'),
+    completedAt: row.completed_at,
+    lastActivityAt: row.last_activity_at,
+    questionsSolved: required(row.questions_solved, 'questions_solved'),
+    firstTryCorrect: required(row.first_try_correct, 'first_try_correct'),
+    questionCount: required(row.question_count, 'question_count'),
+  };
+}
+
+export function toStudentTask(row: Composite['student_task']): StudentTask {
+  return {
+    id: required(row.id, 'id'),
+    classId: required(row.class_id, 'class_id'),
+    className: required(row.class_name, 'class_name'),
+    title: required(row.title, 'title'),
+    instructions: row.instructions,
+    contentId: required(row.content_id, 'content_id'),
+    contentTitle: required(row.content_title, 'content_title'),
+    contentKind: contentKind(row.content_kind),
+    topic: required(row.topic, 'topic'),
+    questionCount: required(row.question_count, 'question_count'),
+    estimatedMinutes: required(row.estimated_minutes, 'estimated_minutes'),
+    dueAt: required(row.due_at, 'due_at'),
+    publishedAt: required(row.published_at, 'published_at'),
+    progress: required(row.status, 'status'),
+    completedAt: row.completed_at,
+    questionsSolved: required(row.questions_solved, 'questions_solved'),
   };
 }

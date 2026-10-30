@@ -23,6 +23,42 @@ export type Database = {
   };
   public: {
     Tables: {
+      attempt_questions: {
+        Row: {
+          attempt_id: string;
+          first_try_correct: boolean;
+          hints_used: number;
+          question_id: string;
+          solved_at: string | null;
+          tries: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          attempt_id: string;
+          first_try_correct: boolean;
+          hints_used?: number;
+          question_id: string;
+          solved_at?: string | null;
+          tries?: number;
+        };
+        Update: {
+          attempt_id?: string;
+          first_try_correct?: boolean;
+          hints_used?: number;
+          question_id?: string;
+          solved_at?: string | null;
+          tries?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'attempt_questions_attempt_id_fkey';
+            columns: ['attempt_id'];
+            isOneToOne: false;
+            referencedRelation: 'lesson_attempts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       class_join_codes: {
         Row: {
           class_id: string;
@@ -188,6 +224,116 @@ export type Database = {
           },
           {
             foreignKeyName: 'former_class_members_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      learning_content: {
+        Row: {
+          available: boolean;
+          estimated_minutes: number;
+          id: string;
+          kind: string;
+          question_count: number;
+          strand: string;
+          title: string;
+          topic: string;
+          year_level: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          available?: boolean;
+          estimated_minutes: number;
+          id: string;
+          kind: string;
+          question_count: number;
+          strand: string;
+          title: string;
+          topic: string;
+          year_level: number;
+        };
+        Update: {
+          available?: boolean;
+          estimated_minutes?: number;
+          id?: string;
+          kind?: string;
+          question_count?: number;
+          strand?: string;
+          title?: string;
+          topic?: string;
+          year_level?: number;
+        };
+        Relationships: [];
+      };
+      learning_questions: {
+        Row: {
+          answer: number;
+          content_id: string;
+          position: number;
+          question_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          answer: number;
+          content_id: string;
+          position: number;
+          question_id: string;
+        };
+        Update: {
+          answer?: number;
+          content_id?: string;
+          position?: number;
+          question_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'learning_questions_content_id_fkey';
+            columns: ['content_id'];
+            isOneToOne: false;
+            referencedRelation: 'learning_content';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      lesson_attempts: {
+        Row: {
+          completed_at: string | null;
+          content_id: string;
+          id: string;
+          last_activity_at: string;
+          started_at: string;
+          student_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          completed_at?: string | null;
+          content_id: string;
+          id?: string;
+          last_activity_at?: string;
+          started_at?: string;
+          student_id: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          content_id?: string;
+          id?: string;
+          last_activity_at?: string;
+          started_at?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'lesson_attempts_content_id_fkey';
+            columns: ['content_id'];
+            isOneToOne: false;
+            referencedRelation: 'learning_content';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'lesson_attempts_student_id_fkey';
             columns: ['student_id'];
             isOneToOne: false;
             referencedRelation: 'profiles';
@@ -402,6 +548,108 @@ export type Database = {
           },
         ];
       };
+      task_students: {
+        Row: {
+          student_id: string;
+          task_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          student_id: string;
+          task_id: string;
+        };
+        Update: {
+          student_id?: string;
+          task_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'task_students_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'task_students_task_id_fkey';
+            columns: ['task_id'];
+            isOneToOne: false;
+            referencedRelation: 'tasks';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      tasks: {
+        Row: {
+          assign_to: string;
+          class_id: string;
+          content_id: string;
+          created_at: string;
+          created_by: string | null;
+          due_at: string;
+          id: string;
+          instructions: string | null;
+          published_at: string | null;
+          request_id: string;
+          status: string;
+          title: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          assign_to: string;
+          class_id: string;
+          content_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          due_at: string;
+          id?: string;
+          instructions?: string | null;
+          published_at?: string | null;
+          request_id: string;
+          status?: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          assign_to?: string;
+          class_id?: string;
+          content_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          due_at?: string;
+          id?: string;
+          instructions?: string | null;
+          published_at?: string | null;
+          request_id?: string;
+          status?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'tasks_class_id_fkey';
+            columns: ['class_id'];
+            isOneToOne: false;
+            referencedRelation: 'classes';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tasks_content_id_fkey';
+            columns: ['content_id'];
+            isOneToOne: false;
+            referencedRelation: 'learning_content';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tasks_created_by_fkey';
+            columns: ['created_by'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       year_level_changes: {
         Row: {
           changed_at: string;
@@ -501,8 +749,38 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_task: {
+        Args: {
+          class_id: string;
+          content_id: string;
+          due_at: string;
+          instructions?: string;
+          publish?: boolean;
+          request_id: string;
+          student_ids?: string[];
+          title: string;
+        };
+        Returns: Database['public']['CompositeTypes']['teacher_task'];
+        SetofOptions: {
+          from: '*';
+          to: 'teacher_task';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       custom_access_token_hook: { Args: { event: Json }; Returns: Json };
+      delete_task: { Args: { task_id: string }; Returns: undefined };
       email_sign_in_age: { Args: Record<PropertyKey, never>; Returns: number };
+      get_task: {
+        Args: { task_id: string };
+        Returns: Database['public']['CompositeTypes']['teacher_task'];
+        SetofOptions: {
+          from: '*';
+          to: 'teacher_task';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       get_teacher_class: {
         Args: { class_id: string };
         Returns: Database['public']['CompositeTypes']['teacher_class'];
@@ -523,6 +801,16 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      learning_catalogue: {
+        Args: Record<PropertyKey, never>;
+        Returns: Database['public']['CompositeTypes']['learning_item'][];
+        SetofOptions: {
+          from: '*';
+          to: 'learning_item';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       leave_class: { Args: { class_id: string }; Returns: undefined };
       my_classes: {
         Args: Record<PropertyKey, never>;
@@ -534,7 +822,31 @@ export type Database = {
           isSetofReturn: true;
         };
       };
+      my_tasks: {
+        Args: Record<PropertyKey, never>;
+        Returns: Database['public']['CompositeTypes']['student_task'][];
+        SetofOptions: {
+          from: '*';
+          to: 'student_task';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       profile_session_is_active: { Args: Record<PropertyKey, never>; Returns: boolean };
+      publish_task: {
+        Args: { task_id: string };
+        Returns: Database['public']['CompositeTypes']['teacher_task'];
+        SetofOptions: {
+          from: '*';
+          to: 'teacher_task';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      record_answer: {
+        Args: { answer: string; attempt_id: string; hints_used?: number; question_id: string };
+        Returns: Json;
+      };
       regenerate_join_code: { Args: { class_id: string }; Returns: string };
       remove_student: { Args: { class_id: string; student_id: string }; Returns: undefined };
       set_student_year_level: {
@@ -547,16 +859,48 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      set_task_due_date: {
+        Args: { due_at: string; task_id: string };
+        Returns: Database['public']['CompositeTypes']['teacher_task'];
+        SetofOptions: {
+          from: '*';
+          to: 'teacher_task';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       shop_award_answer: { Args: { answer: string; question_id: string }; Returns: Json };
       shop_buy: { Args: { item_id: string }; Returns: Json };
       shop_equip: { Args: { category: string; item_id?: string }; Returns: Json };
       shop_state: { Args: Record<PropertyKey, never>; Returns: Json };
+      start_lesson_attempt: { Args: { content_id: string }; Returns: string };
+      task_chosen_students: { Args: { task_id: string }; Returns: string[] };
+      task_results: {
+        Args: { task_id: string };
+        Returns: Database['public']['CompositeTypes']['task_student_result'][];
+        SetofOptions: {
+          from: '*';
+          to: 'task_student_result';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
       teacher_classes: {
         Args: Record<PropertyKey, never>;
         Returns: Database['public']['CompositeTypes']['teacher_class'][];
         SetofOptions: {
           from: '*';
           to: 'teacher_class';
+          isOneToOne: false;
+          isSetofReturn: true;
+        };
+      };
+      teacher_tasks: {
+        Args: { class_id?: string };
+        Returns: Database['public']['CompositeTypes']['teacher_task'][];
+        SetofOptions: {
+          from: '*';
+          to: 'teacher_task';
           isOneToOne: false;
           isSetofReturn: true;
         };
@@ -598,6 +942,7 @@ export type Database = {
     Enums: {
       account_role: 'student' | 'teacher';
       class_teacher_role: 'owner' | 'co_teacher';
+      task_status: 'not_started' | 'in_progress' | 'completed';
     };
     CompositeTypes: {
       class_student: {
@@ -606,6 +951,16 @@ export type Database = {
         last_name: string | null;
         year_level: number | null;
         joined_at: string | null;
+      };
+      learning_item: {
+        id: string | null;
+        kind: string | null;
+        title: string | null;
+        strand: string | null;
+        topic: string | null;
+        year_level: number | null;
+        question_count: number | null;
+        estimated_minutes: number | null;
       };
       student_class: {
         class_id: string | null;
@@ -616,6 +971,35 @@ export type Database = {
         students_can_leave: boolean | null;
         joined_at: string | null;
       };
+      student_task: {
+        id: string | null;
+        class_id: string | null;
+        class_name: string | null;
+        title: string | null;
+        instructions: string | null;
+        content_id: string | null;
+        content_title: string | null;
+        content_kind: string | null;
+        topic: string | null;
+        question_count: number | null;
+        estimated_minutes: number | null;
+        due_at: string | null;
+        published_at: string | null;
+        status: Database['public']['Enums']['task_status'] | null;
+        completed_at: string | null;
+        questions_solved: number | null;
+      };
+      task_student_result: {
+        student_id: string | null;
+        first_name: string | null;
+        last_name: string | null;
+        status: Database['public']['Enums']['task_status'] | null;
+        completed_at: string | null;
+        last_activity_at: string | null;
+        questions_solved: number | null;
+        first_try_correct: number | null;
+        question_count: number | null;
+      };
       teacher_class: {
         id: string | null;
         name: string | null;
@@ -625,6 +1009,24 @@ export type Database = {
         students_can_leave: boolean | null;
         student_count: number | null;
         created_at: string | null;
+      };
+      teacher_task: {
+        id: string | null;
+        class_id: string | null;
+        class_name: string | null;
+        title: string | null;
+        instructions: string | null;
+        content_id: string | null;
+        content_title: string | null;
+        content_kind: string | null;
+        status: string | null;
+        assign_to: string | null;
+        due_at: string | null;
+        created_at: string | null;
+        published_at: string | null;
+        assigned_count: number | null;
+        completed_count: number | null;
+        in_progress_count: number | null;
       };
     };
   };
@@ -739,6 +1141,7 @@ export const Constants = {
     Enums: {
       account_role: ['student', 'teacher'],
       class_teacher_role: ['owner', 'co_teacher'],
+      task_status: ['not_started', 'in_progress', 'completed'],
     },
   },
 } as const;

@@ -1,0 +1,149 @@
+.wrap {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.caption {
+  position: absolute;
+  overflow: hidden;
+  inline-size: 1px;
+  block-size: 1px;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.table th {
+  padding: var(--space-2) var(--space-4);
+  border-block-end: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-align: start;
+}
+
+.table td {
+  padding: var(--space-3) var(--space-4);
+  vertical-align: middle;
+}
+
+.table tbody tr + tr td {
+  border-block-start: 1px solid var(--color-border);
+}
+
+.sortButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-block-size: var(--size-touch-target-min);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sortButton svg {
+  inline-size: var(--size-icon-xs);
+  block-size: var(--size-icon-xs);
+  opacity: 0.35;
+}
+
+.sorted {
+  color: var(--color-text-brand);
+}
+
+.sorted svg {
+  opacity: 1;
+}
+
+.sortButton:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.title {
+  display: block;
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.title:hover {
+  color: var(--color-text-brand);
+  text-decoration: underline;
+}
+
+.sub {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.due {
+  white-space: nowrap;
+}
+
+.overdue {
+  color: var(--color-danger, #b42318);
+  font-weight: var(--font-weight-semibold);
+}
+
+.done {
+  display: grid;
+  gap: var(--space-1);
+  min-inline-size: 7rem;
+}
+
+/* Narrow screens: each task becomes a small card with labelled values. */
+@media (max-width: 639px) {
+  .table thead {
+    position: absolute;
+    overflow: hidden;
+    inline-size: 1px;
+    block-size: 1px;
+    clip-path: inset(50%);
+  }
+
+  .table tr {
+    display: grid;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .table tbody tr + tr {
+    border-block-start: 1px solid var(--color-border);
+  }
+
+  .table td {
+    display: grid;
+    grid-template-columns: 6rem minmax(0, 1fr);
+    align-items: center;
+    padding: 0;
+  }
+
+  .table tbody tr + tr td {
+    border-block-start: 0;
+  }
+
+  .table td::before {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-xs);
+    content: attr(data-label);
+  }
+
+  .table td:first-child {
+    grid-template-columns: 1fr;
+  }
+
+  .table td:first-child::before {
+    content: none;
+  }
+}

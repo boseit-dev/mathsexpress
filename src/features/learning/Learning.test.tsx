@@ -1,10 +1,10 @@
 import { act, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
-import { createFakeDependencies } from '@/test/fakeDependencies';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { paths } from '@/config/paths';
-import { createFakeState } from '@/test/fakeDependencies';
+import { AppError } from '@/domain/errors';
+import { addFakeTask, createFakeDependencies, createFakeState } from '@/test/fakeDependencies';
 import { renderApp } from '@/test/renderApp';
 
 describe('Learn page', () => {
@@ -88,9 +88,9 @@ describe('guided lesson practice', () => {
     );
   });
 
-  it('finishes the full lesson and allows another attempt', async () => {
+  it('finishes the full lesson, saves it, and allows another attempt', async () => {
     const user = userEvent.setup();
-    renderApp(paths.student.lesson('linear-equations-basics'));
+    const { state } = renderApp(paths.student.lesson('linear-equations-basics'));
     await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' });
     for (const solution of ['5', '5', '-3', '5', '-4']) {
       const field = screen.getByRole('textbox', { name: 'Your answer' });
@@ -100,7 +100,12 @@ describe('guided lesson practice', () => {
     }
     const result = screen.getByText('Lesson completed!').parentElement;
     expect(result).not.toBeNull();
-    expect(screen.getByText(/not saved to your account yet/i)).toBeVisible();
+    expect(
+      await screen.findByText('Saved to your account. Your teacher can see this result.'),
+    ).toBeVisible();
+    // Saved on the "server": one finished attempt with every question solved.
+    expect(state.attempts).toHaveLength(1);
+    expect(state.attempts[0]?.completedAt).not.toBeNull();
     await user.click(screen.getByRole('button', { name: /practise again/i }));
     expect(screen.getByText('2x + 4 = 14')).toBeVisible();
   });
@@ -191,5 +196,37 @@ describe('guided lesson practice', () => {
     if (member) member.yearLevel = 8;
     renderApp(paths.student.lesson('linear-equations-basics'), { state });
     expect(await screen.findByRole('heading', { name: 'Lesson unavailable' })).toBeVisible();
+  });
+});
+
+describe('assigned lessons', () => {
+  it('opens a lesson set as a task even outside the student’s year level', async () => {
+    const state = createFakeState();
+    const member = state.classes[0]?.students[0];
+    if (member) member.yearLevel = 8;
+    addFakeTask(state, { title: 'Extension: equations' });
+    renderApp(paths.student.lesson('linear-equations-basics'), { state });
+    expect(
+      await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' }),
+    ).toBeVisible();
+    expect(screen.getByText(/Set by your teacher:/)).toHaveTextContent('Extension: equations');
+  });
+
+  it('keeps practising, and says so, when progress can’t be saved', async () => {
+    const user = userEvent.setup();
+    const state = createFakeState();
+    const failing = {
+      ...createFakeDependencies(state).progress,
+      startAttempt: () => Promise.reject(new AppError('network')),
+    };
+    renderApp(paths.student.lesson('linear-equations-basics'), {
+      state,
+      overrides: { progress: failing },
+    });
+    await screen.findByRole('heading', { level: 1, name: 'Solving linear equations' });
+    await user.type(screen.getByRole('textbox', { name: 'Your answer' }), '5');
+    await user.click(screen.getByRole('button', { name: /check answer/i }));
+    expect(screen.getByText(/Correct! Here's why/)).toBeVisible();
+    expect(await screen.findByText(/progress couldn’t be saved/)).toBeVisible();
   });
 });

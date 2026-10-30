@@ -10,6 +10,18 @@ import {
 import { TeacherClassesPage } from '@/features/teacher-classes/TeacherClassesPage';
 import { ClassOverviewPage } from '@/features/teacher-classes/ClassOverviewPage';
 import { ClassStudentsPage } from '@/features/teacher-classes/ClassStudentsPage';
+import { ClassTasksPage } from '@/features/teacher-classes/ClassTasksPage';
+import { NewTaskPage } from '@/features/teacher-tasks/NewTaskPage';
+import { TaskDetailPage } from '@/features/teacher-tasks/TaskDetailPage';
+import {
+  createClassTasksLoader,
+  createNewTaskAction,
+  createNewTaskLoader,
+  createTaskDetailAction,
+  createTaskDetailLoader,
+  createTeacherTasksLoader,
+} from '@/features/teacher-tasks/teacherTaskHandlers';
+import { TeacherTasksPage } from '@/features/teacher-tasks/TeacherTasksPage';
 import { TeacherClassLayout } from '@/features/teacher-classes/TeacherClassLayout';
 import { createTeacherHomeLoader } from '@/features/teacher-home/teacherHomeLoader';
 import { TeacherHomePage } from '@/features/teacher-home/TeacherHomePage';
@@ -54,14 +66,29 @@ export function createTeacherRoutes(dependencies: AppDependencies): RouteObject 
             children: [
               { index: true, action: classAction, element: <ClassOverviewPage /> },
               { path: 'students', action: classAction, element: <ClassStudentsPage /> },
+              {
+                path: 'tasks',
+                loader: createClassTasksLoader(dependencies),
+                element: <ClassTasksPage />,
+              },
             ],
           },
           {
             path: paths.teacher.tasks,
-            element: planned(
-              'Tasks',
-              'Build tasks from curriculum skills, assign them with due dates and track completion.',
-            ),
+            loader: createTeacherTasksLoader(dependencies),
+            element: <TeacherTasksPage />,
+          },
+          {
+            path: `${paths.teacher.tasks}/new`,
+            loader: createNewTaskLoader(dependencies),
+            action: createNewTaskAction(dependencies),
+            element: <NewTaskPage />,
+          },
+          {
+            path: `${paths.teacher.tasks}/:taskId`,
+            loader: createTaskDetailLoader(dependencies),
+            action: createTaskDetailAction(dependencies),
+            element: <TaskDetailPage />,
           },
           {
             path: paths.teacher.reports,

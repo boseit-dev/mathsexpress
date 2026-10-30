@@ -1,12 +1,12 @@
 import { ArrowUpRight, BookOpenText, GraduationCap, UsersRound } from 'lucide-react';
 import { Link } from 'react-router';
 import { paths } from '@/config/paths';
-import { countOpenAssignments, selectContinueAssignment } from '@/domain/assignment';
+import { countOpenTasks, selectContinueTask } from '@/domain/tasks';
 import { getPrimaryClass } from '@/domain/student';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useRefreshWhenStale } from '@/hooks/useRefreshWhenStale';
 import { useCurrentStudent } from '@/layouts/student/useCurrentStudent';
-import { AssignmentSection } from './components/AssignmentSection';
+import { TaskSection } from './components/TaskSection';
 import { RecommendedPractice } from './components/RecommendedPractice';
 import { StudentProgress } from './components/StudentProgress';
 import { WelcomeBanner } from './components/WelcomeBanner';
@@ -16,7 +16,7 @@ import styles from './StudentHomePage.module.css';
 /** The MathsExpress study journal: simple paths into learning and a calm progress overview. */
 export function StudentHomePage() {
   const student = useCurrentStudent();
-  const { home, now } = useStudentHomeData();
+  const { home, tasks, now } = useStudentHomeData();
   useDocumentTitle('Home');
   useRefreshWhenStale(now);
   const primaryClass = getPrimaryClass(student);
@@ -27,8 +27,8 @@ export function StudentHomePage() {
         student={student}
         primaryClass={primaryClass}
         now={now}
-        taskCounts={countOpenAssignments(home.assignments, now)}
-        continueAssignment={selectContinueAssignment(home.assignments)}
+        taskCounts={countOpenTasks(tasks, now)}
+        continueTask={selectContinueTask(tasks)}
       />
 
       <nav className={styles.paths} aria-label="Study shortcuts">
@@ -69,7 +69,7 @@ export function StudentHomePage() {
           <p className={styles.eyebrow}>01 / YOUR PLAN</p>
           <h2>What’s on your list</h2>
         </div>
-        <AssignmentSection assignments={home.assignments} now={now} />
+        <TaskSection tasks={tasks} now={now} />
       </section>
 
       <section className={styles.section} aria-label="Your learning snapshot">
