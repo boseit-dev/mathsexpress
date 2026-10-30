@@ -16,7 +16,7 @@ import type {
   StudentProgressSummary,
   TopicProgress,
 } from '@/domain/reports';
-import type { CosmeticCategory, ShopState } from '@/domain/shop';
+import type { CosmeticCategory, Look, ShopState } from '@/domain/shop';
 import type {
   AnswerResult,
   LearningItem,
@@ -103,7 +103,11 @@ export interface ShopRepository {
   getState(): Promise<ShopState>;
   buy(itemId: string): Promise<ShopState>;
   equip(category: CosmeticCategory, itemId: string | null): Promise<ShopState>;
+  /** Takes everything off, back to the default look. Owned items stay owned. */
+  resetLook(): Promise<ShopState>;
   awardAnswer(questionId: string, answer: string): Promise<ShopState>;
+  /** For a class's teacher: what each current student wears, by student id. */
+  classLooks(classId: string): Promise<Record<string, Look>>;
 }
 
 /** Tasks: teachers set and track them; students see the ones set for them. */

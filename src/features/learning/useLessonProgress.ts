@@ -12,6 +12,8 @@ export type SaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 export function useLessonProgress(progress: ProgressRepository, lessonId: string) {
   const [status, setStatus] = useState<SaveStatus>('idle');
   const [completed, setCompleted] = useState(false);
+  // Coins the server paid when this attempt was finished: null until then.
+  const [lessonCoins, setLessonCoins] = useState<number | null>(null);
   const attempt = useRef<Promise<string> | null>(null);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   // Bumped when the student practises again, so late replies from the old attempt are ignored.
@@ -46,6 +48,7 @@ export function useLessonProgress(progress: ProgressRepository, lessonId: string
           if (!mounted.current || round !== generation.current) return;
           setStatus('saved');
           if (result.completed) setCompleted(true);
+          if (result.completed && !result.alreadySolved) setLessonCoins(result.coinsAwarded);
         })
         .catch(() => {
           if (!mounted.current || round !== generation.current) return;
@@ -60,7 +63,8 @@ export function useLessonProgress(progress: ProgressRepository, lessonId: string
     attempt.current = null;
     setStatus('idle');
     setCompleted(false);
+    setLessonCoins(null);
   }, []);
 
-  return { save, restart, status, completed };
+  return { save, restart, status, completed, lessonCoins };
 }

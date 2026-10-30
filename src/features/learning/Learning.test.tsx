@@ -103,6 +103,8 @@ describe('guided lesson practice', () => {
     expect(
       await screen.findByText('Saved to your account. Your teacher can see this result.'),
     ).toBeVisible();
+    // Every answer right first time: 25 coins for finishing plus 5 for each first-try answer.
+    expect(await screen.findByText(/\+50 coins for finishing the lesson!/)).toBeVisible();
     // Saved on the "server": one finished attempt with every question solved.
     expect(state.attempts).toHaveLength(1);
     expect(state.attempts[0]?.completedAt).not.toBeNull();

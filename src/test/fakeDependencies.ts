@@ -11,7 +11,7 @@ import {
 } from '@/domain/classes';
 import { AppError } from '@/domain/errors';
 import { checkNumericalAnswer, publishedLessons } from '@/domain/learning';
-import { makeFreshShopState, type ShopState } from '@/domain/shop';
+import { COIN_RULES, avatarParts, makeFreshShopState, type ShopState } from '@/domain/shop';
 import { getFullName, getShortName } from '@/domain/people';
 import type { YearLevel } from '@/domain/student';
 import type {
@@ -180,6 +180,33 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
     if (profile.role !== role)
       throw new AppError(role === 'teacher' ? 'teachers_only' : 'students_only');
     return profile;
+  }
+
+  /** A student's wallet, created with the welcome coins on first use, as the server does. */
+  function walletOf(studentId: string): ShopState {
+    let wallet = state.shopWallets.get(studentId);
+    if (!wallet) {
+      wallet = makeFreshShopState();
+      state.shopWallets.set(studentId, wallet);
+    }
+    return wallet;
+  }
+
+  /** Coins for finishing a lesson, within the daily limit (every fake answer is on one day). */
+  function awardLesson(studentId: string, firstTryCorrect: number): number {
+    const wallet = walletOf(studentId);
+    const rewarded = wallet.transactions.filter((entry) => entry.reason === 'lesson_complete');
+    if (rewarded.length >= COIN_RULES.rewardedLessonsPerDay) return 0;
+    const amount = COIN_RULES.lessonComplete + COIN_RULES.lessonFirstTryBonus * firstTryCorrect;
+    wallet.balance += amount;
+    wallet.transactions.unshift({
+      id: wallet.transactions.length + 1,
+      itemId: null,
+      delta: amount,
+      reason: 'lesson_complete',
+      createdAt: TEST_NOW.toISOString(),
+    });
+    return amount;
   }
 
   function ownClass(classId: string): FakeClass {
@@ -551,12 +578,7 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
       async getState() {
         await Promise.resolve();
         const student = requireRole('student');
-        if (!state.shopWallets.has(student.id)) {
-          state.shopWallets.set(student.id, makeFreshShopState());
-        }
-        const wallet = state.shopWallets.get(student.id);
-        if (!wallet) throw new AppError('unknown');
-        return structuredClone(wallet);
+        return structuredClone(walletOf(student.id));
       },
       async buy(itemId) {
         const student = requireRole('student');
@@ -588,8 +610,18 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
           )
         )
           throw new AppError('shop_not_owned');
-        if (category === 'theme') snapshot.equippedTheme = itemId;
-        else snapshot.equippedFrame = itemId;
+        snapshot.equipped = itemId
+          ? { ...snapshot.equipped, [category]: itemId }
+          : Object.fromEntries(
+              Object.entries(snapshot.equipped).filter(([key]) => key !== category),
+            );
+        state.shopWallets.set(student.id, snapshot);
+        return structuredClone(snapshot);
+      },
+      async resetLook() {
+        const student = requireRole('student');
+        const snapshot = await this.getState();
+        snapshot.equipped = {};
         state.shopWallets.set(student.id, snapshot);
         return structuredClone(snapshot);
       },
@@ -630,6 +662,16 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
         });
         state.shopWallets.set(student.id, snapshot);
         return structuredClone(snapshot);
+      },
+      async classLooks(classId) {
+        await Promise.resolve();
+        const target = ownClass(classId);
+        return Object.fromEntries(
+          target.students.map(({ studentId }) => [
+            studentId,
+            avatarParts(state.shopWallets.get(studentId)?.equipped ?? {}),
+          ]),
+        );
       },
     },
     tasks: {
@@ -819,7 +861,12 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
         const correct = checkNumericalAnswer(answer, question.solution);
         const saved = attempt.questions.get(questionId);
         if (saved?.solved) {
-          return { correct, alreadySolved: true, completed: attempt.completedAt !== null };
+          return {
+            correct,
+            alreadySolved: true,
+            completed: attempt.completedAt !== null,
+            coinsAwarded: 0,
+          };
         }
         attempt.questions.set(questionId, {
           tries: (saved?.tries ?? 0) + 1,
@@ -829,8 +876,13 @@ export function createFakeDependencies(state: FakeState): AppDependencies {
         });
         attempt.lastActivityAt = TEST_NOW.toISOString();
         const completed = lesson.questions.every((item) => attempt.questions.get(item.id)?.solved);
-        if (completed) attempt.completedAt ??= TEST_NOW.toISOString();
-        return { correct, alreadySolved: false, completed };
+        let coinsAwarded = 0;
+        if (completed && attempt.completedAt === null) {
+          attempt.completedAt = TEST_NOW.toISOString();
+          const firstTry = [...attempt.questions.values()].filter((item) => item.firstTryCorrect);
+          coinsAwarded = awardLesson(student.id, firstTry.length);
+        }
+        return { correct, alreadySolved: false, completed, coinsAwarded };
       },
     },
     reports: {

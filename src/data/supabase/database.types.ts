@@ -377,6 +377,8 @@ export type Database = {
           id: string;
           name: string;
           price: number;
+          rarity: string;
+          sort_order: number;
         };
         ComputedFields: never;
         Insert: {
@@ -386,6 +388,8 @@ export type Database = {
           id: string;
           name: string;
           price: number;
+          rarity?: string;
+          sort_order?: number;
         };
         Update: {
           active?: boolean;
@@ -394,8 +398,47 @@ export type Database = {
           id?: string;
           name?: string;
           price?: number;
+          rarity?: string;
+          sort_order?: number;
         };
         Relationships: [];
+      };
+      shop_equipped: {
+        Row: {
+          category: string;
+          item_id: string;
+          student_id: string;
+          updated_at: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          category: string;
+          item_id: string;
+          student_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          category?: string;
+          item_id?: string;
+          student_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'shop_equipped_item_id_fkey';
+            columns: ['item_id'];
+            isOneToOne: false;
+            referencedRelation: 'shop_catalogue';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'shop_equipped_student_id_fkey';
+            columns: ['student_id'];
+            isOneToOne: false;
+            referencedRelation: 'shop_wallets';
+            referencedColumns: ['student_id'];
+          },
+        ];
       };
       shop_owned: {
         Row: {
@@ -505,40 +548,20 @@ export type Database = {
         Row: {
           balance: number;
           created_at: string;
-          equipped_frame: string | null;
-          equipped_theme: string | null;
           student_id: string;
         };
         ComputedFields: never;
         Insert: {
           balance?: number;
           created_at?: string;
-          equipped_frame?: string | null;
-          equipped_theme?: string | null;
           student_id: string;
         };
         Update: {
           balance?: number;
           created_at?: string;
-          equipped_frame?: string | null;
-          equipped_theme?: string | null;
           student_id?: string;
         };
         Relationships: [
-          {
-            foreignKeyName: 'shop_wallets_equipped_frame_fkey';
-            columns: ['equipped_frame'];
-            isOneToOne: false;
-            referencedRelation: 'shop_catalogue';
-            referencedColumns: ['id'];
-          },
-          {
-            foreignKeyName: 'shop_wallets_equipped_theme_fkey';
-            columns: ['equipped_theme'];
-            isOneToOne: false;
-            referencedRelation: 'shop_catalogue';
-            referencedColumns: ['id'];
-          },
           {
             foreignKeyName: 'shop_wallets_student_id_fkey';
             columns: ['student_id'];
@@ -708,6 +731,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      class_member_looks: { Args: { class_id: string }; Returns: Json };
       class_progress: {
         Args: { class_id: string; since?: string; until?: string };
         Returns: Database['public']['CompositeTypes']['student_progress_summary'][];
@@ -902,6 +926,7 @@ export type Database = {
       shop_award_answer: { Args: { answer: string; question_id: string }; Returns: Json };
       shop_buy: { Args: { item_id: string }; Returns: Json };
       shop_equip: { Args: { category: string; item_id?: string }; Returns: Json };
+      shop_reset_look: { Args: Record<PropertyKey, never>; Returns: Json };
       shop_state: { Args: Record<PropertyKey, never>; Returns: Json };
       start_lesson_attempt: { Args: { content_id: string }; Returns: string };
       student_results: {

@@ -50,14 +50,14 @@ describe('server-owned shop wallets and purchases', () => {
       item_id: 'frame-starlight',
     });
     expect(equipped.error).toBeNull();
-    expect(equipped.data).toMatchObject({ equippedFrame: 'frame-starlight' });
+    expect(equipped.data).toMatchObject({ equipped: { frame: 'frame-starlight' } });
     const wrong = await student.client.rpc('shop_equip', {
       category: 'theme',
       item_id: 'frame-starlight',
     });
     expect(wrong.error?.message).toBe('shop_not_owned');
     const reset = await student.client.rpc('shop_equip', { category: 'frame' });
-    expect(reset.data).toMatchObject({ equippedFrame: null });
+    expect(reset.data).toMatchObject({ equipped: {} });
   });
 
   it('never allows teachers or visitors to use the student shop API', async () => {

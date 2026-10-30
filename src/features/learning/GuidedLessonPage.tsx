@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/Button';
 import { paths } from '@/config/paths';
 import { checkNumericalAnswer, publishedLessons } from '@/domain/learning';
 import type { ProgressRepository, ShopRepository } from '@/data/repositories';
+import { COIN_RULES } from '@/domain/shop';
 import { describeTaskDue } from '@/domain/tasks';
 import { errorCodeOf } from '@/domain/errors';
 import { useRefreshWhenVisible } from '@/hooks/useRefreshWhenVisible';
@@ -59,6 +60,20 @@ export function GuidedLessonPage({
   const rewardRequest = useRef(0);
   const lastPublishedReward = useRef(0);
   const mounted = useRef(false);
+  const { lessonCoins } = saving;
+
+  // Lesson coins are paid on the server with the last answer; refresh the header's wallet.
+  useEffect(() => {
+    if (!lessonCoins) return;
+    shop
+      .getState()
+      .then((state) => {
+        window.dispatchEvent(new CustomEvent('mathsexpress:shop-updated', { detail: state }));
+      })
+      .catch(() => {
+        // The coins are saved either way; the balance updates on the next page load.
+      });
+  }, [lessonCoins, shop]);
 
   useEffect(() => {
     mounted.current = true;
@@ -215,6 +230,13 @@ export function GuidedLessonPage({
                   ? 'All correct on the first try.'
                   : `${mistakes} incorrect ${mistakes === 1 ? 'attempt' : 'attempts'} along the way. Your practice helped you improve.`}
               </p>
+              {saving.lessonCoins !== null && (
+                <p className={styles.coinReward}>
+                  {saving.lessonCoins > 0
+                    ? `+${saving.lessonCoins} coins for finishing the lesson! Spend them in the Shop.`
+                    : `You’ve earned lesson coins ${COIN_RULES.rewardedLessonsPerDay} times today. Come back tomorrow to earn more.`}
+                </p>
+              )}
               <div className={styles.note} role="status">
                 {saving.completed
                   ? 'Saved to your account. Your teacher can see this result.'

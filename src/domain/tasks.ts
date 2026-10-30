@@ -99,6 +99,8 @@ export interface AnswerResult {
   alreadySolved: boolean;
   /** Every question in the attempt is now solved. */
   completed: boolean;
+  /** Coins earned by this answer finishing the lesson; 0 otherwise or after the daily limit. */
+  coinsAwarded: number;
 }
 
 export const TASK_TITLE_MAX = 80;

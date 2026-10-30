@@ -569,3 +569,12 @@
   color: var(--color-text-brand);
   font-size: var(--font-size-sm);
 }
+
+/* Coins paid for finishing the lesson. */
+.coinReward {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-coin-surface);
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
+}

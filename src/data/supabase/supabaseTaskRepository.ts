@@ -101,7 +101,15 @@ function decodeAnswer(value: unknown): AnswerResult {
   ) {
     throw new AppError('unknown');
   }
-  return { correct: raw.correct, alreadySolved: raw.alreadySolved, completed: raw.completed };
+  return {
+    correct: raw.correct,
+    alreadySolved: raw.alreadySolved,
+    completed: raw.completed,
+    coinsAwarded:
+      Number.isSafeInteger(raw.coinsAwarded) && (raw.coinsAwarded as number) > 0
+        ? (raw.coinsAwarded as number)
+        : 0,
+  };
 }
 
 /** Saved lesson progress; the server marks every answer. */
