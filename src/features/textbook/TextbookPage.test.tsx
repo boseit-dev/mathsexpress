@@ -148,7 +148,9 @@ describe('student textbook library', () => {
     await user.click(screen.getByRole('tab', { name: 'Revision' }));
     expect(screen.getByText(/An equation is balanced when its two sides/)).toBeVisible();
     await user.click(screen.getByRole('tab', { name: 'My activity' }));
-    expect(screen.getByText(/Textbook question answers currently stay in this browser session/)).toBeVisible();
+    expect(
+      screen.getByText(/Textbook question answers currently stay in this browser session/),
+    ).toBeVisible();
 
     await user.click(screen.getByRole('button', { name: 'Hide textbook contents' }));
     expect(
