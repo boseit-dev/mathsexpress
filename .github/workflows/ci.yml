@@ -40,6 +40,11 @@ jobs:
           node scripts/check-secrets.ts --all
           node scripts/check-secrets.ts --commits origin/main..HEAD
 
+      - name: Print deterministic formatter diff for textbook files
+        run: |
+          npx prettier --write src/features/textbook/catalogue.ts src/features/textbook/LinearEquationsChapter.tsx src/features/textbook/TextbookReader.tsx src/features/textbook/TextbookReader.module.css
+          git diff -- src/features/textbook/catalogue.ts src/features/textbook/LinearEquationsChapter.tsx src/features/textbook/TextbookReader.tsx src/features/textbook/TextbookReader.module.css
+
       - name: Run all checks
         run: npm run check
 
