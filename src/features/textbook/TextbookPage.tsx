@@ -5,7 +5,7 @@ import { paths } from '@/config/paths';
 import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useCurrentStudent } from '@/layouts/student/useCurrentStudent';
 import { findTextbook, findTextbookChapter, textbookBooks, type TextbookBook } from './catalogue';
-import { LinearEquationsChapter } from './LinearEquationsChapter';
+import { TextbookReader } from './TextbookReader';
 import styles from './TextbookPage.module.css';
 
 function BookCover({ book }: { book: TextbookBook }) {
@@ -244,74 +244,9 @@ function BookDetail({ book }: { book: TextbookBook }) {
 }
 
 function ChapterView({ book, chapterId }: { book: TextbookBook; chapterId: string }) {
-  const student = useCurrentStudent();
   const chapter = findTextbookChapter(book, chapterId);
   if (!chapter) return <MissingBook />;
-  const index = book.chapters.findIndex((item) => item.id === chapterId);
-  const previous = book.chapters[index - 1];
-  const next = book.chapters[index + 1];
-  const canPractiseYearNine = student.classes.some((membership) => membership.yearLevel === 9);
-  return (
-    <div className={styles.page}>
-      <Link className={styles.backLink} to={paths.student.textbookBook(book.id)}>
-        <ChevronLeft aria-hidden="true" /> {book.course} contents
-      </Link>
-      <div className={styles.chapterIntro}>
-        <p className={styles.kicker}>
-          {book.course.toUpperCase()} · {book.stage.toUpperCase()}
-        </p>
-        <h1>{chapter.title}</h1>
-        <p>{book.syllabus}</p>
-      </div>
-      {chapter.id === 'solving-linear-equations' && book.id === 'year-9' ? (
-        <LinearEquationsChapter />
-      ) : chapter.id === 'getting-started' ? (
-        <section className={styles.lessonBlock}>
-          <h2>How to use this book</h2>
-          <p>
-            Choose a chapter from the contents page. Read the explanation, follow the worked
-            example, then try the questions yourself. Open a hint when you need help.
-          </p>
-          <p>
-            Our books use the NSW syllabus as their reference, but chapter sequencing is chosen by
-            MathsExpress and requires academic review before publication.
-          </p>
-          <a href={book.syllabusUrl} target="_blank" rel="noopener noreferrer">
-            Check the official syllabus
-          </a>
-        </section>
-      ) : (
-        <section className={styles.lessonBlock}>
-          <BookOpenCheck aria-hidden="true" className={styles.placeholderIcon} />
-          <h2>Chapter in preparation</h2>
-          <p>
-            This chapter is listed in the contents, but its explanations and exercises have not yet
-            been reviewed or published. We will not display unverified maths content.
-          </p>
-          <Link to={paths.student.textbookBook(book.id)}>Return to the contents</Link>
-        </section>
-      )}
-      {book.id === 'year-9' && chapter.id === 'solving-linear-equations' && canPractiseYearNine && (
-        <Link className={styles.practiceLink} to={paths.student.lesson('linear-equations-basics')}>
-          Practise this topic in Learn <ChevronRight aria-hidden="true" />
-        </Link>
-      )}
-      <nav className={styles.chapterNavigation} aria-label="Move between chapters">
-        {previous ? (
-          <Link to={paths.student.textbookChapter(book.id, previous.id)}>
-            <ChevronLeft aria-hidden="true" /> Previous: {previous.title}
-          </Link>
-        ) : (
-          <span />
-        )}
-        {next && (
-          <Link to={paths.student.textbookChapter(book.id, next.id)}>
-            Next: {next.title} <ChevronRight aria-hidden="true" />
-          </Link>
-        )}
-      </nav>
-    </div>
-  );
+  return <TextbookReader key={book.id + '/' + chapter.id} book={book} chapter={chapter} />;
 }
 
 function MissingBook() {

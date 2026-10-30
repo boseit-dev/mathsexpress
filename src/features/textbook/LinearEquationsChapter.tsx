@@ -4,7 +4,7 @@ import { linearEquationExercises, isEquationAnswerCorrect } from './pilotEquatio
 import styles from './TextbookPage.module.css';
 
 /** A full original pilot chapter. The book does not claim to save answers to an account. */
-export function LinearEquationsChapter() {
+export function LinearEquationsChapter({ view = 'all' }: { view?: 'all' | 'questions' }) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [results, setResults] = useState<Record<string, boolean | undefined>>({});
   const [hints, setHints] = useState<readonly string[]>([]);
@@ -12,7 +12,7 @@ export function LinearEquationsChapter() {
 
   return (
     <div className={styles.chapterBody}>
-      <section className={styles.lessonBlock} aria-labelledby="concept-heading">
+      {view === 'all' && <section className={styles.lessonBlock} aria-labelledby="concept-heading">
         <h2 id="concept-heading">1. Understanding equations</h2>
         <p>
           An equation says two expressions have the same value. To find an unknown number, keep both
@@ -27,7 +27,7 @@ export function LinearEquationsChapter() {
             <li>Check: 3 × 5 + 5 = 20, so the answer is correct.</li>
           </ol>
         </div>
-      </section>
+      </section>}
 
       <section className={styles.lessonBlock} aria-labelledby="exercise-heading">
         <div className={styles.exerciseHeading}>
