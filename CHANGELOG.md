@@ -6,6 +6,13 @@ All notable changes to MathsExpress 2.0 are recorded here. The format follows
 
 ## [2.0.0-alpha.3] - Unreleased
 
+### Student and teacher usability improvements
+
+- Replaced the student and teacher More placeholders with useful shortcuts to working features. Added a local focus timer with 5-, 15- and 25-minute choices.
+- Added lesson search, textbook topic search, and Continue Reading links on the student home and textbook library. The most recent chapter is saved only on the student's device.
+- Made class assignments and learning easier to reach with direct Class shortcuts.
+- Added regression tests for the new tools and reading history. These changes do not add unverified learning material or alter the production database.
+
 ### Textbook reader and syllabus structure
 
 - Replace generic textbook chapter placeholders with stage-aware NSW syllabus focus-area outlines across 25 books, including Stage 5 Core/Paths and the distinct 2024 senior courses.

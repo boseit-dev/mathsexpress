@@ -19,6 +19,16 @@ describe('Learn page', () => {
     );
   });
 
+  it('searches available lessons and recovers from no results', async () => {
+    const user = userEvent.setup();
+    renderApp(paths.student.learn);
+    await screen.findByRole('heading', { level: 1, name: 'Learn' });
+    await user.type(screen.getByRole('searchbox', { name: 'Find a lesson' }), 'geometry');
+    expect(screen.getByRole('heading', { name: 'No lessons found' })).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Show all lessons' }));
+    expect(screen.getByRole('link', { name: 'Start lesson' })).toBeVisible();
+  });
+
   it('links an assigned Year 9 student to the original textbook chapter', async () => {
     renderApp(paths.student.learn);
     await screen.findByRole('heading', { level: 1, name: 'Learn' });

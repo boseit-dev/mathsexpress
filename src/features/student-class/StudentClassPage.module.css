@@ -33,3 +33,26 @@
     align-items: start;
   }
 }
+
+.quickNav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.quickNav a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+.quickNav svg {
+  inline-size: var(--size-icon-md);
+  block-size: var(--size-icon-md);
+}

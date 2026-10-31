@@ -1,5 +1,7 @@
 import { ArrowUpRight, BookOpenText, GraduationCap, UsersRound } from 'lucide-react';
 import { StudentAvatar } from '@/components/cosmetics/StudentAvatar';
+import { findTextbook, findTextbookChapter } from '@/features/textbook/catalogue';
+import { getLastReadChapter } from '@/features/textbook/readingHistory';
 import { Link } from 'react-router';
 import { paths } from '@/config/paths';
 import { countOpenTasks, selectContinueTask } from '@/domain/tasks';
@@ -23,6 +25,9 @@ export function StudentHomePage() {
   useRefreshWhenStale(now);
   const primaryClass = getPrimaryClass(student);
   const look = useStudentLook();
+  const recent = getLastReadChapter(student.id);
+  const recentBook = findTextbook(recent?.bookId);
+  const recentChapter = recentBook && findTextbookChapter(recentBook, recent?.chapterId);
 
   return (
     <div className={styles.page}>
@@ -33,6 +38,22 @@ export function StudentHomePage() {
         taskCounts={countOpenTasks(tasks, now)}
         continueTask={selectContinueTask(tasks)}
       />
+
+      {recentBook && recentChapter?.status === 'ready' && (
+        <Link
+          className={styles.resumeReading}
+          to={paths.student.textbookChapter(recentBook.id, recentChapter.id)}
+        >
+          <BookOpenText aria-hidden="true" />
+          <span>
+            <strong>Pick up your textbook</strong>
+            <span>
+              {recentBook.course} · {recentChapter.title}
+            </span>
+          </span>
+          <ArrowUpRight aria-hidden="true" />
+        </Link>
+      )}
 
       <nav className={styles.paths} aria-label="Study shortcuts">
         <Link to={paths.student.learn} className={styles.path}>

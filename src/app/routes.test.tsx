@@ -201,15 +201,15 @@ describe('teacher layout', () => {
     expect(within(nav).getByRole('link', { name: 'Home' })).toHaveAttribute('aria-current', 'page');
   });
 
-  it('offers "Back to home" on planned sections but not on the home page itself', async () => {
+  it('opens the teacher tools hub and can return to home', async () => {
     const { router } = renderApp('/teacher/more', { signedInAs: 'teacher' });
-    expect(await screen.findByRole('link', { name: 'Back to home' })).toHaveAttribute(
+    expect(await screen.findByRole('heading', { level: 1, name: 'More' })).toBeVisible();
+    expect(screen.getByRole('link', { name: /Manage classes/ })).toHaveAttribute(
       'href',
-      '/teacher',
+      '/teacher/classes',
     );
     await router.navigate('/teacher');
     expect(await screen.findByRole('heading', { level: 1, name: /Priya/ })).toBeVisible();
-    expect(screen.queryByRole('link', { name: 'Back to home' })).not.toBeInTheDocument();
   });
 
   it('has no detectable accessibility problems', async () => {

@@ -17,13 +17,9 @@ import { ShopLayout } from '@/features/shop/ShopLayout';
 import { createStudentHomeLoader } from '@/features/student-home/studentHomeLoader';
 import { StudentLayout } from '@/layouts/student/StudentLayout';
 import { createStudentLayoutLoader } from '@/layouts/student/studentLayoutLoader';
+import { StudentMorePage } from '@/features/more/StudentMorePage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { PlannedSectionPage } from './pages/PlannedSectionPage';
 import { RouteErrorPage } from './pages/RouteErrorPage';
-
-function planned(title: string, summary: string) {
-  return <PlannedSectionPage title={title} summary={summary} homePath={paths.student.home} />;
-}
 
 const PAGES_SHOWING_CLASSES: readonly string[] = [paths.student.home, paths.student.class];
 
@@ -83,7 +79,7 @@ export function createStudentRoutes(dependencies: AppDependencies): RouteObject 
           },
           {
             path: paths.student.more,
-            element: planned('More', 'Your profile, achievements, settings and help.'),
+            element: <StudentMorePage />,
           },
           { path: '*', element: <NotFoundPage homePath={paths.student.home} /> },
         ],

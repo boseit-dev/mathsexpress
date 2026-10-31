@@ -6,6 +6,7 @@ import { useDocumentTitle } from '@/hooks/useDocumentTitle';
 import { useCurrentStudent } from '@/layouts/student/useCurrentStudent';
 import { findTextbook, findTextbookChapter, textbookBooks, type TextbookBook } from './catalogue';
 import { TextbookReader } from './TextbookReader';
+import { getLastReadChapter } from './readingHistory';
 import styles from './TextbookPage.module.css';
 
 function BookCover({ book }: { book: TextbookBook }) {
@@ -38,10 +39,14 @@ function LibraryView() {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<LibraryFilter>('all');
   const ownYears = new Set(student.classes.map((membership) => membership.yearLevel));
+  const recent = getLastReadChapter(student.id);
+  const recentBook = findTextbook(recent?.bookId);
+  const recentChapter = recentBook && findTextbookChapter(recentBook, recent?.chapterId);
+  const query = search.toLowerCase().trim();
   const matching = textbookBooks.filter((book) => {
-    const queryMatches = `${book.course} ${book.stage}`
-      .toLowerCase()
-      .includes(search.toLowerCase().trim());
+    const queryMatches =
+      `${book.course} ${book.stage}`.toLowerCase().includes(query) ||
+      book.chapters.some((chapter) => chapter.title.toLowerCase().includes(query));
     const filterMatches =
       filter === 'all' ||
       (filter === 'my-year' && ownYears.has(book.year)) ||
@@ -81,6 +86,20 @@ function LibraryView() {
         </div>
         <BookOpen className={styles.libraryIcon} aria-hidden="true" />
       </header>
+      {recentBook && recentChapter?.status === 'ready' && (
+        <Link
+          className={styles.continueReading}
+          to={paths.student.textbookChapter(recentBook.id, recentChapter.id)}
+        >
+          <span>
+            <strong>Continue reading</strong>
+            <span>
+              {recentBook.course} · {recentChapter.title}
+            </span>
+          </span>
+          <ChevronRight aria-hidden="true" />
+        </Link>
+      )}
       <label className={styles.searchLabel} htmlFor="book-search">
         <Search aria-hidden="true" /> Find a textbook
       </label>
@@ -88,7 +107,7 @@ function LibraryView() {
         id="book-search"
         className={styles.searchInput}
         type="search"
-        placeholder="Search year or course"
+        placeholder="Search year, course or topic"
         value={search}
         onChange={(event) => {
           setSearch(event.target.value);
