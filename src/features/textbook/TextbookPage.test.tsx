@@ -119,12 +119,13 @@ describe('student textbook library', () => {
     expect(screen.getByText('Correct! x = 15 − 7 = 8')).toBeVisible();
   });
 
-  it('does not claim that unpublished chapters are finished', async () => {
+  it('opens a teaching chapter for an additional focus area', async () => {
     renderApp('/student/textbook/year-4/focus-5');
     expect(
       await screen.findByRole('heading', { level: 1, name: 'Geometric measure' }),
     ).toBeVisible();
-    expect(screen.getByRole('heading', { name: 'Lesson in preparation' })).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'One worked example, explained' })).toBeVisible();
+    expect(screen.getByText(/starter lesson for Geometric measure/)).toBeVisible();
   });
 
   it('teaches with an original guided notebook before independent questions', async () => {
@@ -177,6 +178,20 @@ describe('student textbook library', () => {
       expect(screen.getByRole('heading', { name: 'Try one with support' })).toBeVisible();
       expect(screen.getByRole('heading', { name: 'Try it independently' })).toBeVisible();
       unmount();
+    }
+  });
+
+
+  it('opens senior course and Stage 5 Paths teaching with worked examples', async () => {
+    for (const url of [
+      '/student/textbook/year-9/path-9',
+      '/student/textbook/year-12-standard-2/focus-10',
+      '/student/textbook/year-12-extension-2/focus-3',
+    ]) {
+      const view = renderApp(url);
+      expect(await screen.findByRole('heading', { name: 'One worked example, explained' })).toBeVisible();
+      expect(screen.getByRole('heading', { name: 'Try one with support' })).toBeVisible();
+      view.unmount();
     }
   });
 

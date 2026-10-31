@@ -4,6 +4,8 @@
  * Life Skills examples are optional contexts, not prescribed yearly content.
  */
 import { isEquationAnswerCorrect } from './pilotEquations';
+import { supplementaryNotebookLessons } from './supplementaryNotebookLessons';
+import { seniorNotebookLessons } from './seniorNotebookLessons';
 
 export interface NotebookQuestion {
   prompt: string;
@@ -55,7 +57,7 @@ function lesson(
     recap,
   };
 }
-export const notebookLessons: readonly NotebookLesson[] = [
+const starterNotebookLessons: readonly NotebookLesson[] = [
   lesson(
     'kindergarten',
     'focus-1',
@@ -659,6 +661,12 @@ export const notebookLessons: readonly NotebookLesson[] = [
     ],
     ['Read prices carefully.', 'Add before paying.', 'Check how much money is left.'],
   ),
+];
+
+export const notebookLessons: readonly NotebookLesson[] = [
+  ...starterNotebookLessons,
+  ...supplementaryNotebookLessons,
+  ...seniorNotebookLessons,
 ];
 
 export function findNotebookLesson(bookId: string, chapterId: string): NotebookLesson | undefined {

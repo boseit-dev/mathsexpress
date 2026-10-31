@@ -73,3 +73,19 @@ Create original MathsExpress wording, examples, images, exercises and cover artw
 Textbook publishers can inspire general features (contents, exercises, worked examples),
 but Cambridge and other protected pages, illustrations and questions must not be copied.
 Use the official public NSW syllabuses as the curriculum reference, with attribution.
+
+## Additional authored introductions — 31 October 2026
+
+An extra original lesson bank now introduces every *listed catalogue focus-area heading*
+across the 25 books, not just each book's first heading. This includes K–6 stage-level
+topics, Stage 4/5 Core, Stage 5 Paths and distinct Standard, Advanced, Extension and
+Life Skills 11–12 focus areas. Some K–10 and Life Skills content is purposefully shared
+across neighbouring books because outcomes are defined at the stage or individual
+learning-plan level rather than by a fixed year.
+
+**Critical distinction:** The presence of a teaching introduction does **not** mean the
+whole focus area, all NSW outcomes, every content point or full required depth is finished.
+Every new topic is a starting example with one worked solution, a guided answer and
+two practice questions. Further concepts, richer diagrams, multi-step worked problems,
+extension questions, student progress saving and expert review remain outstanding.
+See the official course links in each textbook for NESA's complete requirements.

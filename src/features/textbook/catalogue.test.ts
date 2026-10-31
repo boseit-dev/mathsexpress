@@ -48,13 +48,16 @@ describe('NSW textbook catalogue', () => {
       expect(book.chapters.length).toBeGreaterThan(3);
       expect(
         book.chapters.filter((c) => c.id !== 'getting-started' && c.status === 'ready').length,
-      ).toBe(book.id === 'year-9' ? 2 : 1);
+      ).toBe(book.chapters.length - 1);
     }
   });
 
   it('provides a distinct concept-first starter lesson in all 25 books', () => {
-    expect(notebookLessons).toHaveLength(25);
+    expect(notebookLessons.length).toBeGreaterThan(200);
     expect(new Set(notebookLessons.map((lesson) => lesson.bookId)).size).toBe(25);
+    expect(
+      new Set(notebookLessons.map((lesson) => lesson.bookId + '/' + lesson.chapterId)).size,
+    ).toBe(notebookLessons.length);
     for (const lesson of notebookLessons) {
       const book = findTextbook(lesson.bookId);
       expect(book).toBeDefined();
@@ -68,6 +71,20 @@ describe('NSW textbook catalogue', () => {
       for (const answer of [lesson.guided, ...lesson.practice]) {
         expect(checkNotebookAnswer(String(answer.answer), answer.answer)).toBe(true);
         expect(checkNotebookAnswer(String(answer.answer + 1), answer.answer)).toBe(false);
+      }
+    }
+  });
+
+  it('does not give duplicated courses, bogus outcomes or incomplete answers', () => {
+    for (const lesson of notebookLessons) {
+      expect(lesson.concept.length).toBeGreaterThan(35);
+      expect(lesson.principle.length).toBeGreaterThan(35);
+      expect(lesson.steps.length).toBeGreaterThanOrEqual(3);
+      expect(lesson.guided.hint).not.toBe(lesson.guided.explanation);
+      for (const question of [lesson.guided, ...lesson.practice]) {
+        expect(Number.isFinite(question.answer)).toBe(true);
+        expect(checkNotebookAnswer(String(question.answer), question.answer)).toBe(true);
+        expect(checkNotebookAnswer(String(question.answer + 1), question.answer)).toBe(false);
       }
     }
   });
