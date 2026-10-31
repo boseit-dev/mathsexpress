@@ -42,8 +42,8 @@ jobs:
 
       - name: Print textbook formatter adjustments
         run: |
-          npx prettier --write src/features/textbook/TextbookPage.tsx src/features/textbook/TextbookPage.test.tsx
-          git diff -- src/features/textbook/TextbookPage.tsx src/features/textbook/TextbookPage.test.tsx
+          npx prettier --write docs/textbook-coverage.md src/features/textbook/seniorNotebookLessons.ts src/features/textbook/supplementaryNotebookLessons.ts
+          git diff -- docs/textbook-coverage.md src/features/textbook/seniorNotebookLessons.ts src/features/textbook/supplementaryNotebookLessons.ts
 
       - name: Run all checks
         run: npm run check
