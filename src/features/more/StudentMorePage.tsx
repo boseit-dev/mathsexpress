@@ -77,10 +77,14 @@ function FocusTimer() {
 
   useEffect(() => {
     if (deadline === null) return;
-    const refresh = () => setSecondsLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+    const refresh = () => {
+      setSecondsLeft(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+    };
     refresh();
     const timerId = window.setInterval(refresh, 500);
-    return () => window.clearInterval(timerId);
+    return () => {
+      window.clearInterval(timerId);
+    };
   }, [deadline]);
 
   const running = deadline !== null && secondsLeft > 0;
@@ -122,7 +126,9 @@ function FocusTimer() {
             key={minutes}
             type="button"
             aria-pressed={duration === minutes * 60}
-            onClick={() => reset(minutes * 60)}
+            onClick={() => {
+              reset(minutes * 60);
+            }}
           >
             {minutes} min
           </button>
@@ -137,13 +143,21 @@ function FocusTimer() {
           <button
             type="button"
             className={styles.primaryButton}
-            onClick={() => setDeadline(Date.now() + secondsLeft * 1000)}
+            onClick={() => {
+                setDeadline(Date.now() + secondsLeft * 1000);
+              }}
             disabled={finished}
           >
             {secondsLeft === duration ? 'Start focus' : 'Resume'}
           </button>
         )}
-        <button type="button" className={styles.secondaryButton} onClick={() => reset()}>
+        <button
+          type="button"
+          className={styles.secondaryButton}
+          onClick={() => {
+            reset();
+          }}
+        >
           Reset
         </button>
       </div>

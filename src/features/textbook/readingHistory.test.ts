@@ -2,7 +2,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { getLastReadChapter, saveLastReadChapter } from './readingHistory';
 
 describe('device-local textbook reading history', () => {
-  beforeEach(() => window.localStorage.clear());
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
 
   it('remembers the latest chapter for the right student only', () => {
     expect(getLastReadChapter('reader-a')).toBeNull();

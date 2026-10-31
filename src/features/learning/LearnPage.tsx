@@ -92,10 +92,15 @@ export function LearnPage() {
                   type="search"
                   placeholder="Search topics or strands"
                   value={search}
-                  onChange={(event) => setSearch(event.target.value)}
+                  onChange={(event) => {
+                    setSearch(event.target.value);
+                  }}
                 />
                 {search && (
-                  <button type="button" onClick={() => setSearch('')}>
+                  <button type="button" onClick={() => {
+                      setSearch('');
+                    }}
+                  >
                     Clear search
                   </button>
                 )}
@@ -114,7 +119,13 @@ export function LearnPage() {
               <div className={styles.empty} role="status">
                 <h3>No lessons found</h3>
                 <p>Try a different word or clear your search.</p>
-                <button type="button" className={styles.primaryLink} onClick={() => setSearch('')}>
+                <button
+                  type="button"
+                  className={styles.primaryLink}
+                  onClick={() => {
+                    setSearch('');
+                  }}
+                >
                   Show all lessons
                 </button>
               </div>
