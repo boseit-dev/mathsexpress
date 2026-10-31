@@ -32,10 +32,11 @@ describe('student textbook library', () => {
     await screen.findByRole('heading', { level: 1, name: 'Textbook' });
     await user.click(screen.getByRole('button', { name: 'Ready to learn' }));
     expect(screen.getByText('Showing 25 of 25 books')).toBeVisible();
-    expect(screen.getByRole('link', { name: /Year 9 Mathematics/ })).toHaveAttribute(
-      'href',
-      '/student/textbook/year-9',
-    );
+    expect(
+      screen.getAllByRole('link', { name: /Year 9 Mathematics/ }).some((link) =>
+        link.getAttribute('href') === '/student/textbook/year-9',
+      ),
+    ).toBe(true);
     const search = screen.getByRole('searchbox', { name: 'Find a textbook' });
     await user.type(search, 'standard 2');
     expect(screen.getByText('Showing 1 of 25 books')).toBeVisible();

@@ -69,6 +69,13 @@ export function TextbookReader({ book, chapter }: Props) {
         )}
       </header>
 
+      {starterLesson && (
+        <p className={styles.starterNote}>
+          This is a starter lesson for {chapter.title}. More concepts and NSW syllabus outcomes
+          within this focus area are still in preparation.
+        </p>
+      )}
+
       {hasTeaching && (
         <nav className={styles.journey} aria-label="Jump to chapter section">
           <a href="#concept">01 · Discover</a>

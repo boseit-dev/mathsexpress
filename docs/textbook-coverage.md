@@ -18,35 +18,26 @@ been written, mapped, audited or approved.
   — Year 11 new syllabuses from Term 1 2026, Year 12 from Term 4 2026, and the first
   HSC examination using the new syllabuses in 2027.
 
-## What this pilot builds
+## What is now authored (31 October 2026)
 
-- Separate, addressable MathsExpress book covers for K through Year 10 and Years 7–10
-  Life Skills; separate Year 11 Standard, Advanced, Extension 1 and Life Skills books;
-  separate Year 12 Standard 1, Standard 2, Advanced, Extension 1, Extension 2 and Life Skills books.
-- Every book has its own contents and an original getting-started page. Book and chapter
-  navigation is real and tested. Catalogue search is based on title and stage.
-- K–6 books now list the relevant stage-level syllabus focus areas, including Parts A and B
-  where applicable. Years 7–10 outline Core content groups; Years 9–10 additionally display
-  Stage 5 Paths. NESA does **not** prescribe a fixed year sequence: Paths may also be taught
-  during Stage 4 if appropriate. These are focus-area indexes, not outcome-by-outcome maps.
-- Stage 6 books list distinct official Standard, Advanced, Extension 1, Extension 2 and
-  Life Skills focus areas; the new 2024 Year 12 syllabuses start from Term 4 2026.
-- Standard 11 and Standard 1/2 Year 12 have their distinct focus-area titles from NESA.
-  Content is not yet published for those titles.
-- An original Study Notebook instead of a tabbed, persistent-sidebar interface. A continuous
-  five-part narrative teaches the concept, the method, a guided first step, independent practice
-  and a final recap. Other topics are available in a collapsed chapter list.
-- One authored pilot: Year 9 solving linear equations. Its interactive balance model explains
-  equality; three worked examples show two-step, negative and bracket equations; a common
-  mistake panel explains what goes wrong; a guided first-step check supports learners before
-  the six existing numerical practice questions. Hints and retry feedback remain available.
-  Exercise answers stay on the page and are not saved to the student's account.
-- The library can filter by assigned year and by books with published maths chapters.
-  It reports actual availability: only the Year 9 equations pilot has maths lessons at
-  this stage. The introduction guide is not counted as a complete maths chapter.
-- Readers can move between adjacent chapters and (if teacher-assigned Year 9) navigate
-  between the textbook pilot and the published guided Learn lesson. All answers remain
-  session-only, with no account progress saving.
+- The 25 existing textbook covers remain separate: K–10 Mathematics, Years 7–10
+  Life Skills, and the distinct Year 11 and 12 Standard, Advanced, Extension and Life Skills courses.
+- A typed, original lesson catalogue includes **25 starter lessons**, one in each
+  book's first syllabus focus area. The existing detailed Year 9 linear equations
+  lesson remains available separately: **26 authored lessons in total**.
+- Each starter lesson teaches a concept, offers a concrete visual or number pattern,
+  explains a worked example line by line, guides one checkpoint, provides two independent
+  questions with hints and detailed feedback, and ends with three revision points.
+- Starter lessons are **not** equivalent to finished focus areas or complete syllabus
+  coverage. A clear explanation appears on each such lesson. The rest of the
+  focus-area outlines remain labelled In preparation.
+- NESA sets the K–10 syllabus by stage, not a prescribed chapter order for each
+  calendar year. Year-specific examples are original editorial choices. Years 7–10
+  Core and Stage 5 Paths remain separate; Years 11–12 have different syllabus courses.
+- Life Skills starter lessons are optional examples only. Teachers select suitable
+  outcomes and content for individual students.
+- Answers in textbook practice are session-only. Saved student scores and teacher
+  reports use the separate Learn lesson system, not these new static examples.
 
 ## Outstanding before describing any book as syllabus-complete
 
@@ -67,7 +58,8 @@ been written, mapped, audited or approved.
 The 25 books now list official stage-level and Stage 6 course focus-area headings instead of
 three generic placeholders. Each topic is independently addressable and searchable in the
 book contents. Only the Year 9 equations pilot is flagged as authored.
-The pilot now uses a concept-first Study Notebook, interactive exploration and explanations.
+The existing Year 9 pilot uses an interactive Study Notebook. All 25 other books now have
+an original concept-first starter lesson using the same five-section teaching structure.
 
 **Not yet achieved:** a full official outcome/content-point mapping for every stage,
 hundreds of original reviewed explanations, example banks, questions, diagrams, or

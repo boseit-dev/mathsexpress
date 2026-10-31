@@ -177,8 +177,8 @@ function LibraryView() {
         ) : null,
       )}
       <p className={styles.libraryNote}>
-        Book catalogues are available now. Only the chapters marked “Ready” are published.
-        Unfinished chapters do not contain generated or unverified answers.
+        Each book now has at least one original starter lesson. These are not complete
+        syllabus focus areas. Remaining topics are still in preparation and must be reviewed.
       </p>
     </div>
   );
@@ -204,7 +204,7 @@ function BookDetail({ book }: { book: TextbookBook }) {
           <p>
             {published.length === 0
               ? 'This book has an outline and a getting-started guide. Its maths lessons are still in preparation.'
-              : `${published.length} maths ${published.length === 1 ? 'chapter is' : 'chapters are'} ready. Other chapters are still in preparation.`}
+              : `${published.length} original starter ${published.length === 1 ? 'chapter is' : 'chapters are'} available. These do not complete the full focus areas; further lessons are in preparation.`}
           </p>
           {published[0] && (
             <Link
