@@ -457,7 +457,7 @@ export const supplementaryNotebookLessons: readonly NotebookLesson[] = [
     'A probability ranges from 0 (impossible) to 1 (certain).',
     'What is the probability of rolling an even number on a fair six-sided die?',
     ['The die has six equally likely outcomes.', 'Three outcomes are even: 2, 4, 6.', 'Probability is 3/6 = 1/2 = 0.5.'],
-    ['Probability of rolling a 6 on a fair die? Enter a decimal.', 1 / 6, 'One of six equally likely results.', 'Probability = 1/6, approximately 0.1667.'],
+    ['Probability of rolling an odd number on a fair die? Enter a decimal.', 0.5, 'Three of six results are odd.', '3/6 = 0.5.'],
     [
       ['Probability of heads on a fair coin? Enter a decimal.', 0.5, 'One favourable outcome of two.', '1/2 = 0.5.'],
       ['Probability of rolling less than 4 on a fair die?', 0.5, 'The values 1, 2, 3 are favourable.', '3/6 = 0.5.'],
@@ -508,7 +508,7 @@ export const supplementaryNotebookLessons: readonly NotebookLesson[] = [
     ['Identify the side opposite θ: 3.', 'Identify the hypotenuse: 5.', 'Calculate 3 ÷ 5 = 0.6.'],
     ['Opposite 4, hypotenuse 5. What is sin θ?', 0.8, 'Divide opposite by hypotenuse.', '4/5 = 0.8.'],
     [
-      ['Opposite 5, hypotenuse 13. Find sin θ (decimal to 6 places).', 5 / 13, 'Divide 5 by 13.', '5/13 is approximately 0.384615.'],
+      ['Opposite 3, hypotenuse 5. Find sin θ.', 0.6, 'Divide opposite by hypotenuse.', '3/5 = 0.6.'],
       ['Opposite 6, hypotenuse 10. Find sin θ.', 0.6, '6 ÷ 10.', '0.6.'],
     ],
     ['Identify the reference angle.', 'Label the opposite and hypotenuse sides.', 'Ratios have no units.']),
