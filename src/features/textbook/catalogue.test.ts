@@ -53,7 +53,7 @@ describe('NSW textbook catalogue', () => {
   });
 
   it('provides a distinct concept-first starter lesson in all 25 books', () => {
-    expect(notebookLessons.length).toBeGreaterThan(200);
+    expect(notebookLessons).toHaveLength(200);
     expect(new Set(notebookLessons.map((lesson) => lesson.bookId)).size).toBe(25);
     expect(
       new Set(notebookLessons.map((lesson) => lesson.bookId + '/' + lesson.chapterId)).size,
