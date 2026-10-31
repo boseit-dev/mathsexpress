@@ -319,3 +319,108 @@
   text-align: center;
   overflow-wrap: anywhere;
 }
+
+/* Reveal the teaching process without animating the full page. */
+.stepCount {
+  color: var(--color-text-brand);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.revealActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.revealButton,
+.textButton {
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.revealButton {
+  border: 0;
+  color: var(--color-text-inverse);
+  background: var(--color-brand-primary);
+}
+
+.textButton {
+  color: var(--color-text-brand);
+  background: var(--color-surface);
+  border: 1px solid var(--color-brand-soft);
+}
+
+.revealButton:focus-visible,
+.textButton:focus-visible {
+  outline: 3px solid var(--color-brand-secondary);
+  outline-offset: 2px;
+}
+
+.exampleComplete {
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-semibold);
+}
+
+.extraHelp {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
+
+.extraHelp summary {
+  color: var(--color-text-brand);
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+}
+
+.extraHelp p {
+  margin-block-start: var(--space-3);
+}
+
+.reflection {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.reflection fieldset {
+  display: grid;
+  gap: var(--space-3);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  background: var(--color-surface);
+}
+
+.reflection legend {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-brand);
+  font-weight: var(--font-weight-semibold);
+  padding-inline: var(--space-2);
+}
+
+.reflection label {
+  display: flex;
+  align-items: start;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.reflection input[type='radio'] {
+  flex: 0 0 auto;
+  margin-block-start: var(--space-1);
+  accent-color: var(--color-brand-primary);
+}
+
+.confidenceFeedback {
+  color: var(--color-text-brand);
+  background: var(--color-surface);
+  border-inline-start: var(--space-2) solid var(--color-brand-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
