@@ -19,7 +19,7 @@ interface Props {
 export function TextbookReader({ book, chapter }: Props) {
   const student = useCurrentStudent();
   useEffect(() => {
-    if (chapter.status === 'ready') {
+    if (chapter.status === 'ready' && chapter.id !== 'getting-started') {
       saveLastReadChapter(student.id, { bookId: book.id, chapterId: chapter.id });
     }
   }, [book.id, chapter.id, chapter.status, student.id]);

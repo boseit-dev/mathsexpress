@@ -146,3 +146,28 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_V2_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_V2_ACCOUNT_ID }}
         run: npx wrangler deploy --config wrangler.jsonc
+
+  format_preview:
+    name: Format preview for development branch (temporary)
+    if: github.event_name == 'pull_request' && github.head_ref == 'feature/learning-hub-20261031'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Show exact Prettier output for changed files
+        shell: bash
+        run: |
+          npx prettier --write src/app/routes.test.tsx src/app/studentRoutes.tsx src/app/teacherRoutes.tsx src/features/more/StudentMorePage.tsx src/features/more/TeacherMorePage.tsx src/features/more/MorePages.module.css src/features/more/MorePages.test.tsx src/features/learning/LearnPage.tsx src/features/learning/Learning.module.css src/features/student-class/StudentClassPage.tsx src/features/student-class/StudentClassPage.module.css src/features/textbook/readingHistory.ts src/features/textbook/TextbookReader.tsx src/features/textbook/TextbookPage.tsx src/features/textbook/TextbookPage.module.css src/features/student-home/StudentHomePage.tsx src/features/student-home/StudentHomePage.module.css src/features/textbook/readingHistory.test.ts src/features/learning/Learning.test.tsx CHANGELOG.md
+          for file in src/app/routes.test.tsx src/app/studentRoutes.tsx src/app/teacherRoutes.tsx src/features/more/StudentMorePage.tsx src/features/more/TeacherMorePage.tsx src/features/more/MorePages.module.css src/features/more/MorePages.test.tsx src/features/learning/LearnPage.tsx src/features/learning/Learning.module.css src/features/student-class/StudentClassPage.tsx src/features/student-class/StudentClassPage.module.css src/features/textbook/readingHistory.ts src/features/textbook/TextbookReader.tsx src/features/textbook/TextbookPage.tsx src/features/textbook/TextbookPage.module.css src/features/student-home/StudentHomePage.tsx src/features/student-home/StudentHomePage.module.css src/features/textbook/readingHistory.test.ts src/features/learning/Learning.test.tsx CHANGELOG.md; do
+            printf 'MX_FORMAT_START:%s\n' "$file"
+            base64 -w 0 "$file"
+            printf '\nMX_FORMAT_END\n'
+          done
