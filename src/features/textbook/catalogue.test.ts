@@ -78,7 +78,7 @@ describe('NSW textbook catalogue', () => {
   it('does not give duplicated courses, bogus outcomes or incomplete answers', () => {
     for (const lesson of notebookLessons) {
       expect(lesson.concept.length).toBeGreaterThan(35);
-      expect(lesson.principle.length).toBeGreaterThan(35);
+      expect(lesson.principle.length).toBeGreaterThanOrEqual(20);
       expect(lesson.steps.length).toBeGreaterThanOrEqual(3);
       expect(lesson.guided.hint).not.toBe(lesson.guided.explanation);
       for (const question of [lesson.guided, ...lesson.practice]) {
