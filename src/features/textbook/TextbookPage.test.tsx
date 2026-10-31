@@ -159,13 +159,15 @@ describe('student textbook library', () => {
     expect(screen.getByRole('link', { name: 'Probability' })).toBeVisible();
   });
 
-
   it('teaches real concepts across primary, secondary and senior books', async () => {
     const cases = [
       { url: '/student/textbook/kindergarten/focus-1', heading: 'Count small groups' },
       { url: '/student/textbook/year-6/focus-1', heading: 'Compare tenths and hundredths' },
       { url: '/student/textbook/year-10/core-1', heading: 'Explore compound growth' },
-      { url: '/student/textbook/year-12-extension-2/focus-1', heading: 'Disprove claims with counterexamples' },
+      {
+        url: '/student/textbook/year-12-extension-2/focus-1',
+        heading: 'Disprove claims with counterexamples',
+      },
     ];
     for (const item of cases) {
       const { unmount } = renderApp(item.url);

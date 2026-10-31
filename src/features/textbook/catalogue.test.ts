@@ -52,14 +52,15 @@ describe('NSW textbook catalogue', () => {
     }
   });
 
-
   it('provides a distinct concept-first starter lesson in all 25 books', () => {
     expect(notebookLessons).toHaveLength(25);
     expect(new Set(notebookLessons.map((lesson) => lesson.bookId)).size).toBe(25);
     for (const lesson of notebookLessons) {
       const book = findTextbook(lesson.bookId);
       expect(book).toBeDefined();
-      expect(book?.chapters.find((chapter) => chapter.id === lesson.chapterId)?.status).toBe('ready');
+      expect(book?.chapters.find((chapter) => chapter.id === lesson.chapterId)?.status).toBe(
+        'ready',
+      );
       expect(findNotebookLesson(lesson.bookId, lesson.chapterId)).toBe(lesson);
       expect(lesson.steps.length).toBeGreaterThanOrEqual(3);
       expect(lesson.practice.length).toBeGreaterThanOrEqual(2);

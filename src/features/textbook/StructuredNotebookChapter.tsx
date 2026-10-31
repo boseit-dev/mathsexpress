@@ -69,7 +69,9 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
                 setGuidedChecked(undefined);
               }}
             />
-            <button type="submit" disabled={!guidedAnswer.trim()}>Check this step</button>
+            <button type="submit" disabled={!guidedAnswer.trim()}>
+              Check this step
+            </button>
           </div>
           <details>
             <summary>Need a clue?</summary>
@@ -77,7 +79,9 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
           </details>
           {guidedChecked !== undefined && (
             <p role="status" className={guidedChecked ? styles.guidedSuccess : styles.guidedRetry}>
-              {guidedChecked ? 'That is correct! ' + lesson.guided.explanation : 'Not yet. ' + lesson.guided.hint}
+              {guidedChecked
+                ? 'That is correct! ' + lesson.guided.explanation
+                : 'Not yet. ' + lesson.guided.hint}
             </p>
           )}
         </form>
@@ -90,7 +94,9 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
             <h2 id="starter-practice">Try it independently</h2>
             <p>There is no timer. Check your answers and use a hint if you get stuck.</p>
           </div>
-          <p className={base.score}>{correct} / {lesson.practice.length} correct</p>
+          <p className={base.score}>
+            {correct} / {lesson.practice.length} correct
+          </p>
         </div>
         <div className={base.exerciseList}>
           {lesson.practice.map((exercise, index) => {
@@ -114,12 +120,12 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
                   <strong>{exercise.prompt}</strong>
                   {result && <CheckCircle2 aria-label="Correct" className={base.correctIcon} />}
                 </div>
-                <label className={base.answerLabel} htmlFor={'starter-answer-' + index}>
+                <label className={base.answerLabel} htmlFor={'starter-answer-' + String(index)}>
                   Your answer
                 </label>
                 <div className={base.answerRow}>
                   <input
-                    id={'starter-answer-' + index}
+                    id={'starter-answer-' + String(index)}
                     className={base.answerInput}
                     inputMode="decimal"
                     type="text"
@@ -180,7 +186,9 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
         <p className={styles.stepLabel}>05 / REMEMBER THIS</p>
         <h2 id="starter-recap">Your quick summary</h2>
         <ol>
-          {lesson.recap.map((point, index) => <li key={index}>{point}</li>)}
+          {lesson.recap.map((point, index) => (
+            <li key={index}>{point}</li>
+          ))}
         </ol>
         <p>Return to the worked example whenever you need to review the method.</p>
       </section>
