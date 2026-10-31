@@ -54,20 +54,33 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
           <div className={styles.revealActions}>
             {revealedSteps < lesson.steps.length ? (
               <>
-                <button type="button" className={styles.revealButton}
-                  onClick={() => setRevealedSteps((before) => Math.min(lesson.steps.length, before + 1))}>
+                <button
+                  type="button"
+                  className={styles.revealButton}
+                  onClick={() =>
+                    setRevealedSteps((before) => Math.min(lesson.steps.length, before + 1))
+                  }
+                >
                   Show next step
                 </button>
-                <button type="button" className={styles.textButton}
-                  onClick={() => setRevealedSteps(lesson.steps.length)}>
+                <button
+                  type="button"
+                  className={styles.textButton}
+                  onClick={() => setRevealedSteps(lesson.steps.length)}
+                >
                   Show all steps
                 </button>
               </>
             ) : (
               <>
-                <p className={styles.exampleComplete}>You have seen the full method. Now try explaining it yourself.</p>
-                <button type="button" className={styles.textButton}
-                  onClick={() => setRevealedSteps(1)}>
+                <p className={styles.exampleComplete}>
+                  You have seen the full method. Now try explaining it yourself.
+                </p>
+                <button
+                  type="button"
+                  className={styles.textButton}
+                  onClick={() => setRevealedSteps(1)}
+                >
                   Start the example again
                 </button>
               </>
@@ -246,15 +259,36 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
         <div className={styles.reflection}>
           <fieldset>
             <legend>How confident do you feel with this idea?</legend>
-            <label><input type="radio" name="notebook-confidence" value="review"
-              checked={confidence === 'review'} onChange={() => setConfidence('review')} />
-              I need to read the example again</label>
-            <label><input type="radio" name="notebook-confidence" value="practise"
-              checked={confidence === 'practise'} onChange={() => setConfidence('practise')} />
-              I understand some of it, but need more practice</label>
-            <label><input type="radio" name="notebook-confidence" value="explain"
-              checked={confidence === 'explain'} onChange={() => setConfidence('explain')} />
-              I can explain the method in my own words</label>
+            <label>
+              <input
+                type="radio"
+                name="notebook-confidence"
+                value="review"
+                checked={confidence === 'review'}
+                onChange={() => setConfidence('review')}
+              />
+              I need to read the example again
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="notebook-confidence"
+                value="practise"
+                checked={confidence === 'practise'}
+                onChange={() => setConfidence('practise')}
+              />
+              I understand some of it, but need more practice
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="notebook-confidence"
+                value="explain"
+                checked={confidence === 'explain'}
+                onChange={() => setConfidence('explain')}
+              />
+              I can explain the method in my own words
+            </label>
           </fieldset>
           {confidence && (
             <p role="status" className={styles.confidenceFeedback}>
@@ -266,9 +300,14 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
             </p>
           )}
           {correct === lesson.practice.length && guidedChecked === true && (
-            <p className={styles.exampleComplete}>You have answered all the practice questions correctly in this visit.</p>
+            <p className={styles.exampleComplete}>
+              You have answered all the practice questions correctly in this visit.
+            </p>
           )}
-          <p>These reflections and answers stay only on this page and are not stored in your student account.</p>
+          <p>
+            These reflections and answers stay only on this page and are not stored in your student
+            account.
+          </p>
         </div>
       </section>
     </div>

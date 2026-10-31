@@ -199,7 +199,9 @@ describe('student textbook library', () => {
   it('reveals worked steps gradually and supports a confidence check', async () => {
     const user = userEvent.setup();
     renderApp('/student/textbook/kindergarten/focus-1');
-    expect(await screen.findByRole('heading', { name: 'One worked example, explained' })).toBeVisible();
+    expect(
+      await screen.findByRole('heading', { name: 'One worked example, explained' }),
+    ).toBeVisible();
     expect(screen.getByText('Step 1 of 3')).toBeVisible();
     expect(screen.queryByText('The last word was four: there are 4 cars.')).not.toBeInTheDocument();
 
