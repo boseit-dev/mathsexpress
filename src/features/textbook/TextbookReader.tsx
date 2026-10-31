@@ -1,4 +1,5 @@
 import { BookOpenText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect } from 'react';
 import { Link } from 'react-router';
 import { paths } from '@/config/paths';
 import { useCurrentStudent } from '@/layouts/student/useCurrentStudent';
@@ -6,6 +7,7 @@ import type { TextbookBook, TextbookChapter } from './catalogue';
 import { LinearEquationsChapter } from './LinearEquationsChapter';
 import { findNotebookLesson } from './notebookLessons';
 import { StructuredNotebookChapter } from './StructuredNotebookChapter';
+import { saveLastReadChapter } from './readingHistory';
 import styles from './TextbookReader.module.css';
 
 interface Props {
@@ -16,6 +18,11 @@ interface Props {
 /** A MathsExpress study notebook, not a tabbed question bank. */
 export function TextbookReader({ book, chapter }: Props) {
   const student = useCurrentStudent();
+  useEffect(() => {
+    if (chapter.status === 'ready') {
+      saveLastReadChapter(student.id, { bookId: book.id, chapterId: chapter.id });
+    }
+  }, [book.id, chapter.id, chapter.status, student.id]);
   const isPilot = book.id === 'year-9' && chapter.id === 'solving-linear-equations';
   const starterLesson = findNotebookLesson(book.id, chapter.id);
   const hasTeaching = isPilot || Boolean(starterLesson);

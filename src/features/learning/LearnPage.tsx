@@ -1,4 +1,5 @@
 import { ArrowRight, BookOpenCheck, GraduationCap } from 'lucide-react';
+import { useState } from 'react';
 import { Link } from 'react-router';
 import { Mascot } from '@/components/mascot/Mascot';
 import { cx } from '@/lib/cx';
@@ -13,12 +14,19 @@ import styles from './Learning.module.css';
 /** Published lessons are visible only for year levels a teacher has assigned in a joined class. */
 export function LearnPage() {
   const student = useCurrentStudent();
+  const [search, setSearch] = useState('');
   useDocumentTitle('Learn');
   useRefreshWhenVisible();
   const classes = student.classes;
   const assignedYears = [...new Set(classes.map((item) => item.yearLevel))];
   const lessons = assignedYears.flatMap((year) => lessonsForYear(year));
   const uniqueLessons = [...new Map(lessons.map((lesson) => [lesson.id, lesson])).values()];
+  const query = search.trim().toLowerCase();
+  const matchingLessons = uniqueLessons.filter((lesson) =>
+    [lesson.title, lesson.strand, lesson.introduction].some((text) =>
+      text.toLowerCase().includes(query),
+    ),
+  );
 
   return (
     <div className={styles.page}>
@@ -72,8 +80,21 @@ export function LearnPage() {
                 <h2 id="topics-heading">Explore topics</h2>
                 <p>Only lessons that are ready to learn are listed here.</p>
               </div>
-              <span className={styles.count}>{uniqueLessons.length} available</span>
+              <span className={styles.count}>{matchingLessons.length} of {uniqueLessons.length} available</span>
             </div>
+            {uniqueLessons.length > 0 && (
+              <div className={styles.lessonSearch}>
+                <label htmlFor="lesson-search">Find a lesson</label>
+                <input
+                  id="lesson-search"
+                  type="search"
+                  placeholder="Search topics or strands"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
+                {search && <button type="button" onClick={() => setSearch('')}>Clear search</button>}
+              </div>
+            )}
             {uniqueLessons.length === 0 ? (
               <div className={styles.empty}>
                 <Mascot animation="reading" size={120} cycles={2} />
@@ -83,9 +104,15 @@ export function LearnPage() {
                   are saved.
                 </p>
               </div>
+            ) : matchingLessons.length === 0 ? (
+              <div className={styles.empty} role="status">
+                <h3>No lessons found</h3>
+                <p>Try a different word or clear your search.</p>
+                <button type="button" className={styles.primaryLink} onClick={() => setSearch('')}>Show all lessons</button>
+              </div>
             ) : (
               <div className={styles.lessonGrid}>
-                {uniqueLessons.map((lesson) => (
+                {matchingLessons.map((lesson) => (
                   <article className={styles.lessonCard} key={lesson.id}>
                     <div className={styles.cardArt} aria-hidden="true">
                       <span className={styles.equationArt}>3x + 5 = 20</span>

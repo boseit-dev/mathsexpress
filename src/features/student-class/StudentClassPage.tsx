@@ -1,4 +1,7 @@
 import { useEffect, useRef } from 'react';
+import { ArrowRight, BookOpenText, ClipboardList } from 'lucide-react';
+import { Link } from 'react-router';
+import { paths } from '@/config/paths';
 import { FormMessage } from '@/components/forms/FormMessage';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { LatestFormScope } from '@/app/forms/LatestFormScope';
@@ -45,10 +48,19 @@ function StudentClasses() {
         </p>
       </PageHeader>
 
+      <nav className={styles.quickNav} aria-label="Class quick actions">
+        <Link to={paths.student.tasks}>
+          <ClipboardList aria-hidden="true" /> View my tasks <ArrowRight aria-hidden="true" />
+        </Link>
+        <Link to={paths.student.learn}>
+          <BookOpenText aria-hidden="true" /> Explore lessons <ArrowRight aria-hidden="true" />
+        </Link>
+      </nav>
+
       <div className={styles.columns}>
         <section className={styles.classes} aria-labelledby="your-classes-heading">
           <h2 id="your-classes-heading" className={styles.sectionTitle}>
-            Your classes
+            Your classes · {classes.length}
           </h2>
           <FormMessage ref={leftRef} tabIndex={-1} tone="success">
             {leave.successMessage}
