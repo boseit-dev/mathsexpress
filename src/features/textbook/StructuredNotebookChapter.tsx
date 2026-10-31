@@ -1,11 +1,16 @@
 import { useState } from 'react';
 import { CheckCircle2, CircleHelp, RotateCcw } from 'lucide-react';
 import { checkNotebookAnswer, type NotebookLesson } from './notebookLessons';
+import { NotebookExploration } from './NotebookExploration';
 import styles from './TeachingChapter.module.css';
 import base from './TextbookPage.module.css';
 
 /** Reusable, concept-first five-part reader for original NSW starter lessons. */
 export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }) {
+  const [revealedSteps, setRevealedSteps] = useState(1);
+  const [guidedAttempts, setGuidedAttempts] = useState(0);
+  const [attempts, setAttempts] = useState<Record<number, number>>({});
+  const [confidence, setConfidence] = useState<'review' | 'practise' | 'explain' | null>(null);
   const [guidedAnswer, setGuidedAnswer] = useState('');
   const [guidedChecked, setGuidedChecked] = useState<boolean | undefined>();
   const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -18,6 +23,7 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
         <p className={styles.stepLabel}>01 / DISCOVER THE IDEA</p>
         <h2 id="starter-concept">{lesson.title}</h2>
         <p className={styles.lead}>{lesson.concept}</p>
+        <NotebookExploration bookId={lesson.bookId} chapterId={lesson.chapterId} />
         <div className={styles.explorer}>
           <strong>See the pattern</strong>
           <p className={styles.visualMath}>{lesson.visual}</p>
@@ -32,17 +38,43 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
         <p className={styles.stepLabel}>02 / WATCH IT WORK</p>
         <h2 id="starter-method">One worked example, explained</h2>
         <div className={styles.worked}>
-          <p className={styles.exampleTag}>WORKED EXAMPLE</p>
+          <p className={styles.exampleTag}>WORKED EXAMPLE · EXPLORE EACH STEP</p>
           <h3>{lesson.example}</h3>
+          <p>Pause and think about what you would do next. Reveal the method one step at a time.</p>
+          <p className={styles.stepCount} role="status">
+            Step {revealedSteps} of {lesson.steps.length}
+          </p>
           <ol className={styles.solutionSteps}>
-            {lesson.steps.map((step, index) => (
+            {lesson.steps.slice(0, revealedSteps).map((step, index) => (
               <li key={index}>
                 <p>{step}</p>
               </li>
             ))}
           </ol>
+          <div className={styles.revealActions}>
+            {revealedSteps < lesson.steps.length ? (
+              <>
+                <button type="button" className={styles.revealButton}
+                  onClick={() => setRevealedSteps((before) => Math.min(lesson.steps.length, before + 1))}>
+                  Show next step
+                </button>
+                <button type="button" className={styles.textButton}
+                  onClick={() => setRevealedSteps(lesson.steps.length)}>
+                  Show all steps
+                </button>
+              </>
+            ) : (
+              <>
+                <p className={styles.exampleComplete}>You have seen the full method. Now try explaining it yourself.</p>
+                <button type="button" className={styles.textButton}
+                  onClick={() => setRevealedSteps(1)}>
+                  Start the example again
+                </button>
+              </>
+            )}
+          </div>
         </div>
-        <p>Read each step and explain it in your own words before continuing.</p>
+        <p>Try saying why each step works before checking the next step.</p>
       </section>
 
       <section id="guided" className={styles.section} aria-labelledby="starter-guided">
@@ -53,7 +85,9 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
           className={styles.guidedCard}
           onSubmit={(event) => {
             event.preventDefault();
-            setGuidedChecked(checkNotebookAnswer(guidedAnswer, lesson.guided.answer));
+            const isCorrect = checkNotebookAnswer(guidedAnswer, lesson.guided.answer);
+            setGuidedChecked(isCorrect);
+            if (!isCorrect) setGuidedAttempts((before) => before + 1);
           }}
         >
           <label htmlFor="starter-guided-answer">Your answer</label>
@@ -77,6 +111,13 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
             <summary>Need a clue?</summary>
             <p>{lesson.guided.hint}</p>
           </details>
+          {guidedChecked === false && guidedAttempts >= 2 && (
+            <details className={styles.extraHelp}>
+              <summary>Still unsure? Read the full explanation</summary>
+              <p>{lesson.guided.explanation}</p>
+              <p>Try entering your answer again after reading the explanation.</p>
+            </details>
+          )}
           {guidedChecked !== undefined && (
             <p role="status" className={guidedChecked ? styles.guidedSuccess : styles.guidedRetry}>
               {guidedChecked
@@ -109,10 +150,11 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
                 key={index}
                 onSubmit={(event) => {
                   event.preventDefault();
-                  setChecked((before) => ({
-                    ...before,
-                    [index]: checkNotebookAnswer(input, exercise.answer),
-                  }));
+                  const isCorrect = checkNotebookAnswer(input, exercise.answer);
+                  setChecked((before) => ({ ...before, [index]: isCorrect }));
+                  if (!isCorrect) {
+                    setAttempts((before) => ({ ...before, [index]: (before[index] ?? 0) + 1 }));
+                  }
                 }}
               >
                 <div className={base.questionTop}>
@@ -155,6 +197,13 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
                   </button>
                 </div>
                 {hintVisible && <p className={base.hintText}>{exercise.hint}</p>}
+                {result === false && (attempts[index] ?? 0) >= 2 && (
+                  <details className={styles.extraHelp}>
+                    <summary>See the worked explanation</summary>
+                    <p>{exercise.explanation}</p>
+                    <p>Then try the question again.</p>
+                  </details>
+                )}
                 {result !== undefined && (
                   <p role="status" className={result ? base.correctText : base.retryText}>
                     {result ? 'Correct! ' + exercise.explanation : 'Try again. ' + exercise.hint}
@@ -170,11 +219,15 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
             type="button"
             className={base.hintButton}
             onClick={() => {
+              setRevealedSteps(1);
               setGuidedAnswer('');
               setGuidedChecked(undefined);
+              setGuidedAttempts(0);
               setAnswers({});
               setChecked({});
+              setAttempts({});
               setHints([]);
+              setConfidence(null);
             }}
           >
             <RotateCcw aria-hidden="true" /> Start again
@@ -190,7 +243,33 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
             <li key={index}>{point}</li>
           ))}
         </ol>
-        <p>Return to the worked example whenever you need to review the method.</p>
+        <div className={styles.reflection}>
+          <fieldset>
+            <legend>How confident do you feel with this idea?</legend>
+            <label><input type="radio" name="notebook-confidence" value="review"
+              checked={confidence === 'review'} onChange={() => setConfidence('review')} />
+              I need to read the example again</label>
+            <label><input type="radio" name="notebook-confidence" value="practise"
+              checked={confidence === 'practise'} onChange={() => setConfidence('practise')} />
+              I understand some of it, but need more practice</label>
+            <label><input type="radio" name="notebook-confidence" value="explain"
+              checked={confidence === 'explain'} onChange={() => setConfidence('explain')} />
+              I can explain the method in my own words</label>
+          </fieldset>
+          {confidence && (
+            <p role="status" className={styles.confidenceFeedback}>
+              {confidence === 'review'
+                ? 'Good choice. Go back to the worked example and reveal each step slowly.'
+                : confidence === 'practise'
+                  ? 'Review any mistakes and retry the questions. Learning takes practice.'
+                  : 'Try teaching the idea aloud and check that your explanation matches the worked example.'}
+            </p>
+          )}
+          {correct === lesson.practice.length && guidedChecked === true && (
+            <p className={styles.exampleComplete}>You have answered all the practice questions correctly in this visit.</p>
+          )}
+          <p>These reflections and answers stay only on this page and are not stored in your student account.</p>
+        </div>
       </section>
     </div>
   );
