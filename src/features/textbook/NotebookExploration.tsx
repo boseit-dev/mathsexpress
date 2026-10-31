@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import styles from './NotebookExploration.module.css';
 
-type Props = { bookId: string; chapterId: string };
+interface Props {
+  bookId: string;
+  chapterId: string;
+}
 
 function DotCounter() {
   const [count, setCount] = useState(4);
@@ -22,9 +25,11 @@ function DotCounter() {
         max="10"
         step="1"
         value={count}
-        onChange={(event) => setCount(Number(event.target.value))}
+        onChange={(event) => {
+          setCount(Number(event.target.value));
+        }}
       />
-      <div className={styles.dots} aria-label={count + ' objects'}>
+      <div className={styles.dots} aria-label={String(count) + ' objects'}>
         {Array.from({ length: count }, (_, i) => (
           <span className={styles.dot} key={i} aria-hidden="true" />
         ))}
@@ -55,12 +60,14 @@ function TenthsModel() {
         max="10"
         step="1"
         value={tenths}
-        onChange={(event) => setTenths(Number(event.target.value))}
+        onChange={(event) => {
+          setTenths(Number(event.target.value));
+        }}
       />
       <div
         className={styles.tenFrame}
         role="img"
-        aria-label={tenths + ' of ten equal pieces shaded'}
+        aria-label={String(tenths) + ' of ten equal pieces shaded'}
       >
         {Array.from({ length: 10 }, (_, i) => (
           <span key={i} className={i < tenths ? styles.filled : styles.empty} />
@@ -94,10 +101,12 @@ function PercentModel() {
         max="100"
         step="10"
         value={percent}
-        onChange={(event) => setPercent(Number(event.target.value))}
+        onChange={(event) => {
+          setPercent(Number(event.target.value));
+        }}
       />
-      <div className={styles.track} role="img" aria-label={percent + ' percent shaded'}>
-        <div className={styles.trackFill} style={{ width: percent + '%' }} />
+      <div className={styles.track} role="img" aria-label={String(percent) + ' percent shaded'}>
+        <div className={styles.trackFill} style={{ width: String(percent) + '%' }} />
       </div>
       <p className={styles.result}>
         {percent}% of $50 ={' '}
@@ -136,19 +145,21 @@ function GrowthModel() {
         max="4"
         step="1"
         value={years}
-        onChange={(event) => setYears(Number(event.target.value))}
+        onChange={(event) => {
+          setYears(Number(event.target.value));
+        }}
       />
       <div
         className={styles.growthBars}
         role="img"
-        aria-label={'Investment is $' + value.toFixed(2) + ' after ' + years + ' years'}
+        aria-label={'Investment is $' + value.toFixed(2) + ' after ' + String(years) + ' years'}
       >
         {Array.from({ length: years + 1 }, (_, year) => {
           const amount = 100 * 1.1 ** year;
           return (
             <div className={styles.growthColumn} key={year}>
-              <span className={styles.bar} style={{ height: (amount / 146.41) * 100 + '%' }} />
-              <span>{year === 0 ? 'Start' : 'Y' + year}</span>
+              <span className={styles.bar} style={{ height: String((amount / 146.41) * 100) + '%' }} />
+              <span>{year === 0 ? 'Start' : 'Y' + String(year)}</span>
             </div>
           );
         })}
@@ -191,7 +202,9 @@ function ParabolaModel() {
             max="4"
             step="1"
             value={h}
-            onChange={(event) => setH(Number(event.target.value))}
+            onChange={(event) => {
+              setH(Number(event.target.value));
+            }}
           />
         </label>
         <label htmlFor="notebook-vertex-y">
@@ -203,7 +216,9 @@ function ParabolaModel() {
             max="4"
             step="1"
             value={k}
-            onChange={(event) => setK(Number(event.target.value))}
+            onChange={(event) => {
+              setK(Number(event.target.value));
+            }}
           />
         </label>
       </div>
@@ -213,13 +228,13 @@ function ParabolaModel() {
         role="img"
         aria-label={
           'Parabola y equals (x minus ' +
-          h +
+          String(h) +
           ') squared plus ' +
-          k +
+          String(k) +
           ' with turning point (' +
-          h +
+          String(h) +
           ', ' +
-          k +
+          String(k) +
           ')'
         }
       >
@@ -233,10 +248,10 @@ function ParabolaModel() {
         </defs>
         <g className={styles.grid}>
           {Array.from({ length: 13 }, (_, i) => (
-            <line key={'x' + i} x1={xPos(i - 6)} y1="8" x2={xPos(i - 6)} y2="232" />
+            <line key={'x' + String(i)} x1={xPos(i - 6)} y1="8" x2={xPos(i - 6)} y2="232" />
           ))}
           {Array.from({ length: 13 }, (_, i) => (
-            <line key={'y' + i} x1="8" y1={yPos(i - 4)} x2="312" y2={yPos(i - 4)} />
+            <line key={'y' + String(i)} x1="8" y1={yPos(i - 4)} x2="312" y2={yPos(i - 4)} />
           ))}
         </g>
         <g className={styles.axes}>

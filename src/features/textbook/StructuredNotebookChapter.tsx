@@ -57,8 +57,8 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
                 <button
                   type="button"
                   className={styles.revealButton}
-                  onClick={() =>
-                    setRevealedSteps((before) => Math.min(lesson.steps.length, before + 1))
+                  onClick={() => {
+                    setRevealedSteps((before) => Math.min(lesson.steps.length, before + 1));
                   }
                 >
                   Show next step
@@ -66,7 +66,9 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
                 <button
                   type="button"
                   className={styles.textButton}
-                  onClick={() => setRevealedSteps(lesson.steps.length)}
+                  onClick={() => {
+                    setRevealedSteps(lesson.steps.length);
+                  }}
                 >
                   Show all steps
                 </button>
@@ -79,7 +81,9 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
                 <button
                   type="button"
                   className={styles.textButton}
-                  onClick={() => setRevealedSteps(1)}
+                  onClick={() => {
+                    setRevealedSteps(1);
+                  }}
                 >
                   Start the example again
                 </button>
@@ -265,7 +269,9 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
                 name="notebook-confidence"
                 value="review"
                 checked={confidence === 'review'}
-                onChange={() => setConfidence('review')}
+                onChange={() => {
+                  setConfidence('review');
+                }}
               />
               I need to read the example again
             </label>
@@ -275,7 +281,9 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
                 name="notebook-confidence"
                 value="practise"
                 checked={confidence === 'practise'}
-                onChange={() => setConfidence('practise')}
+                onChange={() => {
+                  setConfidence('practise');
+                }}
               />
               I understand some of it, but need more practice
             </label>
@@ -285,7 +293,9 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
                 name="notebook-confidence"
                 value="explain"
                 checked={confidence === 'explain'}
-                onChange={() => setConfidence('explain')}
+                onChange={() => {
+                  setConfidence('explain');
+                }}
               />
               I can explain the method in my own words
             </label>

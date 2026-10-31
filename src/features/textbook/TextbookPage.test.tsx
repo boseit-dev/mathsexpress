@@ -242,7 +242,6 @@ describe('student textbook library', () => {
   });
 
   it('lets students explore exact decimal and compound growth models', async () => {
-    const user = userEvent.setup();
     const decimal = renderApp('/student/textbook/year-5/focus-1');
     expect(await screen.findByText('Build a decimal')).toBeVisible();
     const tenths = screen.getByRole('slider', { name: /Tenths shaded/ });
