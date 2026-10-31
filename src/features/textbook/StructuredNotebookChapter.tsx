@@ -59,7 +59,7 @@ export function StructuredNotebookChapter({ lesson }: { lesson: NotebookLesson }
                   className={styles.revealButton}
                   onClick={() => {
                     setRevealedSteps((before) => Math.min(lesson.steps.length, before + 1));
-                  }
+                  }}
                 >
                   Show next step
                 </button>
