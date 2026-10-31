@@ -196,6 +196,64 @@ describe('student textbook library', () => {
     }
   });
 
+  it('reveals worked steps gradually and supports a confidence check', async () => {
+    const user = userEvent.setup();
+    renderApp('/student/textbook/kindergarten/focus-1');
+    expect(await screen.findByRole('heading', { name: 'One worked example, explained' })).toBeVisible();
+    expect(screen.getByText('Step 1 of 3')).toBeVisible();
+    expect(screen.queryByText('The last word was four: there are 4 cars.')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Show next step' }));
+    expect(screen.getByText('Step 2 of 3')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Show all steps' }));
+    expect(screen.getByText('The last word was four: there are 4 cars.')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Start the example again' }));
+    expect(screen.getByText('Step 1 of 3')).toBeVisible();
+
+    const slider = screen.getByRole('slider', { name: /Number of objects/ });
+    expect(slider).toHaveValue('4');
+    expect(screen.getByRole('img', { name: '4 objects' })).toBeVisible();
+
+    const confidence = screen.getByRole('radio', { name: /I can explain the method/ });
+    await user.click(confidence);
+    expect(confidence).toBeChecked();
+    expect(screen.getByText(/Try teaching the idea aloud/)).toBeVisible();
+  });
+
+  it('provides additional explanation after two incorrect guided attempts', async () => {
+    const user = userEvent.setup();
+    renderApp('/student/textbook/kindergarten/focus-1');
+    await screen.findByRole('heading', { name: 'Try one with support' });
+    const answer = screen.getAllByRole('textbox', { name: 'Your answer' })[0];
+    if (!answer) throw new Error('Guided answer is missing');
+    await user.type(answer, '9');
+    await user.click(screen.getByRole('button', { name: 'Check this step' }));
+    expect(screen.queryByText('Still unsure? Read the full explanation')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Check this step' }));
+    expect(screen.getByText('Still unsure? Read the full explanation')).toBeVisible();
+    await user.click(screen.getByText('Still unsure? Read the full explanation'));
+    expect(screen.getByText('One, two, three: 3 dots.')).toBeVisible();
+    await user.clear(answer);
+    await user.type(answer, '3');
+    await user.click(screen.getByRole('button', { name: 'Check this step' }));
+    expect(screen.getByText(/That is correct!/)).toBeVisible();
+  });
+
+  it('lets students explore exact decimal and compound growth models', async () => {
+    const user = userEvent.setup();
+    const decimal = renderApp('/student/textbook/year-5/focus-1');
+    expect(await screen.findByText('Build a decimal')).toBeVisible();
+    const tenths = screen.getByRole('slider', { name: /Tenths shaded/ });
+    expect(tenths).toHaveValue('4');
+    expect(screen.getByRole('img', { name: '4 of ten equal pieces shaded' })).toBeVisible();
+    decimal.unmount();
+    renderApp('/student/textbook/year-10/core-1');
+    expect(await screen.findByText('Watch compound growth')).toBeVisible();
+    const years = screen.getByRole('slider', { name: /Number of years/ });
+    expect(years).toHaveValue('2');
+    expect(screen.getByRole('img', { name: 'Investment is $121.00 after 2 years' })).toBeVisible();
+  });
+
   it('has no detectable accessibility problems in the published reader', async () => {
     renderApp('/student/textbook/year-9/solving-linear-equations');
     await screen.findByRole('heading', { name: 'Exercise 1A' });
