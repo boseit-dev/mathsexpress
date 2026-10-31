@@ -442,7 +442,7 @@ export const seniorNotebookLessons: readonly NotebookLesson[] = [
     'Integrate 2x(x²+1) dx and find the coefficient of (x²+1)².',
     ['Let u = x²+1, so du = 2x dx.', 'The integral becomes ∫ u du = u²/2 + C.', 'Substitute back: (x²+1)²/2 + C. Coefficient = 0.5.'],
     ['Coefficient of (x²+1)² in that antiderivative?', 0.5, 'Integrate u to u²/2.', '0.5.'],
-    [['Coefficient of (x²+1)³ in ∫ 2x(x²+1)² dx?', 1 / 3, 'Set u=x²+1; integrate u².', 'Coefficient = 1/3.'], ['Coefficient of (x²+1) in ∫ 2x dx?', 1, 'Substitute back: x²+C=(x²+1)+new C.', 'Coefficient is 1.']],
+    [['Coefficient of (x²+1)⁴ in ∫ 2x(x²+1)³ dx?', 0.25, 'Set u=x²+1; integrate u³.', 'Coefficient = 1/4 = 0.25.'], ['Coefficient of (x²+1) in ∫ 2x dx?', 1, 'Substitute back: x²+C=(x²+1)+new C.', 'Coefficient is 1.']],
     ['Find an inner expression.', 'Check its derivative is present.', 'Substitute back after integrating.']),
   ...teach(ext2, 'focus-5', 'Model motion with calculus',
     'A position function gives where an object is. Differentiation of position gives velocity; differentiation of velocity gives acceleration.',
