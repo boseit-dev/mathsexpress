@@ -40,11 +40,6 @@ jobs:
           node scripts/check-secrets.ts --all
           node scripts/check-secrets.ts --commits origin/main..HEAD
 
-      - name: Show final textbook lint-fix formatting
-        run: |
-          npx prettier --write src/features/textbook/NotebookExploration.tsx src/features/textbook/StructuredNotebookChapter.tsx src/features/textbook/TextbookPage.test.tsx
-          git diff -- src/features/textbook/NotebookExploration.tsx src/features/textbook/StructuredNotebookChapter.tsx src/features/textbook/TextbookPage.test.tsx
-
       - name: Run all checks
         run: npm run check
 

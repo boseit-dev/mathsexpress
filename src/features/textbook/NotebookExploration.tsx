@@ -29,7 +29,7 @@ function DotCounter() {
           setCount(Number(event.target.value));
         }}
       />
-      <div className={styles.dots} aria-label={String(count) + ' objects'}>
+      <div className={styles.dots} role="img" aria-label={String(count) + ' objects'}>
         {Array.from({ length: count }, (_, i) => (
           <span className={styles.dot} key={i} aria-hidden="true" />
         ))}
@@ -158,7 +158,10 @@ function GrowthModel() {
           const amount = 100 * 1.1 ** year;
           return (
             <div className={styles.growthColumn} key={year}>
-              <span className={styles.bar} style={{ height: String((amount / 146.41) * 100) + '%' }} />
+              <span
+                className={styles.bar}
+                style={{ height: String((amount / 146.41) * 100) + '%' }}
+              />
               <span>{year === 0 ? 'Start' : 'Y' + String(year)}</span>
             </div>
           );

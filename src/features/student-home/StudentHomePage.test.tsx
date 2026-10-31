@@ -219,10 +219,14 @@ describe('keeping the home page current', () => {
     const getStudentHome = renderCountingHomeLoads();
     await screen.findByRole('heading', { level: 1 });
 
+    await waitFor(() => {
+      expect(
+        setTimeoutSpy.mock.calls.some(([, delay]) => delay === millisecondsUntilMidnight(TEST_NOW)),
+      ).toBe(true);
+    });
     const midnightCall = setTimeoutSpy.mock.calls.find(
       ([, delay]) => delay === millisecondsUntilMidnight(TEST_NOW),
     );
-    expect(midnightCall).toBeDefined();
     act(() => {
       (midnightCall?.[0] as () => void)();
     });
