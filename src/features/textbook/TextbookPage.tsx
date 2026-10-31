@@ -129,6 +129,18 @@ function LibraryView() {
       <p className={styles.resultsCount} role="status">
         Showing {matching.length} of {textbookBooks.length} books
       </p>
+      {matching.length > 0 && (search.trim() || filter !== 'all') && (
+        <button
+          type="button"
+          className={styles.resetFilters}
+          onClick={() => {
+            setSearch('');
+            setFilter('all');
+          }}
+        >
+          Show all books
+        </button>
+      )}
       {matching.length === 0 && (
         <div className={styles.emptyResults}>
           <p>
