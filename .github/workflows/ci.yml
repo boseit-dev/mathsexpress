@@ -40,6 +40,11 @@ jobs:
           node scripts/check-secrets.ts --all
           node scripts/check-secrets.ts --commits origin/main..HEAD
 
+      - name: Print notebook formatter adjustments
+        run: |
+          npx prettier --write src/features/textbook/catalogue.test.ts src/features/textbook/notebookLessons.ts src/features/textbook/StructuredNotebookChapter.tsx src/features/textbook/TextbookPage.test.tsx
+          git diff -- src/features/textbook/catalogue.test.ts src/features/textbook/notebookLessons.ts src/features/textbook/StructuredNotebookChapter.tsx src/features/textbook/TextbookPage.test.tsx
+
       - name: Run all checks
         run: npm run check
 
