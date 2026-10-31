@@ -33,13 +33,9 @@ import { createTeacherHomeLoader } from '@/features/teacher-home/teacherHomeLoad
 import { TeacherHomePage } from '@/features/teacher-home/TeacherHomePage';
 import { TeacherLayout } from '@/layouts/teacher/TeacherLayout';
 import { createTeacherLayoutLoader } from '@/layouts/teacher/teacherLayoutLoader';
+import { TeacherMorePage } from '@/features/more/TeacherMorePage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { PlannedSectionPage } from './pages/PlannedSectionPage';
 import { RouteErrorPage } from './pages/RouteErrorPage';
-
-function planned(title: string, summary: string) {
-  return <PlannedSectionPage title={title} summary={summary} homePath={paths.teacher.home} />;
-}
 
 export function createTeacherRoutes(dependencies: AppDependencies): RouteObject {
   const classAction = createTeacherClassAction(dependencies);
@@ -108,7 +104,7 @@ export function createTeacherRoutes(dependencies: AppDependencies): RouteObject 
           },
           {
             path: paths.teacher.more,
-            element: planned('More', 'Your profile, school settings and help.'),
+            element: <TeacherMorePage />,
           },
           { path: '*', element: <NotFoundPage homePath={paths.teacher.home} /> },
         ],

@@ -1,0 +1,199 @@
+.page {
+  display: grid;
+  gap: var(--space-6);
+  padding-block-end: var(--space-8);
+}
+.hero {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-8);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(125deg, var(--color-brand-lavender-wash), var(--color-brand-light-blue));
+}
+.hero h1 {
+  font-size: var(--font-size-display);
+}
+.hero p:not(.eyebrow),
+.heading p,
+.timerIntro p,
+.localNote,
+.help p {
+  color: var(--color-text-secondary);
+}
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-brand);
+  letter-spacing: 0.08em;
+}
+.overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: var(--space-3);
+}
+.overview > div {
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+.overview strong {
+  font-size: var(--font-size-lg);
+}
+.overview span {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.columns {
+  display: grid;
+  gap: var(--space-6);
+  align-items: start;
+}
+.tools,
+.timer,
+.help {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-inline-size: 0;
+}
+.heading {
+  display: grid;
+  gap: var(--space-1);
+}
+.heading h2,
+.timer h2,
+.help h2 {
+  font-size: var(--font-size-xl);
+}
+.linkGrid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+}
+.toolLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  min-block-size: 6rem;
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.toolLink:hover,
+.toolLink:focus-visible {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.iconBubble {
+  display: grid;
+  place-items: center;
+  flex: 0 0 2.75rem;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border-radius: var(--radius-md);
+  color: var(--color-brand-primary);
+  background: var(--color-brand-pale);
+}
+.iconBubble svg {
+  inline-size: var(--size-icon-md);
+  block-size: var(--size-icon-md);
+}
+.toolCopy {
+  display: grid;
+  gap: var(--space-1);
+  min-inline-size: 0;
+}
+.toolCopy > span {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.arrow {
+  margin-inline-start: auto;
+  color: var(--color-brand-primary);
+}
+.timer,
+.help {
+  padding: var(--space-5);
+  border: 1px solid var(--color-brand-soft);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+}
+.timerIntro {
+  display: flex;
+  align-items: start;
+  gap: var(--space-3);
+}
+.timerIntro > div {
+  display: grid;
+  gap: var(--space-1);
+}
+.time {
+  display: block;
+  padding-block: var(--space-3);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-align: center;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brand-primary);
+}
+.presets,
+.timerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.presets button,
+.secondaryButton,
+.primaryButton {
+  min-block-size: var(--size-touch-target);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-input);
+  background: var(--color-surface);
+}
+.presets button[aria-pressed='true'] {
+  background: var(--color-brand-pale);
+  border-color: var(--color-brand-primary);
+  font-weight: var(--font-weight-semibold);
+}
+.primaryButton {
+  border-color: var(--color-brand-primary);
+  color: var(--color-text-inverse);
+  background: var(--color-brand-primary);
+}
+.primaryButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.localNote {
+  font-size: var(--font-size-xs);
+}
+.done {
+  text-align: center;
+  color: var(--color-success);
+  font-weight: var(--font-weight-semibold);
+}
+@media (min-width: 1100px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toolLink {
+    transition: none;
+  }
+}
