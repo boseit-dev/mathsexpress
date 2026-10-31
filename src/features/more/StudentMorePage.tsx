@@ -144,8 +144,8 @@ function FocusTimer() {
             type="button"
             className={styles.primaryButton}
             onClick={() => {
-                setDeadline(Date.now() + secondsLeft * 1000);
-              }}
+              setDeadline(Date.now() + secondsLeft * 1000);
+            }}
             disabled={finished}
           >
             {secondsLeft === duration ? 'Start focus' : 'Resume'}

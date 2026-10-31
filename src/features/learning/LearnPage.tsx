@@ -97,7 +97,9 @@ export function LearnPage() {
                   }}
                 />
                 {search && (
-                  <button type="button" onClick={() => {
+                  <button
+                    type="button"
+                    onClick={() => {
                       setSearch('');
                     }}
                   >
