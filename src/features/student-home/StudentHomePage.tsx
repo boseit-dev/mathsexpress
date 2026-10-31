@@ -40,9 +40,17 @@ export function StudentHomePage() {
       />
 
       {recentBook && recentChapter?.status === 'ready' && (
-        <Link className={styles.resumeReading} to={paths.student.textbookChapter(recentBook.id, recentChapter.id)}>
+        <Link
+          className={styles.resumeReading}
+          to={paths.student.textbookChapter(recentBook.id, recentChapter.id)}
+        >
           <BookOpenText aria-hidden="true" />
-          <span><strong>Pick up your textbook</strong><span>{recentBook.course} · {recentChapter.title}</span></span>
+          <span>
+            <strong>Pick up your textbook</strong>
+            <span>
+              {recentBook.course} · {recentChapter.title}
+            </span>
+          </span>
           <ArrowUpRight aria-hidden="true" />
         </Link>
       )}

@@ -80,7 +80,9 @@ export function LearnPage() {
                 <h2 id="topics-heading">Explore topics</h2>
                 <p>Only lessons that are ready to learn are listed here.</p>
               </div>
-              <span className={styles.count}>{matchingLessons.length} of {uniqueLessons.length} available</span>
+              <span className={styles.count}>
+                {matchingLessons.length} of {uniqueLessons.length} available
+              </span>
             </div>
             {uniqueLessons.length > 0 && (
               <div className={styles.lessonSearch}>
@@ -92,7 +94,11 @@ export function LearnPage() {
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                 />
-                {search && <button type="button" onClick={() => setSearch('')}>Clear search</button>}
+                {search && (
+                  <button type="button" onClick={() => setSearch('')}>
+                    Clear search
+                  </button>
+                )}
               </div>
             )}
             {uniqueLessons.length === 0 ? (
@@ -108,7 +114,9 @@ export function LearnPage() {
               <div className={styles.empty} role="status">
                 <h3>No lessons found</h3>
                 <p>Try a different word or clear your search.</p>
-                <button type="button" className={styles.primaryLink} onClick={() => setSearch('')}>Show all lessons</button>
+                <button type="button" className={styles.primaryLink} onClick={() => setSearch('')}>
+                  Show all lessons
+                </button>
               </div>
             ) : (
               <div className={styles.lessonGrid}>

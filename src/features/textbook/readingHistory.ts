@@ -20,7 +20,8 @@ export function getLastReadChapter(studentId: string): LastReadChapter | null {
       !('chapterId' in value) ||
       typeof value.bookId !== 'string' ||
       typeof value.chapterId !== 'string'
-    ) return null;
+    )
+      return null;
     return { bookId: value.bookId, chapterId: value.chapterId };
   } catch {
     // Private browsing or unavailable storage must never block textbooks.

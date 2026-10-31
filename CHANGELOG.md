@@ -13,7 +13,6 @@ All notable changes to MathsExpress 2.0 are recorded here. The format follows
 - Made class assignments and learning easier to reach with direct Class shortcuts.
 - Added regression tests for the new tools and reading history. These changes do not add unverified learning material or alter the production database.
 
-
 ### Textbook reader and syllabus structure
 
 - Replace generic textbook chapter placeholders with stage-aware NSW syllabus focus-area outlines across 25 books, including Stage 5 Core/Paths and the distinct 2024 senior courses.

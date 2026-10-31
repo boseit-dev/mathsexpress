@@ -87,8 +87,16 @@ function LibraryView() {
         <BookOpen className={styles.libraryIcon} aria-hidden="true" />
       </header>
       {recentBook && recentChapter?.status === 'ready' && (
-        <Link className={styles.continueReading} to={paths.student.textbookChapter(recentBook.id, recentChapter.id)}>
-          <span><strong>Continue reading</strong><span>{recentBook.course} · {recentChapter.title}</span></span>
+        <Link
+          className={styles.continueReading}
+          to={paths.student.textbookChapter(recentBook.id, recentChapter.id)}
+        >
+          <span>
+            <strong>Continue reading</strong>
+            <span>
+              {recentBook.course} · {recentChapter.title}
+            </span>
+          </span>
           <ChevronRight aria-hidden="true" />
         </Link>
       )}

@@ -1,5 +1,16 @@
 import { useEffect, useState } from 'react';
-import { ArrowUpRight, BookOpen, Clock3, GraduationCap, History, LibraryBig, ListTodo, Palette, School, Sparkles } from 'lucide-react';
+import {
+  ArrowUpRight,
+  BookOpen,
+  Clock3,
+  GraduationCap,
+  History,
+  LibraryBig,
+  ListTodo,
+  Palette,
+  School,
+  Sparkles,
+} from 'lucide-react';
 import { Link } from 'react-router';
 import { paths } from '@/config/paths';
 import { formatYearLevel } from '@/domain/student';
@@ -8,13 +19,48 @@ import { useCurrentStudent } from '@/layouts/student/useCurrentStudent';
 import styles from './MorePages.module.css';
 
 const studyLinks = [
-  { to: paths.student.learn, icon: GraduationCap, title: 'Guided learning', detail: 'Learn with worked examples and practice.' },
-  { to: paths.student.textbook, icon: BookOpen, title: 'Maths textbooks', detail: 'Read explanations for your topics.' },
-  { to: paths.student.tasks, icon: ListTodo, title: 'My assignments', detail: 'See your teacher-assigned work and progress.' },
-  { to: paths.student.class, icon: School, title: 'My classes', detail: 'See your classes, teachers and year levels.' },
-  { to: paths.student.shop, icon: Sparkles, title: 'Rewards shop', detail: 'Explore items you can buy with your coins.' },
-  { to: paths.student.shopCollection, icon: Palette, title: 'My collection', detail: 'Try on the looks you have collected.' },
-  { to: paths.student.shopHistory, icon: History, title: 'Coin history', detail: 'Review your rewards and spending.' },
+  {
+    to: paths.student.learn,
+    icon: GraduationCap,
+    title: 'Guided learning',
+    detail: 'Learn with worked examples and practice.',
+  },
+  {
+    to: paths.student.textbook,
+    icon: BookOpen,
+    title: 'Maths textbooks',
+    detail: 'Read explanations for your topics.',
+  },
+  {
+    to: paths.student.tasks,
+    icon: ListTodo,
+    title: 'My assignments',
+    detail: 'See your teacher-assigned work and progress.',
+  },
+  {
+    to: paths.student.class,
+    icon: School,
+    title: 'My classes',
+    detail: 'See your classes, teachers and year levels.',
+  },
+  {
+    to: paths.student.shop,
+    icon: Sparkles,
+    title: 'Rewards shop',
+    detail: 'Explore items you can buy with your coins.',
+  },
+  {
+    to: paths.student.shopCollection,
+    icon: Palette,
+    title: 'My collection',
+    detail: 'Try on the looks you have collected.',
+  },
+  {
+    to: paths.student.shopHistory,
+    icon: History,
+    title: 'Coin history',
+    detail: 'Review your rewards and spending.',
+  },
 ] as const;
 
 function displayTime(seconds: number) {
@@ -54,14 +100,22 @@ function FocusTimer() {
   return (
     <section className={styles.timer} aria-labelledby="focus-heading">
       <div className={styles.timerIntro}>
-        <span className={styles.iconBubble}><Clock3 aria-hidden="true" /></span>
+        <span className={styles.iconBubble}>
+          <Clock3 aria-hidden="true" />
+        </span>
         <div>
           <h2 id="focus-heading">Focus timer</h2>
           <p>Choose a short study session. Take a break when you need one.</p>
         </div>
       </div>
-      <output className={styles.time} aria-label="Time remaining">{displayTime(secondsLeft)}</output>
-      {finished && <p className={styles.done} role="status">Session finished. Great work!</p>}
+      <output className={styles.time} aria-label="Time remaining">
+        {displayTime(secondsLeft)}
+      </output>
+      {finished && (
+        <p className={styles.done} role="status">
+          Session finished. Great work!
+        </p>
+      )}
       <div className={styles.presets} aria-label="Choose a focus session">
         {[5, 15, 25].map((minutes) => (
           <button
@@ -76,7 +130,9 @@ function FocusTimer() {
       </div>
       <div className={styles.timerActions}>
         {running ? (
-          <button type="button" className={styles.primaryButton} onClick={pause}>Pause</button>
+          <button type="button" className={styles.primaryButton} onClick={pause}>
+            Pause
+          </button>
         ) : (
           <button
             type="button"
@@ -87,9 +143,13 @@ function FocusTimer() {
             {secondsLeft === duration ? 'Start focus' : 'Resume'}
           </button>
         )}
-        <button type="button" className={styles.secondaryButton} onClick={() => reset()}>Reset</button>
+        <button type="button" className={styles.secondaryButton} onClick={() => reset()}>
+          Reset
+        </button>
       </div>
-      <p className={styles.localNote}>This timer runs only while you stay on this page. It does not save or share your activity.</p>
+      <p className={styles.localNote}>
+        This timer runs only while you stay on this page. It does not save or share your activity.
+      </p>
     </section>
   );
 }
@@ -102,13 +162,21 @@ export function StudentMorePage() {
   return (
     <div className={styles.page}>
       <header className={styles.hero}>
-        <p className={styles.eyebrow}><LibraryBig size={17} aria-hidden="true" /> YOUR STUDY SPACE</p>
+        <p className={styles.eyebrow}>
+          <LibraryBig size={17} aria-hidden="true" /> YOUR STUDY SPACE
+        </p>
         <h1>More</h1>
         <p>Everything you need to keep learning, customise your look and stay organised.</p>
       </header>
       <section className={styles.overview} aria-label="Your account at a glance">
-        <div><strong>{student.classes.length}</strong><span>{student.classes.length === 1 ? 'Class joined' : 'Classes joined'}</span></div>
-        <div><strong>{years.length ? years.map(formatYearLevel).join(' · ') : '—'}</strong><span>Teacher-assigned learning level</span></div>
+        <div>
+          <strong>{student.classes.length}</strong>
+          <span>{student.classes.length === 1 ? 'Class joined' : 'Classes joined'}</span>
+        </div>
+        <div>
+          <strong>{years.length ? years.map(formatYearLevel).join(' · ') : '—'}</strong>
+          <span>Teacher-assigned learning level</span>
+        </div>
       </section>
       <div className={styles.columns}>
         <section className={styles.tools} aria-labelledby="tools-heading">
@@ -119,8 +187,13 @@ export function StudentMorePage() {
           <nav aria-label="Student tools" className={styles.linkGrid}>
             {studyLinks.map(({ to, icon: Icon, title, detail }) => (
               <Link key={to} to={to} className={styles.toolLink}>
-                <span className={styles.iconBubble}><Icon aria-hidden="true" /></span>
-                <span className={styles.toolCopy}><strong>{title}</strong><span>{detail}</span></span>
+                <span className={styles.iconBubble}>
+                  <Icon aria-hidden="true" />
+                </span>
+                <span className={styles.toolCopy}>
+                  <strong>{title}</strong>
+                  <span>{detail}</span>
+                </span>
                 <ArrowUpRight className={styles.arrow} aria-hidden="true" />
               </Link>
             ))}
