@@ -189,8 +189,8 @@ function LibraryView() {
         ) : null,
       )}
       <p className={styles.libraryNote}>
-        Each book now has at least one original starter lesson. These are not complete
-        syllabus focus areas. Remaining topics are still in preparation and must be reviewed.
+        Each book now has at least one original starter lesson. These are not complete syllabus
+        focus areas. Remaining topics are still in preparation and must be reviewed.
       </p>
     </div>
   );

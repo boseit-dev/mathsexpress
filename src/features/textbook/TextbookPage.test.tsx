@@ -33,9 +33,9 @@ describe('student textbook library', () => {
     await user.click(screen.getByRole('button', { name: 'Ready to learn' }));
     expect(screen.getByText('Showing 25 of 25 books')).toBeVisible();
     expect(
-      screen.getAllByRole('link', { name: /Year 9 Mathematics/ }).some((link) =>
-        link.getAttribute('href') === '/student/textbook/year-9',
-      ),
+      screen
+        .getAllByRole('link', { name: /Year 9 Mathematics/ })
+        .some((link) => link.getAttribute('href') === '/student/textbook/year-9'),
     ).toBe(true);
     const search = screen.getByRole('searchbox', { name: 'Find a textbook' });
     await user.type(search, 'standard 2');
@@ -181,7 +181,6 @@ describe('student textbook library', () => {
     }
   });
 
-
   it('opens senior course and Stage 5 Paths teaching with worked examples', async () => {
     for (const url of [
       '/student/textbook/year-9/path-9',
@@ -189,7 +188,9 @@ describe('student textbook library', () => {
       '/student/textbook/year-12-extension-2/focus-3',
     ]) {
       const view = renderApp(url);
-      expect(await screen.findByRole('heading', { name: 'One worked example, explained' })).toBeVisible();
+      expect(
+        await screen.findByRole('heading', { name: 'One worked example, explained' }),
+      ).toBeVisible();
       expect(screen.getByRole('heading', { name: 'Try one with support' })).toBeVisible();
       view.unmount();
     }

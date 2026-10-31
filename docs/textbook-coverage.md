@@ -76,7 +76,7 @@ Use the official public NSW syllabuses as the curriculum reference, with attribu
 
 ## Additional authored introductions — 31 October 2026
 
-An extra original lesson bank now introduces every *listed catalogue focus-area heading*
+An extra original lesson bank now introduces every _listed catalogue focus-area heading_
 across the 25 books, not just each book's first heading. This includes K–6 stage-level
 topics, Stage 4/5 Core, Stage 5 Paths and distinct Standard, Advanced, Extension and
 Life Skills 11–12 focus areas. Some K–10 and Life Skills content is purposefully shared
