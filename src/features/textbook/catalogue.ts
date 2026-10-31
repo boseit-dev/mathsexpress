@@ -1,4 +1,5 @@
 import type { YearLevel } from '@/domain/student';
+import { findNotebookLesson } from './notebookLessons';
 
 /** Original MathsExpress books. NESA defines syllabus stages, not a compulsory
  * year-by-year chapter order; chapter sequences remain editorial until reviewed. */
@@ -121,6 +122,7 @@ export function stageForYear(year: YearLevel): string {
 }
 
 function k10Book(year: YearLevel, lifeSkills = false): TextbookBook {
+  const bookId = `${year === 'K' ? 'kindergarten' : `year-${year}`}${lifeSkills ? '-life-skills' : ''}`;
   const title = year === 'K' ? 'Kindergarten' : `Year ${year}`;
   const stage = stageForYear(year);
   const pilot: TextbookChapter[] =
@@ -147,13 +149,20 @@ function k10Book(year: YearLevel, lifeSkills = false): TextbookBook {
               ...(stage === 'Stage 5' ? focusChapters(pathFocus, 'Stage 5 Paths', 'path') : []),
             ];
   return {
-    id: `${year === 'K' ? 'kindergarten' : `year-${year}`}${lifeSkills ? '-life-skills' : ''}`,
+    id: bookId,
     year,
     course: lifeSkills ? `${title} Mathematics Life Skills` : `${title} Mathematics`,
     stage,
     syllabus: 'NSW Mathematics K–10 (2022)',
     syllabusUrl: NSW_K10,
-    chapters: [guide, ...pilot, ...outlines],
+    chapters: [
+      guide,
+      ...pilot,
+      ...outlines.map((chapter) => ({
+        ...chapter,
+        status: findNotebookLesson(bookId, chapter.id) ? ('ready' as const) : ('planned' as const),
+      })),
+    ],
   };
 }
 
@@ -172,14 +181,21 @@ function seniorBook(
         : course === 'Extension 2'
           ? 'https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-extension-2-11-12-2024/overview'
           : 'https://curriculum.nsw.edu.au/learning-areas/mathematics/mathematics-life-skills-11-12-2024/overview';
+  const bookId = `year-${year}-${id}`;
   return {
-    id: `year-${year}-${id}`,
+    id: bookId,
     year,
     course: `Year ${year} ${course}`,
     stage: 'Stage 6',
     syllabus: 'NSW Mathematics 11–12 (2024)',
     syllabusUrl,
-    chapters: [guide, ...focusChapters(focusAreas, 'Syllabus focus areas', 'focus')],
+    chapters: [
+      guide,
+      ...focusChapters(focusAreas, 'Syllabus focus areas', 'focus').map((chapter) => ({
+        ...chapter,
+        status: findNotebookLesson(bookId, chapter.id) ? ('ready' as const) : ('planned' as const),
+      })),
+    ],
   };
 }
 

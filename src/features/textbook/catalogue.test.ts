@@ -2,6 +2,7 @@ import type { YearLevel } from '@/domain/student';
 import { describe, expect, it } from 'vitest';
 import { findTextbook, findTextbookChapter, stageForYear, textbookBooks } from './catalogue';
 import { isEquationAnswerCorrect, linearEquationExercises } from './pilotEquations';
+import { checkNotebookAnswer, findNotebookLesson, notebookLessons } from './notebookLessons';
 
 describe('NSW textbook catalogue', () => {
   it('gives every book a unique route and an accessible guide', () => {
@@ -47,7 +48,26 @@ describe('NSW textbook catalogue', () => {
       expect(book.chapters.length).toBeGreaterThan(3);
       expect(
         book.chapters.filter((c) => c.id !== 'getting-started' && c.status === 'ready').length,
-      ).toBe(book.id === 'year-9' ? 1 : 0);
+      ).toBe(book.id === 'year-9' ? 2 : 1);
+    }
+  });
+
+
+  it('provides a distinct concept-first starter lesson in all 25 books', () => {
+    expect(notebookLessons).toHaveLength(25);
+    expect(new Set(notebookLessons.map((lesson) => lesson.bookId)).size).toBe(25);
+    for (const lesson of notebookLessons) {
+      const book = findTextbook(lesson.bookId);
+      expect(book).toBeDefined();
+      expect(book?.chapters.find((chapter) => chapter.id === lesson.chapterId)?.status).toBe('ready');
+      expect(findNotebookLesson(lesson.bookId, lesson.chapterId)).toBe(lesson);
+      expect(lesson.steps.length).toBeGreaterThanOrEqual(3);
+      expect(lesson.practice.length).toBeGreaterThanOrEqual(2);
+      expect(lesson.recap.length).toBeGreaterThanOrEqual(3);
+      for (const answer of [lesson.guided, ...lesson.practice]) {
+        expect(checkNotebookAnswer(String(answer.answer), answer.answer)).toBe(true);
+        expect(checkNotebookAnswer(String(answer.answer + 1), answer.answer)).toBe(false);
+      }
     }
   });
 

@@ -4,6 +4,8 @@ import { paths } from '@/config/paths';
 import { useCurrentStudent } from '@/layouts/student/useCurrentStudent';
 import type { TextbookBook, TextbookChapter } from './catalogue';
 import { LinearEquationsChapter } from './LinearEquationsChapter';
+import { findNotebookLesson } from './notebookLessons';
+import { StructuredNotebookChapter } from './StructuredNotebookChapter';
 import styles from './TextbookReader.module.css';
 
 interface Props {
@@ -15,6 +17,8 @@ interface Props {
 export function TextbookReader({ book, chapter }: Props) {
   const student = useCurrentStudent();
   const isPilot = book.id === 'year-9' && chapter.id === 'solving-linear-equations';
+  const starterLesson = findNotebookLesson(book.id, chapter.id);
+  const hasTeaching = isPilot || Boolean(starterLesson);
   const chapterIndex = book.chapters.findIndex((item) => item.id === chapter.id);
   const previous = book.chapters[chapterIndex - 1];
   const next = book.chapters[chapterIndex + 1];
@@ -39,21 +43,33 @@ export function TextbookReader({ book, chapter }: Props) {
         <p className={styles.description}>
           {isPilot
             ? 'Discover why equations work, watch each step change the balance, and build confidence before answering questions.'
-            : chapter.id === 'getting-started'
-              ? 'A friendly guide to studying with your MathsExpress book.'
-              : 'This is a syllabus topic outline. The teaching chapter has not been published yet.'}
+            : starterLesson
+              ? starterLesson.concept
+              : chapter.id === 'getting-started'
+                ? 'A friendly guide to studying with your MathsExpress book.'
+                : 'This is a syllabus topic outline. The teaching chapter has not been published yet.'}
         </p>
-        {isPilot && (
+        {hasTeaching && (
           <div className={styles.objectives} aria-label="In this chapter you will learn">
             <strong>By the end, you can:</strong>
-            <span>Explain what an equation means</span>
-            <span>Undo operations in the right order</span>
-            <span>Check that your solution works</span>
+            {isPilot ? (
+              <>
+                <span>Explain what an equation means</span>
+                <span>Undo operations in the right order</span>
+                <span>Check that your solution works</span>
+              </>
+            ) : (
+              <>
+                <span>Understand the main idea</span>
+                <span>Follow a worked example</span>
+                <span>Try a guided question</span>
+              </>
+            )}
           </div>
         )}
       </header>
 
-      {isPilot && (
+      {hasTeaching && (
         <nav className={styles.journey} aria-label="Jump to chapter section">
           <a href="#concept">01 · Discover</a>
           <a href="#method">02 · Learn</a>
@@ -66,6 +82,8 @@ export function TextbookReader({ book, chapter }: Props) {
       <div className={styles.readingSurface}>
         {isPilot ? (
           <LinearEquationsChapter />
+        ) : starterLesson ? (
+          <StructuredNotebookChapter lesson={starterLesson} />
         ) : chapter.id === 'getting-started' ? (
           <section className={styles.notice}>
             <h2>How to learn from this book</h2>

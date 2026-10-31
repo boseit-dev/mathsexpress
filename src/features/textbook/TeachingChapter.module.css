@@ -304,3 +304,18 @@
     max-inline-size: 100%;
   }
 }
+
+/* A clear visual focus for the new original notebook teaching diagrams. */
+.visualMath {
+  display: grid;
+  place-items: center;
+  min-block-size: 5rem;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-text-brand);
+  font-size: clamp(1.25rem, 2.8vw, 2rem);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  overflow-wrap: anywhere;
+}

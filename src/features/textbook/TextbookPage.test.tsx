@@ -31,14 +31,14 @@ describe('student textbook library', () => {
     renderApp('/student/textbook');
     await screen.findByRole('heading', { level: 1, name: 'Textbook' });
     await user.click(screen.getByRole('button', { name: 'Ready to learn' }));
-    expect(screen.getByText('Showing 1 of 25 books')).toBeVisible();
+    expect(screen.getByText('Showing 25 of 25 books')).toBeVisible();
     expect(screen.getByRole('link', { name: /Year 9 Mathematics/ })).toHaveAttribute(
       'href',
       '/student/textbook/year-9',
     );
     const search = screen.getByRole('searchbox', { name: 'Find a textbook' });
     await user.type(search, 'standard 2');
-    expect(screen.getByText('Showing 0 of 25 books')).toBeVisible();
+    expect(screen.getByText('Showing 1 of 25 books')).toBeVisible();
     await user.click(screen.getByRole('button', { name: 'Show all books' }));
     expect(search).toHaveValue('');
     expect(screen.getByText('Showing 25 of 25 books')).toBeVisible();
@@ -157,6 +157,24 @@ describe('student textbook library', () => {
 
     await user.click(screen.getByText(/Explore other topics in Year 9 Mathematics/));
     expect(screen.getByRole('link', { name: 'Probability' })).toBeVisible();
+  });
+
+
+  it('teaches real concepts across primary, secondary and senior books', async () => {
+    const cases = [
+      { url: '/student/textbook/kindergarten/focus-1', heading: 'Count small groups' },
+      { url: '/student/textbook/year-6/focus-1', heading: 'Compare tenths and hundredths' },
+      { url: '/student/textbook/year-10/core-1', heading: 'Explore compound growth' },
+      { url: '/student/textbook/year-12-extension-2/focus-1', heading: 'Disprove claims with counterexamples' },
+    ];
+    for (const item of cases) {
+      const { unmount } = renderApp(item.url);
+      expect(await screen.findByRole('heading', { name: item.heading })).toBeVisible();
+      expect(screen.getByRole('heading', { name: 'One worked example, explained' })).toBeVisible();
+      expect(screen.getByRole('heading', { name: 'Try one with support' })).toBeVisible();
+      expect(screen.getByRole('heading', { name: 'Try it independently' })).toBeVisible();
+      unmount();
+    }
   });
 
   it('has no detectable accessibility problems in the published reader', async () => {
