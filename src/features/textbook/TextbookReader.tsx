@@ -90,7 +90,7 @@ export function TextbookReader({ book, chapter }: Props) {
         {isPilot ? (
           <LinearEquationsChapter />
         ) : starterLesson ? (
-          <StructuredNotebookChapter lesson={starterLesson} />
+          <StructuredNotebookChapter key={book.id + '/' + chapter.id} lesson={starterLesson} />
         ) : chapter.id === 'getting-started' ? (
           <section className={styles.notice}>
             <h2>How to learn from this book</h2>
